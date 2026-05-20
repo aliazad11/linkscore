@@ -435,10 +435,12 @@ export default function App() {
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length) });
 
-    const res = await fetch("/api/generate-plan", {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
+      headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version":"2023-06-01" },
       body: JSON.stringify({
+        model:"claude-sonnet-4-5", max_tokens:3000,
+        system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
         messages:[{ role:"user", content:messageContent }, { role:"assistant", content:"{" }],
       }),
     });
