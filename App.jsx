@@ -288,7 +288,7 @@ export default function App() {
         method:"POST",
         headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
-          model:"claude-sonnet-4-20250514", max_tokens:2000,
+          model:"claude-sonnet-4-5", max_tokens:2000,
           system:"You are a JSON API. Output only valid raw JSON. No markdown, no explanation, no code blocks.",
           messages:[{ role:"user", content:buildPrompt(user, ans) }],
         }),
@@ -355,7 +355,7 @@ export default function App() {
         method:"POST",
         headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
-          model:"claude-sonnet-4-20250514", max_tokens:2000,
+          model:"claude-sonnet-4-5", max_tokens:2000,
           system:"You are a JSON API. Output only valid raw JSON. No markdown, no explanation, no code blocks.",
           messages:[{ role:"user", content:buildPrompt(userData, answers) }],
         }),
