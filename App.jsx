@@ -287,6 +287,7 @@ export default function App() {
   const [pdfText, setPdfText] = useState("");
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
+  const [activeThoughtTab, setActiveThoughtTab] = useState(0);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -866,7 +867,6 @@ export default function App() {
   if (phase==="result"&&plan) {
     const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules"];
     const THOUGHT_TABS = ["Analysis","Improvements"];
-    const [activeThoughtTab, setActiveThoughtTab] = React.useState(0);
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
