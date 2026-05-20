@@ -287,7 +287,6 @@ export default function App() {
   const [pdfText, setPdfText] = useState("");
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
-  const [activeThoughtTab, setActiveThoughtTab] = useState(0);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -311,31 +310,10 @@ export default function App() {
             }
           });
           const data = await res.json();
-          console.log("Plan fetch result:", data);
           if (data[0]?.plan_data) {
-            const p = data[0].plan_data;
-            // Ensure all required fields exist with fallbacks
-            const safePlan = {
-              score: p.score || 50,
-              archetype: p.archetype || "LinkedIn Professional",
-              headline: p.headline || "",
-              urgency: p.urgency || "",
-              profile_scores: p.profile_scores || { headline: 50, about: 50, experience: 50, overall: 50 },
-              profile_fixes: p.profile_fixes || [],
-              content_strategy: p.content_strategy || {},
-              post_hooks: p.post_hooks || [],
-              content_calendar: p.content_calendar || [],
-              critical_rules: p.critical_rules || [],
-              growth_tactics: p.growth_tactics || [],
-              closing_message: p.closing_message || "",
-              thought_leader: p.thought_leader || { available: false, score: 0, hook_score: 0, engagement_score: 0, voice_score: 0, structure_score: 0, analysis: "", improvements: [] },
-              ...p
-            };
-            setPlan(safePlan);
+            setPlan(data[0].plan_data);
             setUserData(d => ({ ...d, firstName: data[0].first_name || "there" }));
             setPhase("result");
-          } else {
-            console.log("No plan found for id:", id);
           }
         } catch(e) { console.log("Plan load error:", e); }
       };
@@ -439,7 +417,7 @@ export default function App() {
       method:"POST",
       headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version":"2023-06-01" },
       body: JSON.stringify({
-        model:"claude-sonnet-4-5-20250929", max_tokens:3000,
+        model:"claude-sonnet-4-5", max_tokens:3000,
         system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
         messages:[{ role:"user", content:messageContent }, { role:"assistant", content:"{" }],
       }),
@@ -867,6 +845,7 @@ export default function App() {
   if (phase==="result"&&plan) {
     const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules"];
     const THOUGHT_TABS = ["Analysis","Improvements"];
+    const [activeThoughtTab, setActiveThoughtTab] = React.useState(0);
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
