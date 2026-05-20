@@ -439,7 +439,7 @@ export default function App() {
       method:"POST",
       headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version":"2023-06-01" },
       body: JSON.stringify({
-        model:"claude-sonnet-4-5", max_tokens:3000,
+        model:"claude-sonnet-4-5-20250929", max_tokens:3000,
         system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
         messages:[{ role:"user", content:messageContent }, { role:"assistant", content:"{" }],
       }),
@@ -899,7 +899,7 @@ export default function App() {
                 <div>
                   <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
                   <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?"Early stage":plan.thought_leader.score<70?"Growing voice":"Strong presence"}</p>
-                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>Based on your posts</p>
+                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.thought_leader.analysis}</p>
                 </div>
               </div>
             ) : (
