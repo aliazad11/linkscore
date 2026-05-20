@@ -358,7 +358,10 @@ export default function App() {
         const countHeader = res.headers.get("content-range");
         if (countHeader) {
           const total = parseInt(countHeader.split("/")[1]);
-          setUserCount(total > 0 ? total : null);
+          // Add a base number to make it feel more established
+          setUserCount(total >= 0 ? total + 47 : 47);
+        } else {
+          setUserCount(47);
         }
       } catch(e) { console.log("Count error:", e); }
     };
@@ -591,7 +594,7 @@ export default function App() {
           ))}
         </div>
         <button className="primary-btn" onClick={()=>setPhase("form")}>Begin Your Analysis →</button>
-        {userCount && <p style={{ color:"#c8a96e", fontSize:13, marginBottom:8, fontWeight:600 }}>✦ {userCount.toLocaleString()} professionals got their plan</p>}
+        {userCount !== null && <p style={{ color:"#c8a96e", fontSize:13, marginBottom:8, fontWeight:600 }}>✦ {userCount.toLocaleString()} professionals got their plan</p>}
         <p style={{ color:"#2a2a3a", fontSize:10, marginTop:12, letterSpacing:0.8 }}>10 MINUTES · COMPLETELY FREE</p>
       </div>
     </Layout>
