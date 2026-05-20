@@ -7,7 +7,15 @@ export default async function handler(req) {
 
   try {
     const { messages } = await req.json();
-    const apiKey = process.env.VITE_ANTHROPIC_KEY;
+    
+    // Try all possible env var names
+    const apiKey = process.env.VITE_ANTHROPIC_KEY || 
+                   process.env.ANTHROPIC_KEY || 
+                   process.env.ANTHROPIC_API_KEY || '';
+
+    if (!apiKey) {
+      return new Response(JSON.stringify({ error: 'No API key found', env: Object.keys(process.env).filter(k => k.includes('ANTHROP')) }), { status: 500 });
+    }
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
