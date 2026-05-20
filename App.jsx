@@ -251,6 +251,7 @@ export default function App() {
   const [pdfText, setPdfText] = useState("");
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [industryOther, setIndustryOther] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -285,6 +286,11 @@ export default function App() {
     const a = {...answers, [q.id]:selected};
     setAnswers(a);
     setSelected(null);
+    // If industry is "Other", show custom input
+    if (q.id === "industry" && selected === "Other") {
+      setPhase("industry_other");
+      return;
+    }
     if (currentQ+1<QUESTIONS.length) setCurrentQ(currentQ+1);
     else setPhase("pdf_upload");
   };
@@ -457,6 +463,31 @@ export default function App() {
     </Layout>
   );
 
+  // ── INDUSTRY OTHER ─────────────────────────────────────────────────────────
+  if (phase==="industry_other") return (
+    <Layout>
+      <div className="page-enter">
+        <Logo />
+        <Badge color="#6a5a9a">Your World</Badge>
+        <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>What industry are you in?</h2>
+        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>Tell us more so we can tailor your strategy.</p>
+        <input
+          className="field-input"
+          value={industryOther}
+          onChange={e=>setIndustryOther(e.target.value)}
+          placeholder="e.g. Architecture, Education, Logistics..."
+          style={{ marginBottom:20 }}
+        />
+        <button className="primary-btn" disabled={!industryOther.trim()} onClick={()=>{
+          setAnswers(a=>({...a, industry: industryOther.trim()}));
+          setPhase("quiz");
+          setCurrentQ(q=>q+1);
+        }}>Continue →</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setPhase("quiz"); setSelected(null); }}>← Back</button>
+      </div>
+    </Layout>
+  );
+
   // ── PDF UPLOAD ─────────────────────────────────────────────────────────────
   if (phase==="pdf_upload") return (
     <Layout>
@@ -464,7 +495,7 @@ export default function App() {
         <Logo />
         <Badge>Step 3 of 3 — Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
-        <p style={{ ...s.sub }}>Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>More</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Then upload it here.</p>
+        <p style={{ ...s.sub }}>Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Then upload it here.</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
           onClick={()=>fileInputRef.current?.click()}
