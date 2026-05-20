@@ -171,7 +171,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
     : "\nNo profile PDF provided.\n";
   const postSection = screenshotCount > 0
-    ? `\nPOST SCREENSHOTS: ${screenshotCount} post images are attached above. YOU MUST set thought_leader.available=true and fill in ALL thought_leader fields with real scores and analysis based on what you see. Analyze hook quality, engagement numbers, voice, structure. Give 3 specific improvements.\n`
+    ? `\nPOST SCREENSHOTS: ${screenshotCount} post images are attached above. YOU MUST set thought_leader.available=true and fill in ALL thought_leader fields. Keep thought_leader.analysis to ONE short sentence (max 15 words) summarizing their style. Put all detailed feedback in improvements array (3 specific actionable items).\n`
     : `\nNO POST SCREENSHOTS: Set thought_leader.available=false, all scores=0, analysis="No post screenshots provided.", improvements=["Upload your last 3 posts to get your Thought Leader Score"].\n`;
 
   return `User data:
@@ -899,7 +899,7 @@ export default function App() {
                 <div>
                   <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
                   <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?"Early stage":plan.thought_leader.score<70?"Growing voice":"Strong presence"}</p>
-                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.thought_leader.analysis}</p>
+                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.thought_leader.analysis?.slice(0,120)}{plan.thought_leader.analysis?.length>120?"…":""}</p>
                 </div>
               </div>
             ) : (
