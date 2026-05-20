@@ -168,7 +168,7 @@ function buildEmailHTML(firstName, plan) {
 
 function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
   const profileSection = profileText
-    ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
+    ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 1000)}\n`
     : "\nNo profile PDF provided.\n";
   const postSection = screenshotCount > 0
     ? `\nPOST SCREENSHOTS PROVIDED: ${screenshotCount} screenshots of their recent LinkedIn posts have been shared above. Analyze them carefully — extract post topics, engagement numbers, writing style, hook patterns, and what worked vs what didn't. Use this to make hooks and calendar hyper-specific.\n`
@@ -387,7 +387,13 @@ export default function App() {
   const callAPI = async (user, ans, profile, screenshots) => {
     const validScreenshots = screenshots.filter(s => s !== null);
     const messageContent = [];
-    
+
+    // Add PDF as document if available (single API call instead of two)
+    if (profile && profile.startsWith("PDF_BASE64:")) {
+      const base64 = profile.replace("PDF_BASE64:", "");
+      messageContent.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } });
+    }
+
     // Add post screenshots if any
     if (validScreenshots.length > 0) {
       validScreenshots.forEach((s, i) => {
@@ -395,7 +401,8 @@ export default function App() {
         messageContent.push({ type:"image", source:{ type:"base64", media_type:s.type, data:s.base64 } });
       });
     }
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profile, validScreenshots.length) });
+    const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length) });
 
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method:"POST",
@@ -419,6 +426,10 @@ export default function App() {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
+      // Small delay to avoid rate limiting when PDF + screenshots are uploaded
+      if (pdfText || (!noPostsYet && postScreenshots.some(s=>s))) {
+        await new Promise(r => setTimeout(r, 3000));
+      }
       // Generate the plan
       const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots);
       setPlan(result);
@@ -490,25 +501,9 @@ export default function App() {
     setPdfName(file.name);
     const reader = new FileReader();
     reader.onload = async (e) => {
+      // Store PDF as base64 — Claude will read it directly during plan generation
       const base64 = e.target.result.split(",")[1];
-      try {
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method:"POST",
-          headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version":"2023-06-01" },
-          body: JSON.stringify({
-            model:"claude-sonnet-4-5", max_tokens:1000,
-            messages:[{ role:"user", content:[
-              { type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } },
-              { type:"text", text:"Extract the key LinkedIn profile information: headline, about section, experience, skills. Return as plain text summary under 500 words." }
-            ]}],
-          }),
-        });
-        const data = await res.json();
-        const text = data.content?.find(b=>b.type==="text")?.text||"";
-        setPdfText(text);
-      } catch(e) {
-        setPdfText("PDF uploaded but could not be read.");
-      }
+      setPdfText(`PDF_BASE64:${base64}`);
     };
     reader.readAsDataURL(file);
   };
