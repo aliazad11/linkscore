@@ -413,6 +413,9 @@ export default function App() {
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length) });
 
+    console.log("callAPI starting, messageContent length:", messageContent.length);
+    console.log("API key present:", !!import.meta.env.VITE_ANTHROPIC_KEY);
+    console.log("API key prefix:", import.meta.env.VITE_ANTHROPIC_KEY?.slice(0,20));
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version":"2023-06-01" },
@@ -500,11 +503,11 @@ export default function App() {
 
       setPhase("result");
     } catch(e) {
-      if (e.message === "Failed to fetch") {
-        setEmailError("Connection error — please check your internet and try again.");
-      } else {
-        setEmailError(`Error: ${e.message}`);
-      }
+      console.error("Full error:", e);
+      console.error("Error type:", e.constructor.name);
+      console.error("Error message:", e.message);
+      console.error("Error stack:", e.stack);
+      setEmailError(`Error: ${e.message} | ${e.constructor.name}`);
     }
     setLoading(false);
   };
