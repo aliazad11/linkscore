@@ -170,6 +170,9 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
   const profileSection = profileText
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
     : "\nNo profile PDF provided.\n";
+  const postSection = screenshotCount > 0
+    ? `\nPOST SCREENSHOTS PROVIDED: ${screenshotCount} screenshots of their recent LinkedIn posts have been shared above. Analyze them carefully — extract post topics, engagement numbers, writing style, hook patterns, and what worked vs what didn't. Use this to make hooks and calendar hyper-specific.\n`
+    : "\nNo post screenshots provided.\n";
 
   return `User data:
 Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}
