@@ -255,17 +255,17 @@ function Badge({ children, color="#c8a96e" }) {
   );
 }
 
-function ScoreRing({ score }) {
+function ScoreRing({ score, color="#c8a96e" }) {
   const r = 36; const c = 2 * Math.PI * r;
+  const gradId = `grad_${color.replace('#','')}`;
   return (
     <div style={{ position:"relative", width:80, height:80, flexShrink:0 }}>
       <svg width={80} height={80} style={{ transform:"rotate(-90deg)" }}>
         <circle cx={40} cy={40} r={r} fill="none" stroke="#1a1a2e" strokeWidth={5} />
-        <circle cx={40} cy={40} r={r} fill="none" stroke="url(#goldGrad)" strokeWidth={5}
+        <circle cx={40} cy={40} r={r} fill="none" stroke={color} strokeWidth={5}
           strokeDasharray={`${(score/100)*c} ${c}`} strokeLinecap="round" />
-        <defs><linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%"><stop offset="0%" stopColor="#c8a96e"/><stop offset="100%" stopColor="#f0d090"/></linearGradient></defs>
       </svg>
-      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", color:"#c8a96e", fontSize:20, fontWeight:800 }}>{score}</div>
+      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", color, fontSize:20, fontWeight:800 }}>{score}</div>
     </div>
   );
 }
@@ -485,8 +485,9 @@ export default function App() {
       } catch(e) { console.log("Supabase plan error:", e); }
 
       // Send email via serverless function
+      console.log("Sending email with planId:", savedPlanId);
       try {
-        await fetch("/api/send-email", {
+        const emailRes = await fetch("/api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -496,6 +497,8 @@ export default function App() {
             planId: savedPlanId
           })
         });
+        const emailData = await emailRes.json();
+        console.log("Email response:", emailData);
       } catch(e) { console.log("Email error:", e); }
 
       setPhase("result");
@@ -840,7 +843,9 @@ export default function App() {
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
   if (phase==="result"&&plan) {
-    const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules","Thought Leader"];
+    const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules"];
+    const THOUGHT_TABS = ["Analysis","Improvements"];
+    const [activeThoughtTab, setActiveThoughtTab] = React.useState(0);
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
@@ -855,14 +860,37 @@ export default function App() {
             <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
           </div>
 
-          {/* Score */}
-          <div style={{ display:"flex", alignItems:"center", gap:20, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"18px 20px", marginBottom:20 }}>
-            <ScoreRing score={plan.score} />
-            <div>
-              <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:4 }}>LinkedIn Score</p>
-              <p style={{ color:"#F9FAFB", fontSize:14, fontWeight:700, marginBottom:4 }}>{plan.score<40?"Significant room to grow":plan.score<70?"Good foundation — needs strategy":"Strong start — optimize now"}</p>
-              <p style={{ color:"#ef4444", fontSize:12, lineHeight:1.5, opacity:0.8 }}>{plan.urgency}</p>
+          {/* Scores Row */}
+          <div style={{ display:"flex", gap:12, marginBottom:20 }}>
+            {/* LinkedIn Score */}
+            <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
+              <ScoreRing score={plan.score} />
+              <div>
+                <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Profile Score</p>
+                <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.score<40?"Needs work":plan.score<70?"Good foundation":"Strong profile"}</p>
+                <p style={{ color:"#ef4444", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.urgency}</p>
+              </div>
             </div>
+            {/* Thought Leader Score */}
+            {plan.thought_leader?.available ? (
+              <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
+                <ScoreRing score={plan.thought_leader.score} color="#a78bfa" />
+                <div>
+                  <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
+                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?"Early stage":plan.thought_leader.score<70?"Growing voice":"Strong presence"}</p>
+                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>Based on your posts</p>
+                </div>
+              </div>
+            ) : (
+              <div style={{ flex:1, display:"flex", alignItems:"center", gap:12, background:"#0d0d18", border:"1px dashed #1a1a2e", borderRadius:16, padding:"16px", cursor:"pointer" }} onClick={()=>setPhase("post_screenshots")}>
+                <div style={{ width:52, height:52, borderRadius:"50%", border:"2px dashed #2a2a4a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20 }}>📸</div>
+                <div>
+                  <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
+                  <p style={{ color:"#4a4a6a", fontSize:12, fontWeight:600, marginBottom:3 }}>Not calculated</p>
+                  <p style={{ color:"#3a3a5a", fontSize:11 }}>Upload posts to unlock</p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Profile section scores */}
@@ -880,25 +908,6 @@ export default function App() {
                   </div>
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* Thought Leader Score */}
-          {plan.thought_leader?.available && (
-            <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:20 }}>
-              <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Score</p>
-              {[["Hook Quality", plan.thought_leader.hook_score],["Engagement", plan.thought_leader.engagement_score],["Voice Consistency", plan.thought_leader.voice_score],["Post Structure", plan.thought_leader.structure_score]].map(([label,score])=>(
-                <div key={label} style={{ marginBottom:12 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                    <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
-                    <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
-                  </div>
-                  <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
-                    <div style={{ height:"100%", width:`${score}%`, background:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", borderRadius:4, transition:"width 1.2s cubic-bezier(0.16,1,0.3,1)" }} />
-                  </div>
-                </div>
-              ))}
-              <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6, marginTop:12, paddingTop:12, borderTop:"1px solid #1a1a2e" }}>{plan.thought_leader.analysis}</p>
             </div>
           )}
 
@@ -991,29 +1000,63 @@ export default function App() {
               </div>
             )}
 
-            {/* Thought Leader */}
-            {activeSection===6 && (
-              <div>
-                {plan.thought_leader?.available ? (
-                  <>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Advice — Based On Your Posts</p>
+          </div>
+
+          {/* Thought Leader Section */}
+          {plan.thought_leader?.available && (
+            <div style={{ marginTop:32 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
+                <div style={{ flex:1, height:1, background:"#1a1a2e" }} />
+                <p style={{ color:"#a78bfa", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", flexShrink:0 }}>Thought Leader Plan</p>
+                <div style={{ flex:1, height:1, background:"#1a1a2e" }} />
+              </div>
+
+              {/* Sub-scores */}
+              <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:16 }}>
+                {[["Hook Quality", plan.thought_leader.hook_score],["Engagement", plan.thought_leader.engagement_score],["Voice Consistency", plan.thought_leader.voice_score],["Post Structure", plan.thought_leader.structure_score]].map(([label,score])=>(
+                  <div key={label} style={{ marginBottom:12 }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                      <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
+                      <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
+                    </div>
+                    <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
+                      <div style={{ height:"100%", width:`${score}%`, background:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", borderRadius:4, transition:"width 1.2s ease" }} />
+                    </div>
+                  </div>
+                ))}
+                <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e" }}>{plan.thought_leader.analysis}</p>
+              </div>
+
+              {/* Thought Leader Tabs */}
+              <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+                {THOUGHT_TABS.map((t,i)=><button key={i} className={`tab-pill${activeThoughtTab===i?" active":""}`} style={{ borderColor: activeThoughtTab===i?"#a78bfa":"", color: activeThoughtTab===i?"#a78bfa":"" }} onClick={()=>setActiveThoughtTab(i)}>{t}</button>)}
+              </div>
+
+              <div className="section-reveal" key={activeThoughtTab}>
+                {/* Analysis */}
+                {activeThoughtTab===0 && (
+                  <div>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Post Analysis</p>
+                    <div className="card-block">
+                      <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.7 }}>{plan.thought_leader.analysis}</p>
+                    </div>
+                  </div>
+                )}
+                {/* Improvements */}
+                {activeThoughtTab===1 && (
+                  <div>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>How To Improve Your Posts</p>
                     {plan.thought_leader.improvements?.map((tip,i)=>(
                       <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
-                        <div style={{ width:24, height:24, borderRadius:"50%", background:"rgba(200,169,110,0.1)", border:"1px solid #c8a96e33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#c8a96e", fontSize:11, fontWeight:700 }}>{i+1}</div>
+                        <div style={{ width:26, height:26, borderRadius:"50%", background:"rgba(167,139,250,0.1)", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#a78bfa", fontSize:12, fontWeight:700 }}>{i+1}</div>
                         <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tip}</p>
                       </div>
                     ))}
-                  </>
-                ) : (
-                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
-                    <p style={{ fontSize:28, marginBottom:16 }}>📸</p>
-                    <p style={{ color:"#4a4a6a", fontSize:15, fontWeight:600, marginBottom:8 }}>No post screenshots uploaded</p>
-                    <p style={{ color:"#2a2a3a", fontSize:13, lineHeight:1.6 }}>Retake the quiz and upload screenshots of your last 3 LinkedIn posts to get personalized thought leader advice.</p>
                   </div>
                 )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
           <button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>Start Over</button>
         </div>
