@@ -58,7 +58,7 @@ export default async function handler(req) {
       body: JSON.stringify({
         from: 'Linkedscore <noreply@linkedscore.app>',
         to: [email],
-        subject: `${firstName}, your LinkedIn plan is ready`,
+        subject: `${firstName}, your LinkedIn plan is ready — Score: ${plan.score}`,
         html
       })
     });
