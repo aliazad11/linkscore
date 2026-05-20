@@ -289,7 +289,7 @@ export default function App() {
         headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
           model:"claude-sonnet-4-5", max_tokens:2000,
-          system:"You are a JSON API. Output only valid raw JSON. No markdown, no explanation, no code blocks.",
+          system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
           messages:[{ role:"user", content:buildPrompt(user, ans) }],
         }),
       });
@@ -297,8 +297,8 @@ export default function App() {
       const data = await res.json();
       const text = data.content?.find(b=>b.type==="text")?.text||"";
       const clean = text.replace(/```json[\s\S]*?```|```/g,"").trim();
-      const m = clean.match(/\{[\s\S]*\}/);
-      if (!m) throw new Error("No JSON");
+      const m = clean.match(/\{[\s\S]*\}/s);
+      if (!m) throw new Error("No JSON found: " + text.slice(0,200));
       setPlan(JSON.parse(m[0]));
       sessionStorage.removeItem("linkscore_answers");
       sessionStorage.removeItem("linkscore_user");
@@ -356,7 +356,7 @@ export default function App() {
         headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
           model:"claude-sonnet-4-5", max_tokens:2000,
-          system:"You are a JSON API. Output only valid raw JSON. No markdown, no explanation, no code blocks.",
+          system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
           messages:[{ role:"user", content:buildPrompt(userData, answers) }],
         }),
       });
