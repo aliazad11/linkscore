@@ -415,19 +415,15 @@ export default function App() {
         });
       } catch(e) { console.log("Supabase error:", e); }
 
-      // Send email via Resend
+      // Send email via serverless function
       try {
-        await fetch("https://api.resend.com/emails", {
+        await fetch("/api/send-email", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${import.meta.env.VITE_RESEND_KEY}`
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            from: "Linkedscore <noreply@linkedscore.app>",
-            to: [email],
-            subject: `${userData.firstName}, your LinkedIn plan is ready`,
-            html: buildEmailHTML(userData.firstName, result)
+            email,
+            firstName: userData.firstName,
+            plan: result
           })
         });
       } catch(e) { console.log("Email error:", e); }
