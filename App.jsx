@@ -264,6 +264,51 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
 
+  // Check if returning from Stripe payment
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const savedAnswers = sessionStorage.getItem("linkscore_answers");
+    const savedUser = sessionStorage.getItem("linkscore_user");
+    const savedEmail = sessionStorage.getItem("linkscore_email");
+    if (urlParams.get("success") === "true" && savedAnswers && savedUser) {
+      const parsedAnswers = JSON.parse(savedAnswers);
+      const parsedUser = JSON.parse(savedUser);
+      setAnswers(parsedAnswers);
+      setUserData(parsedUser);
+      setEmail(savedEmail || "");
+      setPhase("generating");
+      generatePlan(parsedUser, parsedAnswers);
+    }
+  }, []);
+
+  const generatePlan = async (user, ans) => {
+    setPhase("generating");
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY },
+        body: JSON.stringify({
+          model:"claude-sonnet-4-20250514", max_tokens:2000,
+          system:"You are a JSON API. Output only valid raw JSON. No markdown, no explanation, no code blocks.",
+          messages:[{ role:"user", content:buildPrompt(user, ans) }],
+        }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const text = data.content?.find(b=>b.type==="text")?.text||"";
+      const clean = text.replace(/```json[\s\S]*?```|```/g,"").trim();
+      const m = clean.match(/\{[\s\S]*\}/);
+      if (!m) throw new Error("No JSON");
+      setPlan(JSON.parse(m[0]));
+      sessionStorage.removeItem("linkscore_answers");
+      sessionStorage.removeItem("linkscore_user");
+      sessionStorage.removeItem("linkscore_email");
+      setPhase("result");
+    } catch(e) {
+      setPhase("paywall");
+    }
+  };
+
   // Analysis animation
   useEffect(() => {
     if (phase !== "analyzing") return;
@@ -305,10 +350,16 @@ export default function App() {
   const handlePaywall = async () => {
     if (!email.includes("@") || !email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
+    // Save email to sessionStorage and redirect to Stripe
+    sessionStorage.setItem("linkscore_email", email);
+    sessionStorage.setItem("linkscore_answers", JSON.stringify(answers));
+    sessionStorage.setItem("linkscore_user", JSON.stringify(userData));
+    window.location.href = "https://buy.stripe.com/bJe7sM9aq95c8Wo8li1RC00?prefilled_email=" + encodeURIComponent(email);
+    return;
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method:"POST",
-        headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true" },
+        headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY },
         body: JSON.stringify({
           model:"claude-sonnet-4-20250514", max_tokens:2000,
           system:"You are a JSON API. Output only valid raw JSON. No markdown, no explanation, no code blocks.",
@@ -341,7 +392,7 @@ export default function App() {
             <span style={{ fontSize:22 }}>✦</span>
           </div>
           <Badge>LinkedIn Intelligence</Badge>
-          <h1 style={{ fontFamily:"'Cormorant Garamond',serif", color:"#e8e8f0", fontSize:48, fontWeight:300, lineHeight:1.1, marginBottom:8, letterSpacing:-1 }}>
+          <h1 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:48, fontWeight:300, lineHeight:1.1, marginBottom:8, letterSpacing:-1 }}>
             Your LinkedIn is<br />
             <em style={{ fontStyle:"italic", color:"#c8a96e" }}>invisible.</em>
           </h1>
@@ -369,7 +420,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Badge>Step 1 of 2</Badge>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", color:"#e8e8f0", fontSize:34, fontWeight:300, marginBottom:6, letterSpacing:-0.5 }}>Tell us about yourself.</h2>
+        <h2 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:34, fontWeight:300, marginBottom:6, letterSpacing:-0.5 }}>Tell us about yourself.</h2>
         <p style={{ color:"#4a4a6a", fontSize:14, marginBottom:28, lineHeight:1.7 }}>This is how we make your plan truly personal.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
@@ -418,7 +469,7 @@ export default function App() {
         <div className="progress-bar" style={{ marginBottom:28 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
         </div>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", color:"#e8e8f0", fontSize:30, fontWeight:400, marginBottom:8, lineHeight:1.25, letterSpacing:-0.3 }}>{q.question}</h2>
+        <h2 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:30, fontWeight:400, marginBottom:8, lineHeight:1.25, letterSpacing:-0.3 }}>{q.question}</h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24, lineHeight:1.6 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:24 }}>
           {q.options.map(opt => (
@@ -448,9 +499,9 @@ export default function App() {
               strokeLinecap="round" transform="rotate(-90 40 40)"
               style={{ transition:"stroke-dasharray 0.4s ease" }} />
           </svg>
-          <span style={{ color:"#c8a96e", fontSize:22, fontFamily:"'Cormorant Garamond',serif" }}>✦</span>
+          <span style={{ color:"#c8a96e", fontSize:22, fontFamily:"'DM Sans',sans-serif" }}>✦</span>
         </div>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", color:"#e8e8f0", fontSize:28, fontWeight:300, marginBottom:6 }}>
+        <h2 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:28, fontWeight:300, marginBottom:6 }}>
           Analyzing, {userData.firstName}...
         </h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building something made only for you.</p>
@@ -476,7 +527,7 @@ export default function App() {
           <span style={{ color:"#c8a96e", fontSize:18 }}>◆</span>
         </div>
         <Badge color="#10b981">Analysis Complete</Badge>
-        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:8, letterSpacing:-0.5 }}>
+        <h2 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:8, letterSpacing:-0.5 }}>
           Your plan is ready,<br /><em style={{ fontStyle:"italic", color:"#c8a96e" }}>{userData.firstName}.</em>
         </h2>
         <div className="gold-rule" />
@@ -512,7 +563,7 @@ export default function App() {
           {/* Header */}
           <div style={{ textAlign:"center", marginBottom:28 }}>
             <Badge>Your LinkedIn Plan</Badge>
-            <h1 style={{ fontFamily:"'Cormorant Garamond',serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:6, letterSpacing:-0.5 }}>
+            <h1 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:6, letterSpacing:-0.5 }}>
               {userData.firstName}, you are<br />
               <em style={{ fontStyle:"italic", color:"#c8a96e" }}>{plan.archetype}</em>
             </h1>
@@ -529,7 +580,7 @@ export default function App() {
                   strokeDasharray={`${(plan.score/100)*176} 176`} strokeLinecap="round" />
                 <defs><linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%"><stop offset="0%" stopColor="#c8a96e"/><stop offset="100%" stopColor="#f0d090"/></linearGradient></defs>
               </svg>
-              <p style={{ textAlign:"center", color:"#c8a96e", fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, marginTop:-52, lineHeight:1, position:"relative", zIndex:1 }}>{plan.score}</p>
+              <p style={{ textAlign:"center", color:"#c8a96e", fontFamily:"'DM Sans',sans-serif", fontSize:20, fontWeight:600, marginTop:-52, lineHeight:1, position:"relative", zIndex:1 }}>{plan.score}</p>
               <div style={{ height:52 }} />
             </div>
             <div>
