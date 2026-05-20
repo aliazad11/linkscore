@@ -350,12 +350,6 @@ export default function App() {
   const handlePaywall = async () => {
     if (!email.includes("@") || !email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
-    // Save email to sessionStorage and redirect to Stripe
-    sessionStorage.setItem("linkscore_email", email);
-    sessionStorage.setItem("linkscore_answers", JSON.stringify(answers));
-    sessionStorage.setItem("linkscore_user", JSON.stringify(userData));
-    window.location.href = "https://buy.stripe.com/bJe7sM9aq95c8Wo8li1RC00?prefilled_email=" + encodeURIComponent(email);
-    return;
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method:"POST",
