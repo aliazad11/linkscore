@@ -221,7 +221,7 @@ const GLOBAL_CSS = `
 function Logo() {
   return (
     <div style={{ display:"flex", justifyContent:"center", marginBottom:28 }}>
-      <img src="/logo.png" alt="Linkedscore" style={{ height:40, objectFit:"contain" }} />
+      <img src="https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png" alt="Linkedscore" style={ height:40, objectFit:"contain" } />
     </div>
   );
 }
@@ -397,7 +397,7 @@ export default function App() {
           <Badge>LinkedIn Intelligence</Badge>
           <h1 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:48, fontWeight:300, lineHeight:1.1, marginBottom:8, letterSpacing:-1 }}>
             Your LinkedIn is<br />
-            <em style={{ fontStyle:"italic", color:"#c8a96e" }}>invisible.</em>
+            <span style={{ color:"#c8a96e" }}>invisible.</span>
           </h1>
           <div className="gold-rule" style={{ marginTop:24 }} />
           <p style={{ color:"#4a4a6a", fontSize:15, lineHeight:1.8, maxWidth:380, margin:"0 auto" }}>
@@ -580,7 +580,7 @@ export default function App() {
             <Badge>Your LinkedIn Plan</Badge>
             <h1 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:6, letterSpacing:-0.5 }}>
               {userData.firstName}, you are<br />
-              <em style={{ fontStyle:"italic", color:"#c8a96e" }}>{plan.archetype}</em>
+              <span style={{ color:"#c8a96e", fontWeight:700 }}>{plan.archetype}</span>
             </h1>
             <div className="gold-rule" />
             <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.7, maxWidth:400, margin:"0 auto" }}>{plan.headline}</p>
@@ -616,7 +616,7 @@ export default function App() {
               <div>
                 <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.06),rgba(200,169,110,0.02))", border:"1px solid #c8a96e22", borderRadius:16, padding:20, marginBottom:12 }}>
                   <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Personal Message</p>
-                  <p style={{ color:"#8a8a9a", fontSize:14, lineHeight:1.8, fontStyle:"italic" }}>"{plan.closing_message}"</p>
+                  <p style={{ color:"#8a8a9a", fontSize:14, lineHeight:1.8 }}>"{plan.closing_message}"</p>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                   {plan.growth_tactics?.map((t,i) => (
