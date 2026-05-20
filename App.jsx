@@ -217,6 +217,15 @@ const GLOBAL_CSS = `
   }
 `;
 
+// ─── LOGO ─────────────────────────────────────────────────────────────────────
+function Logo() {
+  return (
+    <div style={{ display:"flex", justifyContent:"center", marginBottom:28 }}>
+      <img src="/logo.png" alt="Linkedscore" style={{ height:40, objectFit:"contain" }} />
+    </div>
+  );
+}
+
 // ─── LAYOUT WRAPPER ───────────────────────────────────────────────────────────
 function Layout({ children, showVideo = false }) {
   return (
@@ -267,9 +276,9 @@ export default function App() {
   // Check if returning from Stripe payment
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const savedAnswers = sessionStorage.getItem("linkscore_answers");
-    const savedUser = sessionStorage.getItem("linkscore_user");
-    const savedEmail = sessionStorage.getItem("linkscore_email");
+    const savedAnswers = sessionStorage.getItem("linkedscore_answers");
+    const savedUser = sessionStorage.getItem("linkedscore_user");
+    const savedEmail = sessionStorage.getItem("linkedscore_email");
     if (urlParams.get("success") === "true" && savedAnswers && savedUser) {
       const parsedAnswers = JSON.parse(savedAnswers);
       const parsedUser = JSON.parse(savedUser);
@@ -290,19 +299,20 @@ export default function App() {
         body: JSON.stringify({
           model:"claude-sonnet-4-5", max_tokens:2000,
           system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
-          messages:[{ role:"user", content:buildPrompt(user, ans) }],
+          messages:[{ role:"user", content:buildPrompt(user, ans) }, { role:"assistant", content:"{" }],
         }),
       });
       if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
-      const text = data.content?.find(b=>b.type==="text")?.text||"";
+      const rawText = data.content?.find(b=>b.type==="text")?.text||"";
+      const text = "{" + rawText;
       const clean = text.replace(/```json[\s\S]*?```|```/g,"").trim();
       const m = clean.match(/\{[\s\S]*\}/s);
-      if (!m) throw new Error("No JSON found: " + text.slice(0,200));
+      if (!m) throw new Error("No JSON: " + rawText.slice(0,200));
       setPlan(JSON.parse(m[0]));
-      sessionStorage.removeItem("linkscore_answers");
-      sessionStorage.removeItem("linkscore_user");
-      sessionStorage.removeItem("linkscore_email");
+      sessionStorage.removeItem("linkedscore_answers");
+      sessionStorage.removeItem("linkedscore_user");
+      sessionStorage.removeItem("linkedscore_email");
       setPhase("result");
     } catch(e) {
       setPhase("paywall");
@@ -357,14 +367,15 @@ export default function App() {
         body: JSON.stringify({
           model:"claude-sonnet-4-5", max_tokens:2000,
           system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
-          messages:[{ role:"user", content:buildPrompt(userData, answers) }],
+          messages:[{ role:"user", content:buildPrompt(userData, answers) }, { role:"assistant", content:"{" }],
         }),
       });
       if (!res.ok) { const d = await res.json().catch(()=>({})); throw new Error(d?.error?.message||`HTTP ${res.status}`); }
       const data = await res.json();
-      const text = data.content?.find(b=>b.type==="text")?.text||"";
+      const rawText = data.content?.find(b=>b.type==="text")?.text||"";
+      const text = "{" + rawText;
       const clean = text.replace(/```json[\s\S]*?```|```/g,"").trim();
-      const m = clean.match(/\{[\s\S]*\}/);
+      const m = clean.match(/\{[\s\S]*\}/s);
       if (!m) throw new Error("No JSON found in response");
       setPlan(JSON.parse(m[0]));
       setPhase("result");
@@ -382,9 +393,7 @@ export default function App() {
     <Layout showVideo>
       <div className="page-enter" style={{ textAlign:"center" }}>
         <div style={{ marginBottom:32 }}>
-          <div style={{ width:56, height:56, borderRadius:"50%", border:"1px solid #c8a96e44", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 24px", background:"rgba(200,169,110,0.06)" }}>
-            <span style={{ fontSize:22 }}>✦</span>
-          </div>
+          <Logo />
           <Badge>LinkedIn Intelligence</Badge>
           <h1 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:48, fontWeight:300, lineHeight:1.1, marginBottom:8, letterSpacing:-1 }}>
             Your LinkedIn is<br />
@@ -485,6 +494,7 @@ export default function App() {
   if (phase === "analyzing") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
+        <Logo />
         <div style={{ width:80, height:80, borderRadius:"50%", border:"1px solid #c8a96e22", margin:"0 auto 28px", position:"relative", display:"flex", alignItems:"center", justifyContent:"center" }}>
           <svg width={80} height={80} style={{ position:"absolute", inset:0 }}>
             <circle cx={40} cy={40} r={36} fill="none" stroke="#1a1a2e" strokeWidth={1} />
@@ -517,12 +527,10 @@ export default function App() {
   if (phase === "paywall") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <div style={{ width:48, height:48, borderRadius:"50%", border:"1px solid #c8a96e44", display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 20px", background:"rgba(200,169,110,0.06)" }}>
-          <span style={{ color:"#c8a96e", fontSize:18 }}>◆</span>
-        </div>
+        <Logo />
         <Badge color="#10b981">Analysis Complete</Badge>
         <h2 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:8, letterSpacing:-0.5 }}>
-          Your plan is ready,<br /><em style={{ fontStyle:"italic", color:"#c8a96e" }}>{userData.firstName}.</em>
+          Your plan is ready,<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span>
         </h2>
         <div className="gold-rule" />
         <p style={{ color:"#4a4a6a", fontSize:14, lineHeight:1.7, marginBottom:28 }}>Enter your email to unlock your full personalized LinkedIn strategy.</p>
@@ -549,6 +557,18 @@ export default function App() {
   );
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
+  if (phase === "generating") return (
+    <Layout>
+      <div className="page-enter" style={{ textAlign:"center" }}>
+        <div style={{ width:72, height:72, borderRadius:"50%", border:"1px solid #c8a96e22", margin:"0 auto 28px", display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <span style={{ color:"#c8a96e", fontSize:24 }}>✦</span>
+        </div>
+        <h2 style={{ color:"#e8e8f0", fontSize:26, fontWeight:700, marginBottom:8 }}>Building your plan...</h2>
+        <p style={{ color:"#3a3a5a", fontSize:13 }}>This takes about 10 seconds.</p>
+      </div>
+    </Layout>
+  );
+
   if (phase === "result" && plan) {
     const TABS = ["Overview","Profile","Content","Rules","30 Days"];
     return (
@@ -556,6 +576,7 @@ export default function App() {
         <div className="page-enter">
           {/* Header */}
           <div style={{ textAlign:"center", marginBottom:28 }}>
+            <Logo />
             <Badge>Your LinkedIn Plan</Badge>
             <h1 style={{ fontFamily:"'DM Sans',sans-serif", color:"#e8e8f0", fontSize:36, fontWeight:300, marginBottom:6, letterSpacing:-0.5 }}>
               {userData.firstName}, you are<br />
