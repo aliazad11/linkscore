@@ -286,6 +286,7 @@ export default function App() {
   const [activeSection, setActiveSection] = useState(0);
   const [pdfText, setPdfText] = useState("");
   const [userCount, setUserCount] = useState(null);
+  const [planId, setPlanId] = useState(null);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -293,6 +294,32 @@ export default function App() {
   const [noPostsYet, setNoPostsYet] = useState(false);
   const postRefs = [useRef(null), useRef(null), useRef(null)];
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Check if URL has a plan ID e.g. linkedscore.app/plan/UUID
+    const path = window.location.pathname;
+    const match = path.match(/^\/plan\/([a-f0-9-]{36})$/);
+    if (match) {
+      const id = match[1];
+      const loadPlan = async () => {
+        try {
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/plans?id=eq.${id}&select=*`, {
+            headers: {
+              "apikey": import.meta.env.VITE_SUPABASE_KEY,
+              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`
+            }
+          });
+          const data = await res.json();
+          if (data[0]?.plan_data) {
+            setPlan(data[0].plan_data);
+            setUserData(d => ({ ...d, firstName: data[0].first_name || "there" }));
+            setPhase("result");
+          }
+        } catch(e) { console.log("Plan load error:", e); }
+      };
+      loadPlan();
+    }
+  }, []);
 
   useEffect(() => {
     // Fetch real user count from Supabase
@@ -397,8 +424,9 @@ export default function App() {
       setPlan(result);
 
       // Save user to Supabase (counter)
+      let savedPlanId = null;
       try {
-        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users`, {
+        const userRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -413,7 +441,28 @@ export default function App() {
             linkedin_url: userData.linkedinUrl
           })
         });
-      } catch(e) { console.log("Supabase error:", e); }
+      } catch(e) { console.log("Supabase user error:", e); }
+
+      // Save plan to Supabase and get unique ID
+      try {
+        const planRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/plans`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": import.meta.env.VITE_SUPABASE_KEY,
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`,
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({
+            email,
+            first_name: userData.firstName,
+            plan_data: result
+          })
+        });
+        const planData = await planRes.json();
+        savedPlanId = planData[0]?.id;
+        if (savedPlanId) setPlanId(savedPlanId);
+      } catch(e) { console.log("Supabase plan error:", e); }
 
       // Send email via serverless function
       try {
@@ -423,7 +472,8 @@ export default function App() {
           body: JSON.stringify({
             email,
             firstName: userData.firstName,
-            plan: result
+            plan: result,
+            planId: savedPlanId
           })
         });
       } catch(e) { console.log("Email error:", e); }
