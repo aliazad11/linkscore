@@ -221,7 +221,7 @@ const GLOBAL_CSS = `
 function Logo() {
   return (
     <div style={{ display:"flex", justifyContent:"center", marginBottom:28 }}>
-      <img src="https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png" alt="Linkedscore" style={ height:40, objectFit:"contain" } />
+      <img src="https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png" alt="Linkedscore" style={{ height:40, objectFit:"contain" }} />
     </div>
   );
 }
