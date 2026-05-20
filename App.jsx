@@ -171,8 +171,8 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 1000)}\n`
     : "\nNo profile PDF provided.\n";
   const postSection = screenshotCount > 0
-    ? `\nPOST SCREENSHOTS PROVIDED: ${screenshotCount} screenshots of their recent LinkedIn posts have been shared above. Analyze them carefully — extract post topics, engagement numbers, writing style, hook patterns, and what worked vs what didn't. Use this to make hooks and calendar hyper-specific.\n`
-    : "\nNo post screenshots provided.\n";
+    ? `\nPOST SCREENSHOTS PROVIDED: ${screenshotCount} screenshots of their recent LinkedIn posts are above. Analyze them and: (1) Calculate a THOUGHT LEADER SCORE 0-100 based on hook quality, engagement numbers visible, voice consistency, post structure. (2) Set thought_leader.available=true with realistic sub-scores. (3) Write a 1-2 sentence analysis of their posting style. (4) Give 3 specific actionable improvements based on what you actually see. (5) Make post_hooks and content_calendar specific to their style and what performed well.\n`
+    : "\nNo post screenshots — set thought_leader.available=false, score=0.\n";
 
   return `User data:
 Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}
@@ -183,7 +183,7 @@ Content style: ${answers.content_style}, Audience: ${answers.audience}
 Time available: ${answers.time_commitment}, Success vision: ${answers.biggest_win}
 ${profileSection}
 Return ONLY this JSON, no other text:
-{"score":72,"archetype":"The Silent Expert","headline":"You have the expertise — now make it visible.","urgency":"Every day without a strategy is a day a less-qualified person gets the opportunity you deserve.","profile_scores":{"headline":45,"about":30,"experience":60,"overall":45},"profile_fixes":["Rewrite your headline to include who you help and how — not just your job title","Add a compelling About section in first person that tells your story and outcome","Add 2-3 bullet points per role with quantified achievements"],"content_strategy":{"post_frequency":"Maximum 2 posts per month — LinkedIn rewards depth over volume.","best_posting_times":"Tuesday to Thursday, 7–9am or 5–6pm your local time. Never post on weekends.","content_mix":"60% personal lessons from your work, 30% practical tips for your audience, 10% bold opinions.","hook_formula":"Start with a counterintuitive statement or a specific number. Never start with I.","content_types":"Rotate: document carousels for reach, text-only for stories, photos with you in them for engagement."},"post_hooks":["I made a mistake that cost my team 3 months of work. Here is what I learned:","Most people optimize their LinkedIn headline wrong. Here is the one change that got me 5x more profile views:","Nobody told me this when I started my career in [industry]. 5 years later, I wish someone had:"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"Share one hard lesson from your career","hook":"[use hook #1 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 2","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Comment meaningfully on 10 posts in your niche. Send 15 personalized connection requests to people in your target audience. Update one section of your profile."},{"week":"Week 3","type":"POST","topic":"A practical tip your audience wishes they knew","hook":"[use hook #2 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 4","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Reply to every comment from Week 3 post. Send 10 more connection requests. Review your profile analytics and note what improved."}],"critical_rules":["Never edit a post after publishing — LinkedIn immediately cuts its reach in the algorithm.","Never reshare others posts to grow your account — comment and like instead.","Post your own first comment immediately after publishing to trigger early engagement.","Stay active for 60 minutes after posting and reply to every comment — this is your reach ceiling window.","Tag people only when genuinely relevant — LinkedIn detects and penalizes tag-for-reach behavior.","Send 10 personalized connection requests per week to people in your exact niche."],"growth_tactics":["Search your target audience by job title and send 10 tailored connection requests per week with a short personal note.","Ask two former colleagues or managers for a written recommendation this week.","Check your LinkedIn SSI score at linkedin.com/sales/ssi and improve the weakest pillar first.","Use document carousels — they get 3x more reach than single images on LinkedIn right now."],"closing_message":"You already have everything it takes. The experience, the story, the expertise. The only thing missing was a clear system — and now you have one."}
+{"score":72,"archetype":"The Silent Expert","headline":"You have the expertise — now make it visible.","urgency":"Every day without a strategy is a day a less-qualified person gets the opportunity you deserve.","profile_scores":{"headline":45,"about":30,"experience":60,"overall":45},"profile_fixes":["Rewrite your headline to include who you help and how — not just your job title","Add a compelling About section in first person that tells your story and outcome","Add 2-3 bullet points per role with quantified achievements"],"content_strategy":{"post_frequency":"Maximum 2 posts per month — LinkedIn rewards depth over volume.","best_posting_times":"Tuesday to Thursday, 7–9am or 5–6pm your local time. Never post on weekends.","content_mix":"60% personal lessons from your work, 30% practical tips for your audience, 10% bold opinions.","hook_formula":"Start with a counterintuitive statement or a specific number. Never start with I.","content_types":"Rotate: document carousels for reach, text-only for stories, photos with you in them for engagement."},"post_hooks":["I made a mistake that cost my team 3 months of work. Here is what I learned:","Most people optimize their LinkedIn headline wrong. Here is the one change that got me 5x more profile views:","Nobody told me this when I started my career in [industry]. 5 years later, I wish someone had:"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"Share one hard lesson from your career","hook":"[use hook #1 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 2","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Comment meaningfully on 10 posts in your niche. Send 15 personalized connection requests to people in your target audience. Update one section of your profile."},{"week":"Week 3","type":"POST","topic":"A practical tip your audience wishes they knew","hook":"[use hook #2 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 4","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Reply to every comment from Week 3 post. Send 10 more connection requests. Review your profile analytics and note what improved."}],"critical_rules":["Never edit a post after publishing — LinkedIn immediately cuts its reach in the algorithm.","Never reshare others posts to grow your account — comment and like instead.","Post your own first comment immediately after publishing to trigger early engagement.","Stay active for 60 minutes after posting and reply to every comment — this is your reach ceiling window.","Tag people only when genuinely relevant — LinkedIn detects and penalizes tag-for-reach behavior.","Send 10 personalized connection requests per week to people in your exact niche."],"growth_tactics":["Search your target audience by job title and send 10 tailored connection requests per week with a short personal note.","Ask two former colleagues or managers for a written recommendation this week.","Check your LinkedIn SSI score at linkedin.com/sales/ssi and improve the weakest pillar first.","Use document carousels — they get 3x more reach than single images on LinkedIn right now."],"closing_message":"You already have everything it takes. The experience, the story, the expertise. The only thing missing was a clear system — and now you have one.","thought_leader":{"available":false,"score":0,"hook_score":0,"engagement_score":0,"voice_score":0,"structure_score":0,"analysis":"No post screenshots provided.","improvements":["Upload your last 3 posts to get your Thought Leader Score"]}}
 
 ${postSection}
 Replace ALL placeholder values with real personalized content based on the user data and profile above. Make post_hooks genuinely specific to their industry, experience level, and content style.`;
@@ -380,8 +380,17 @@ export default function App() {
       setPhase("industry_other");
       return;
     }
-    if (currentQ+1<QUESTIONS.length) setCurrentQ(currentQ+1);
-    else setPhase("pdf_upload");
+    // If PDF uploaded, skip industry and experience questions
+    const skipIds = pdfText ? ["industry", "experience"] : [];
+    let nextQ = currentQ + 1;
+    while (nextQ < QUESTIONS.length && skipIds.includes(QUESTIONS[nextQ].id)) {
+      // Pre-fill skipped answers with "From PDF"
+      a[QUESTIONS[nextQ].id] = "Extracted from LinkedIn PDF";
+      nextQ++;
+    }
+    setAnswers(a);
+    if (nextQ < QUESTIONS.length) setCurrentQ(nextQ);
+    else setPhase("post_screenshots");
   };
 
   const callAPI = async (user, ans, profile, screenshots) => {
@@ -522,7 +531,10 @@ export default function App() {
   const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
-  const progress = (currentQ/QUESTIONS.length)*100;
+  const skipIds = pdfText ? ["industry", "experience"] : [];
+  const effectiveTotal = QUESTIONS.length - skipIds.length;
+  const effectiveCurrent = QUESTIONS.slice(0, currentQ).filter(q => !skipIds.includes(q.id)).length;
+  const progress = (effectiveCurrent/effectiveTotal)*100;
 
   const s = {
     h1: { color:"#F9FAFB", fontSize:32, fontWeight:800, lineHeight:1.2, marginBottom:12, letterSpacing:-0.5 },
@@ -539,7 +551,7 @@ export default function App() {
         <Badge>LinkedIn Intelligence</Badge>
         <h1 style={s.h1}>Your LinkedIn is<br /><span style={{ color:"#c8a96e" }}>invisible.</span></h1>
         <div className="gold-rule" />
-        <p style={{ ...s.sub, maxWidth:380, margin:"0 auto 32px" }}>Answer 10 questions. Upload your profile. Get a strategy built entirely around you.</p>
+        <p style={{ ...s.sub, maxWidth:380, margin:"0 auto 32px" }}>Upload your LinkedIn profile. Answer a few questions. Get a strategy built entirely around you.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:32, textAlign:"left" }}>
           {["Personalized LinkedIn Score","Profile section-by-section scoring","3 custom post hooks for your voice","30-day content calendar","Critical algorithm rules"].map((f,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -592,7 +604,7 @@ export default function App() {
           </div>
         </div>
         <div style={{ marginTop:24 }}>
-          <button className="primary-btn" onClick={()=>{ if(validate()) setPhase("quiz"); }}>Continue →</button>
+          <button className="primary-btn" onClick={()=>{ if(validate()) setPhase("pdf_upload"); }}>Continue →</button>
         </div>
       </div>
     </Layout>
@@ -604,8 +616,8 @@ export default function App() {
       <div className="page-enter" key={currentQ}>
         <Logo />
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <Badge color="#6a5a9a">{q.phase}</Badge>
-          <span style={{ color:"#2a2a4a", fontSize:12 }}>{currentQ+1} / {QUESTIONS.length}</span>
+          <Badge color="#6a5a9a">Step 3 of 3 — {q.phase}</Badge>
+          <span style={{ color:"#2a2a4a", fontSize:12 }}>{effectiveCurrent+1} / {effectiveTotal}</span>
         </div>
         <div className="progress-bar" style={{ marginBottom:24 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
@@ -622,7 +634,7 @@ export default function App() {
           ))}
         </div>
         <button className="primary-btn" disabled={!selected} onClick={handleNext}>
-          {currentQ+1===QUESTIONS.length?"Upload Your Profile →":"Continue →"}
+          {currentQ+1===QUESTIONS.length?"Upload Your Posts →":"Continue →"}
         </button>
       </div>
     </Layout>
@@ -658,9 +670,9 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
-        <Badge>Step 3 of 3 — Your Profile</Badge>
+        <Badge>Step 2 of 3 — Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
-        <p style={{ ...s.sub }}>Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Then upload it here.</p>
+        <p style={{ ...s.sub }}>This makes your plan 3x more accurate. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
           onClick={()=>fileInputRef.current?.click()}
@@ -683,10 +695,10 @@ export default function App() {
           )}
         </div>
         <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>PDF stays on your device. We only read the text.</p>
-        <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>
-          {pdfName?"Analyze My Profile →":"Skip & Continue →"}
+        <button className="primary-btn" onClick={()=>setPhase("quiz")}>
+          {pdfName?"Continue to Questions →":"Skip & Continue →"}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setCurrentQ(QUESTIONS.length-1)||setPhase("quiz")}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>← Back</button>
       </div>
     </Layout>
   );
@@ -696,9 +708,9 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
-        <Badge>Optional — Your Posts</Badge>
+        <Badge>Step 3 of 3 — Your Posts</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
-        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>This helps us analyze what already works for you and make your hooks much more specific.</p>
+        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>This unlocks your Thought Leader Score and makes your hooks much more specific to what already works for you.</p>
         
         {!noPostsYet && (
           <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
@@ -823,7 +835,7 @@ export default function App() {
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
   if (phase==="result"&&plan) {
-    const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules"];
+    const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules","Thought Leader"];
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
@@ -863,6 +875,25 @@ export default function App() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Thought Leader Score */}
+          {plan.thought_leader?.available && (
+            <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:20 }}>
+              <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Score</p>
+              {[["Hook Quality", plan.thought_leader.hook_score],["Engagement", plan.thought_leader.engagement_score],["Voice Consistency", plan.thought_leader.voice_score],["Post Structure", plan.thought_leader.structure_score]].map(([label,score])=>(
+                <div key={label} style={{ marginBottom:12 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                    <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
+                    <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
+                  </div>
+                  <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${score}%`, background:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", borderRadius:4, transition:"width 1.2s cubic-bezier(0.16,1,0.3,1)" }} />
+                  </div>
+                </div>
+              ))}
+              <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6, marginTop:12, paddingTop:12, borderTop:"1px solid #1a1a2e" }}>{plan.thought_leader.analysis}</p>
             </div>
           )}
 
@@ -952,6 +983,29 @@ export default function App() {
                     <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{rule}</p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Thought Leader */}
+            {activeSection===6 && (
+              <div>
+                {plan.thought_leader?.available ? (
+                  <>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Advice — Based On Your Posts</p>
+                    {plan.thought_leader.improvements?.map((tip,i)=>(
+                      <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
+                        <div style={{ width:24, height:24, borderRadius:"50%", background:"rgba(200,169,110,0.1)", border:"1px solid #c8a96e33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#c8a96e", fontSize:11, fontWeight:700 }}>{i+1}</div>
+                        <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tip}</p>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                    <p style={{ fontSize:28, marginBottom:16 }}>📸</p>
+                    <p style={{ color:"#4a4a6a", fontSize:15, fontWeight:600, marginBottom:8 }}>No post screenshots uploaded</p>
+                    <p style={{ color:"#2a2a3a", fontSize:13, lineHeight:1.6 }}>Retake the quiz and upload screenshots of your last 3 LinkedIn posts to get personalized thought leader advice.</p>
+                  </div>
+                )}
               </div>
             )}
           </div>
