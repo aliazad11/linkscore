@@ -134,7 +134,39 @@ const ANALYSIS_STEPS = [
   { text: "Calculating your LinkedIn Score...", duration: 1400 },
 ];
 
-function buildPrompt(userData, answers, profileText) {
+function buildEmailHTML(firstName, plan) {
+  const hooks = plan.post_hooks?.map((h,i) => `<li style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-left:3px solid #c8a96e;border-radius:4px;">${h}</li>`).join('') || '';
+  const rules = plan.critical_rules?.slice(0,3).map(r => `<li style="margin-bottom:8px;">${r}</li>`).join('') || '';
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#08080e;font-family:'Segoe UI',sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+    <img src="https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png" alt="Linkedscore" style="height:36px;margin-bottom:32px;display:block;" />
+    <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${firstName}, you are <span style="color:#c8a96e;">${plan.archetype}</span></h1>
+    <p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:32px;">${plan.headline}</p>
+    <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:24px;">
+      <p style="color:#c8a96e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">YOUR LINKEDIN SCORE</p>
+      <p style="color:#f9fafb;font-size:48px;font-weight:800;margin:0 0 8px;">${plan.score}<span style="font-size:20px;color:#6b7280;">/100</span></p>
+      <p style="color:#ef4444;font-size:13px;">${plan.urgency}</p>
+    </div>
+    <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:24px;">
+      <p style="color:#c8a96e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">YOUR 3 POST HOOKS</p>
+      <ul style="list-style:none;padding:0;margin:0;">${hooks}</ul>
+    </div>
+    <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:32px;">
+      <p style="color:#c8a96e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">3 CRITICAL RULES</p>
+      <ul style="color:#9ca3af;font-size:14px;line-height:1.6;padding-left:20px;">${rules}</ul>
+    </div>
+    <a href="https://linkedscore.app" style="display:block;text-align:center;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:24px;">View Your Full Plan →</a>
+    <p style="color:#374151;font-size:12px;text-align:center;">You received this because you used Linkedscore. <br/>© 2025 Linkedscore</p>
+  </div>
+</body>
+</html>`;
+}
+
+function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
   const profileSection = profileText
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
     : "\nNo profile PDF provided.\n";
@@ -150,6 +182,7 @@ ${profileSection}
 Return ONLY this JSON, no other text:
 {"score":72,"archetype":"The Silent Expert","headline":"You have the expertise — now make it visible.","urgency":"Every day without a strategy is a day a less-qualified person gets the opportunity you deserve.","profile_scores":{"headline":45,"about":30,"experience":60,"overall":45},"profile_fixes":["Rewrite your headline to include who you help and how — not just your job title","Add a compelling About section in first person that tells your story and outcome","Add 2-3 bullet points per role with quantified achievements"],"content_strategy":{"post_frequency":"Maximum 2 posts per month — LinkedIn rewards depth over volume.","best_posting_times":"Tuesday to Thursday, 7–9am or 5–6pm your local time. Never post on weekends.","content_mix":"60% personal lessons from your work, 30% practical tips for your audience, 10% bold opinions.","hook_formula":"Start with a counterintuitive statement or a specific number. Never start with I.","content_types":"Rotate: document carousels for reach, text-only for stories, photos with you in them for engagement."},"post_hooks":["I made a mistake that cost my team 3 months of work. Here is what I learned:","Most people optimize their LinkedIn headline wrong. Here is the one change that got me 5x more profile views:","Nobody told me this when I started my career in [industry]. 5 years later, I wish someone had:"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"Share one hard lesson from your career","hook":"[use hook #1 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 2","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Comment meaningfully on 10 posts in your niche. Send 15 personalized connection requests to people in your target audience. Update one section of your profile."},{"week":"Week 3","type":"POST","topic":"A practical tip your audience wishes they knew","hook":"[use hook #2 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 4","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Reply to every comment from Week 3 post. Send 10 more connection requests. Review your profile analytics and note what improved."}],"critical_rules":["Never edit a post after publishing — LinkedIn immediately cuts its reach in the algorithm.","Never reshare others posts to grow your account — comment and like instead.","Post your own first comment immediately after publishing to trigger early engagement.","Stay active for 60 minutes after posting and reply to every comment — this is your reach ceiling window.","Tag people only when genuinely relevant — LinkedIn detects and penalizes tag-for-reach behavior.","Send 10 personalized connection requests per week to people in your exact niche."],"growth_tactics":["Search your target audience by job title and send 10 tailored connection requests per week with a short personal note.","Ask two former colleagues or managers for a written recommendation this week.","Check your LinkedIn SSI score at linkedin.com/sales/ssi and improve the weakest pillar first.","Use document carousels — they get 3x more reach than single images on LinkedIn right now."],"closing_message":"You already have everything it takes. The experience, the story, the expertise. The only thing missing was a clear system — and now you have one."}
 
+${postSection}
 Replace ALL placeholder values with real personalized content based on the user data and profile above. Make post_hooks genuinely specific to their industry, experience level, and content style.`;
 }
 
@@ -249,10 +282,36 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [pdfText, setPdfText] = useState("");
+  const [userCount, setUserCount] = useState(null);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
+  const [postScreenshots, setPostScreenshots] = useState([null, null, null]);
+  const [noPostsYet, setNoPostsYet] = useState(false);
+  const postRefs = [useRef(null), useRef(null), useRef(null)];
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch real user count from Supabase
+    const fetchCount = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users?select=count`, {
+          headers: {
+            "apikey": import.meta.env.VITE_SUPABASE_KEY,
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`,
+            "Prefer": "count=exact",
+            "Range": "0-0"
+          }
+        });
+        const countHeader = res.headers.get("content-range");
+        if (countHeader) {
+          const total = parseInt(countHeader.split("/")[1]);
+          setUserCount(total > 0 ? total : null);
+        }
+      } catch(e) { console.log("Count error:", e); }
+    };
+    fetchCount();
+  }, []);
 
   useEffect(() => {
     if (phase !== "analyzing") return;
@@ -295,14 +354,26 @@ export default function App() {
     else setPhase("pdf_upload");
   };
 
-  const callAPI = async (user, ans, profile) => {
+  const callAPI = async (user, ans, profile, screenshots) => {
+    const validScreenshots = screenshots.filter(s => s !== null);
+    const messageContent = [];
+    
+    // Add post screenshots if any
+    if (validScreenshots.length > 0) {
+      validScreenshots.forEach((s, i) => {
+        messageContent.push({ type:"text", text:`LinkedIn Post Screenshot ${i+1}:` });
+        messageContent.push({ type:"image", source:{ type:"base64", media_type:s.type, data:s.base64 } });
+      });
+    }
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profile, validScreenshots.length) });
+
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "anthropic-dangerous-direct-browser-access":"true", "x-api-key": import.meta.env.VITE_ANTHROPIC_KEY, "anthropic-version":"2023-06-01" },
       body: JSON.stringify({
         model:"claude-sonnet-4-5", max_tokens:3000,
         system:"You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.",
-        messages:[{ role:"user", content:buildPrompt(user, ans, profile) }, { role:"assistant", content:"{" }],
+        messages:[{ role:"user", content:messageContent }, { role:"assistant", content:"{" }],
       }),
     });
     if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error?.message||`HTTP ${res.status}`); }
@@ -318,8 +389,46 @@ export default function App() {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
-      const result = await callAPI(userData, answers, pdfText);
+      // Generate the plan
+      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots);
       setPlan(result);
+
+      // Save user to Supabase (counter)
+      try {
+        await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": import.meta.env.VITE_SUPABASE_KEY,
+            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`,
+            "Prefer": "return=minimal"
+          },
+          body: JSON.stringify({
+            email,
+            first_name: userData.firstName,
+            job_title: userData.jobTitle,
+            linkedin_url: userData.linkedinUrl
+          })
+        });
+      } catch(e) { console.log("Supabase error:", e); }
+
+      // Send email via Resend
+      try {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${import.meta.env.VITE_RESEND_KEY}`
+          },
+          body: JSON.stringify({
+            from: "Linkedscore <noreply@linkedscore.app>",
+            to: [email],
+            subject: `${userData.firstName}, your LinkedIn plan is ready`,
+            html: buildEmailHTML(userData.firstName, result)
+          })
+        });
+      } catch(e) { console.log("Email error:", e); }
+
       setPhase("result");
     } catch(e) {
       setEmailError(`Error: ${e.message}`);
@@ -355,7 +464,18 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); };
+  const handlePostScreenshot = (index, file) => {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const updated = [...postScreenshots];
+      updated[index] = { file, preview: e.target.result, base64: e.target.result.split(",")[1], type: file.type };
+      setPostScreenshots(updated);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
   const progress = (currentQ/QUESTIONS.length)*100;
@@ -385,6 +505,7 @@ export default function App() {
           ))}
         </div>
         <button className="primary-btn" onClick={()=>setPhase("form")}>Begin Your Analysis →</button>
+        {userCount && <p style={{ color:"#c8a96e", fontSize:13, marginBottom:8, fontWeight:600 }}>✦ {userCount.toLocaleString()} professionals got their plan</p>}
         <p style={{ color:"#2a2a3a", fontSize:10, marginTop:12, letterSpacing:0.8 }}>10 MINUTES · COMPLETELY FREE</p>
       </div>
     </Layout>
@@ -518,10 +639,75 @@ export default function App() {
           )}
         </div>
         <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>PDF stays on your device. We only read the text.</p>
-        <button className="primary-btn" onClick={()=>setPhase("analyzing")}>
+        <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>
           {pdfName?"Analyze My Profile →":"Skip & Continue →"}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setCurrentQ(QUESTIONS.length-1)||setPhase("quiz")}>← Back</button>
+      </div>
+    </Layout>
+  );
+
+  // ── POST SCREENSHOTS ──────────────────────────────────────────────────────
+  if (phase==="post_screenshots") return (
+    <Layout>
+      <div className="page-enter">
+        <Logo />
+        <Badge>Optional — Your Posts</Badge>
+        <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
+        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>This helps us analyze what already works for you and make your hooks much more specific.</p>
+        
+        {!noPostsYet && (
+          <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
+            {[0,1,2].map(i => (
+              <div key={i}>
+                <input ref={postRefs[i]} type="file" accept="image/*" style={{ display:"none" }} onChange={e=>handlePostScreenshot(i, e.target.files[0])} />
+                <div
+                  onClick={()=>postRefs[i].current?.click()}
+                  style={{
+                    border:`1.5px dashed ${postScreenshots[i]?"#c8a96e":"#2a2a3e"}`,
+                    borderRadius:14, padding:postScreenshots[i]?"0":"20px 16px",
+                    cursor:"pointer", background:postScreenshots[i]?"transparent":"#0d0d18",
+                    transition:"all 0.2s", overflow:"hidden",
+                    display:"flex", alignItems:"center", gap:12,
+                  }}
+                >
+                  {postScreenshots[i] ? (
+                    <>
+                      <img src={postScreenshots[i].preview} alt={`Post ${i+1}`} style={{ width:72, height:56, objectFit:"cover", borderRadius:10, flexShrink:0 }} />
+                      <div>
+                        <p style={{ color:"#c8a96e", fontSize:13, fontWeight:700 }}>✓ Post {i+1} uploaded</p>
+                        <p style={{ color:"#3a3a5a", fontSize:11 }}>Click to replace</p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ fontSize:20 }}>📸</span>
+                      <div>
+                        <p style={{ color:"#4a4a6a", fontSize:13, fontWeight:600 }}>Post {i+1}</p>
+                        <p style={{ color:"#2a2a3a", fontSize:11 }}>Click to upload screenshot</p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div
+          onClick={()=>setNoPostsYet(!noPostsYet)}
+          style={{ display:"flex", alignItems:"center", gap:12, cursor:"pointer", padding:"12px 16px", background:"#0d0d18", border:`1px solid ${noPostsYet?"#c8a96e":"#1a1a2e"}`, borderRadius:12, marginBottom:24, transition:"all 0.2s" }}
+        >
+          <div style={{ width:18, height:18, borderRadius:4, border:`1.5px solid ${noPostsYet?"#c8a96e":"#2a2a3e"}`, background:noPostsYet?"#c8a96e":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}>
+            {noPostsYet && <span style={{ color:"#08080e", fontSize:11, fontWeight:900 }}>✓</span>}
+          </div>
+          <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>I haven't posted on LinkedIn yet</p>
+        </div>
+
+        <button className="primary-btn" onClick={()=>setPhase("analyzing")}>
+          {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
+        </button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("pdf_upload")}>← Back</button>
       </div>
     </Layout>
   );
