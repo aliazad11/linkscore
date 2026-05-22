@@ -1,14 +1,10 @@
-export const config = { runtime: 'edge' };
-
-export default async function handler(req) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
-
   try {
-    const { messages } = await req.json();
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const { messages } = req.body;
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -22,17 +18,9 @@ export default async function handler(req) {
         messages
       })
     });
-
-    const data = await res.json();
-    return new Response(JSON.stringify(data), {
-      status: res.ok ? 200 : 400,
-      headers: { 'Content-Type': 'application/json' }
-    });
-
+    const data = await response.json();
+    return res.status(response.ok ? 200 : 400).json(data);
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return res.status(500).json({ error: e.message });
   }
 }
