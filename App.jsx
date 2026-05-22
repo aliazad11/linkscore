@@ -175,7 +175,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
     : `\nNO POST SCREENSHOTS: Set thought_leader.available=false, all scores=0, analysis="No post screenshots provided.", improvements=["Upload your last 3 posts to get your Thought Leader Score"].\n`;
 
   return `User data:
-Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}
+Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}${userData.ssiScore ? ", SSI Score: "+userData.ssiScore+"/100" : ""}
 Industry: ${answers.industry}, Experience: ${answers.experience}
 Goal: ${answers.goal}, Activity: ${answers.current_status}
 Profile completeness: ${answers.profile_completeness}, Struggle: ${answers.content_struggle}
@@ -559,7 +559,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",ssiScore:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
@@ -632,6 +632,11 @@ export default function App() {
             <label style={s.label}>LinkedIn Profile URL</label>
             <input className={`field-input${formErrors.linkedinUrl?" error":""}`} value={userData.linkedinUrl} onChange={e=>setUserData({...userData,linkedinUrl:e.target.value})} placeholder="linkedin.com/in/yourname" />
             {formErrors.linkedinUrl&&<p style={s.err}>{formErrors.linkedinUrl}</p>}
+          </div>
+          <div>
+            <label style={s.label}>LinkedIn SSI Score <span style={{ color:"#3a3a5a", fontWeight:400 }}>(optional)</span></label>
+            <input className="field-input" type="number" min="0" max="100" value={userData.ssiScore||""} onChange={e=>setUserData({...userData,ssiScore:e.target.value})} placeholder="0–100" />
+            <p style={{ color:"#2a2a3a", fontSize:11, marginTop:4 }}>Find yours at <span style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</span> — makes your plan more accurate</p>
           </div>
         </div>
         <div style={{ marginTop:24 }}>
