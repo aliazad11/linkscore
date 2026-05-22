@@ -166,16 +166,18 @@ function buildEmailHTML(firstName, plan) {
 </html>`;
 }
 
-function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
+function buildPrompt(userData, answers, profileText, screenshotCount = 0, ssiImg = null) {
   const profileSection = profileText
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
     : "\nNo profile PDF provided.\n";
+  const ssiSection = ssiImg ? "\nSSI SCREENSHOT PROVIDED: Analyze the LinkedIn SSI dashboard screenshot and extract all 4 sub-scores (Establish Brand, Find People, Engage Insights, Build Relationships) and total score. Use these exact numbers for Revenue at Risk™ calculation and profile analysis.\n" : "";
+
   const postSection = screenshotCount > 0
     ? `\nPOST SCREENSHOTS: ${screenshotCount} post images are attached above. YOU MUST set thought_leader.available=true and fill in ALL thought_leader fields. Keep thought_leader.analysis to ONE short sentence (max 15 words) summarizing their style. Put all detailed feedback in improvements array (3 specific actionable items).\n`
     : `\nNO POST SCREENSHOTS: Set thought_leader.available=false, all scores=0, analysis="No post screenshots provided.", improvements=["Upload your last 3 posts to get your Thought Leader Score"].\n`;
 
   return `User data:
-Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}${userData.ssiScore ? ", SSI Score: "+userData.ssiScore+"/100" : ""}
+Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}
 Industry: ${answers.industry}, Experience: ${answers.experience}
 Goal: ${answers.goal}, Activity: ${answers.current_status}
 Profile completeness: ${answers.profile_completeness}, Struggle: ${answers.content_struggle}
@@ -185,7 +187,7 @@ ${profileSection}
 Return ONLY this JSON, no other text:
 {"score":72,"archetype":"The Silent Expert","headline":"You have the expertise — now make it visible.","urgency":"Every day without a strategy is a day a less-qualified person gets the opportunity you deserve.","profile_scores":{"headline":45,"about":30,"experience":60,"overall":45},"profile_fixes":["Rewrite your headline to include who you help and how — not just your job title","Add a compelling About section in first person that tells your story and outcome","Add 2-3 bullet points per role with quantified achievements"],"content_strategy":{"post_frequency":"Maximum 2 posts per month — LinkedIn rewards depth over volume.","best_posting_times":"Tuesday to Thursday, 7–9am or 5–6pm your local time. Never post on weekends.","content_mix":"60% personal lessons from your work, 30% practical tips for your audience, 10% bold opinions.","hook_formula":"Start with a counterintuitive statement or a specific number. Never start with I.","content_types":"Rotate: document carousels for reach, text-only for stories, photos with you in them for engagement."},"post_hooks":["I made a mistake that cost my team 3 months of work. Here is what I learned:","Most people optimize their LinkedIn headline wrong. Here is the one change that got me 5x more profile views:","Nobody told me this when I started my career in [industry]. 5 years later, I wish someone had:"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"Share one hard lesson from your career","hook":"[use hook #1 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 2","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Comment meaningfully on 10 posts in your niche. Send 15 personalized connection requests to people in your target audience. Update one section of your profile."},{"week":"Week 3","type":"POST","topic":"A practical tip your audience wishes they knew","hook":"[use hook #2 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 4","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Reply to every comment from Week 3 post. Send 10 more connection requests. Review your profile analytics and note what improved."}],"critical_rules":["Never edit a post after publishing — LinkedIn immediately cuts its reach in the algorithm.","Never reshare others posts to grow your account — comment and like instead.","Post your own first comment immediately after publishing to trigger early engagement.","Stay active for 60 minutes after posting and reply to every comment — this is your reach ceiling window.","Tag people only when genuinely relevant — LinkedIn detects and penalizes tag-for-reach behavior.","Send 10 personalized connection requests per week to people in your exact niche."],"growth_tactics":["Search your target audience by job title and send 10 tailored connection requests per week with a short personal note.","Ask two former colleagues or managers for a written recommendation this week.","Check your LinkedIn SSI score at linkedin.com/sales/ssi and improve the weakest pillar first.","Use document carousels — they get 3x more reach than single images on LinkedIn right now."],"closing_message":"You already have everything it takes. The experience, the story, the expertise. The only thing missing was a clear system — and now you have one.","thought_leader":{"available":BOOL_TRUE_IF_SCREENSHOTS_PROVIDED,"score":SCORE_0_100,"hook_score":SCORE_0_100,"engagement_score":SCORE_0_100,"voice_score":SCORE_0_100,"structure_score":SCORE_0_100,"analysis":"ANALYSIS_TEXT","improvements":["IMPROVEMENT_1","IMPROVEMENT_2","IMPROVEMENT_3"]}}
 
-${postSection}
+${ssiSection}${postSection}
 Replace ALL placeholder values with real personalized content based on the user data and profile above. Make post_hooks genuinely specific to their industry, experience level, and content style.`;
 }
 
@@ -288,6 +290,7 @@ export default function App() {
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
   const [activeThoughtTab, setActiveThoughtTab] = useState(0);
+  const [ssiScreenshot, setSsiScreenshot] = useState(null);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -418,7 +421,7 @@ export default function App() {
     else setPhase("post_screenshots");
   };
 
-  const callAPI = async (user, ans, profile, screenshots) => {
+  const callAPI = async (user, ans, profile, screenshots, ssiImg=null) => {
     const validScreenshots = screenshots.filter(s => s !== null);
     const messageContent = [];
 
@@ -426,6 +429,12 @@ export default function App() {
     if (profile && profile.startsWith("PDF_BASE64:")) {
       const base64 = profile.replace("PDF_BASE64:", "");
       messageContent.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } });
+    }
+
+    // Add SSI screenshot if provided
+    if (ssiImg) {
+      messageContent.push({ type:"text", text:"LinkedIn SSI Score Dashboard screenshot:" });
+      messageContent.push({ type:"image", source:{ type:"base64", media_type:ssiImg.type, data:ssiImg.base64 } });
     }
 
     // Add post screenshots if any
@@ -436,7 +445,7 @@ export default function App() {
       });
     }
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length) });
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, ssiImg) });
 
     const res = await fetch("/api/generate-plan", {
       method:"POST",
@@ -463,7 +472,7 @@ export default function App() {
         await new Promise(r => setTimeout(r, 3000));
       }
       // Generate the plan
-      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots);
+      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, ssiScreenshot);
       setPlan(result);
 
       // Save user to Supabase (counter)
@@ -559,7 +568,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",ssiScore:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setSsiScreenshot(null); };
 
   const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
@@ -635,8 +644,34 @@ export default function App() {
           </div>
           <div>
             <label style={s.label}>LinkedIn SSI Score <span style={{ color:"#3a3a5a", fontWeight:400 }}>(optional)</span></label>
-            <input className="field-input" type="number" min="0" max="100" value={userData.ssiScore||""} onChange={e=>setUserData({...userData,ssiScore:e.target.value})} placeholder="0–100" />
-            <p style={{ color:"#2a2a3a", fontSize:11, marginTop:4 }}>Find yours at <span style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</span> — makes your plan more accurate</p>
+            <p style={{ color:"#2a2a3a", fontSize:11, marginBottom:8 }}>Go to <span style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</span> → take a screenshot → upload it here</p>
+            <label style={{ display:"block", cursor:"pointer" }}>
+              <input type="file" accept="image/*" style={{ display:"none" }} onChange={e=>{
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = ev => {
+                  const base64 = ev.target.result.split(",")[1];
+                  setSsiScreenshot({ base64, type: file.type, preview: ev.target.result });
+                };
+                reader.readAsDataURL(file);
+              }} />
+              {ssiScreenshot ? (
+                <div style={{ position:"relative", borderRadius:10, overflow:"hidden", border:"1px solid #c8a96e" }}>
+                  <img src={ssiScreenshot.preview} alt="SSI" style={{ width:"100%", maxHeight:120, objectFit:"cover" }} />
+                  <div style={{ position:"absolute", top:6, right:6, background:"rgba(0,0,0,0.7)", borderRadius:6, padding:"2px 8px", color:"#c8a96e", fontSize:11, fontWeight:700 }}>✓ Uploaded</div>
+                  <button onClick={e=>{e.preventDefault();setSsiScreenshot(null);}} style={{ position:"absolute", top:6, left:6, background:"rgba(0,0,0,0.7)", border:"none", borderRadius:6, padding:"2px 8px", color:"#ff6b6b", fontSize:11, cursor:"pointer" }}>Remove</button>
+                </div>
+              ) : (
+                <div style={{ border:"1px dashed #2a2a4a", borderRadius:10, padding:"14px 16px", display:"flex", alignItems:"center", gap:10, background:"#0d0d18" }}>
+                  <span style={{ fontSize:20 }}>📊</span>
+                  <div>
+                    <p style={{ color:"#4a4a6a", fontSize:13, fontWeight:600, marginBottom:2 }}>Upload SSI screenshot</p>
+                    <p style={{ color:"#2a2a3a", fontSize:11 }}>Makes Revenue at Risk™ more accurate</p>
+                  </div>
+                </div>
+              )}
+            </label>
           </div>
         </div>
         <div style={{ marginTop:24 }}>
