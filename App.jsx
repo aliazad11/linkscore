@@ -644,7 +644,7 @@ export default function App() {
           </div>
           <div>
             <label style={s.label}>LinkedIn SSI Score <span style={{ color:"#3a3a5a", fontWeight:400 }}>(optional)</span></label>
-            <p style={{ color:"#2a2a3a", fontSize:11, marginBottom:8 }}>Go to <span style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</span> → take a screenshot → upload it here</p>
+            <p style={{ color:"#2a2a3a", fontSize:11, marginBottom:8 }}>Go to <a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</a> → take a screenshot → upload it here</p>
             <label style={{ display:"block", cursor:"pointer" }}>
               <input type="file" accept="image/*" style={{ display:"none" }} onChange={e=>{
                 const file = e.target.files[0];
