@@ -6,10 +6,9 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     define: {
-      'import.meta.env.VITE_ANTHROPIC_KEY': JSON.stringify(env.VITE_ANTHROPIC_KEY),
-      'import.meta.env.VITE_RESEND_KEY': JSON.stringify(env.VITE_RESEND_KEY),
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_KEY': JSON.stringify(env.VITE_SUPABASE_KEY),
+      'import.meta.env.VITE_RESEND_KEY': JSON.stringify(env.VITE_RESEND_KEY),
     }
   }
 })
