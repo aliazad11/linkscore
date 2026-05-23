@@ -1,9 +1,13 @@
+export const config = { maxDuration: 60 };
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
   try {
     const { messages } = req.body;
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -18,8 +22,10 @@ export default async function handler(req, res) {
         messages
       })
     });
+
     const data = await response.json();
     return res.status(response.ok ? 200 : 400).json(data);
+
   } catch (e) {
     return res.status(500).json({ error: e.message });
   }
