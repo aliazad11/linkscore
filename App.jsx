@@ -3,18 +3,7 @@ import { useState, useEffect, useRef } from "react";
 const LOGO_URL = "https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png";
 
 const QUESTIONS = [
-  {
-    id: "goal", phase: "Your Ambition",
-    question: "What brings you here today?",
-    subtitle: "Be honest — this shapes everything we build together.",
-    options: [
-      { label: "Land a better job or get headhunted", emoji: "🎯" },
-      { label: "Build my personal brand & become known", emoji: "✦" },
-      { label: "Attract clients or business opportunities", emoji: "💼" },
-      { label: "Grow my network in my industry", emoji: "🌐" },
-      { label: "Get promoted or recognized internally", emoji: "🏆" },
-    ],
-  },
+
   {
     id: "current_status", phase: "Where You Are",
     question: "How active are you on LinkedIn right now?",
@@ -166,7 +155,7 @@ function buildEmailHTML(firstName, plan) {
 </html>`;
 }
 
-function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
+function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null) {
   const profileSection = profileText
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
     : "\nNo profile PDF provided.\n";
@@ -179,6 +168,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0) {
     : `\nNO SSI SCORES: Set ssi_plan.available=false.\n`;
 
   return `User data:
+Cohort: ${cohort||"Professional"} — tailor ALL advice, hooks, and recommendations specifically for this type of professional.
 Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}
 SSI Scores: ${(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships) ? 
   "Establish Brand: "+(userData.establish_brand||"?")+"/25, Find People: "+(userData.find_people||"?")+"/25, Engage Insights: "+(userData.engage_insights||"?")+"/25, Build Relationships: "+(userData.build_relationships||"?")+"/25, Total: "+((parseInt(userData.establish_brand||0)+parseInt(userData.find_people||0)+parseInt(userData.engage_insights||0)+parseInt(userData.build_relationships||0)))+"/100"
@@ -425,7 +415,7 @@ export default function App() {
     else setPhase("post_screenshots");
   };
 
-  const callAPI = async (user, ans, profile, screenshots) => {
+  const callAPI = async (user, ans, profile, screenshots, cohort=null) => {
     const validScreenshots = screenshots.filter(s => s !== null);
     const messageContent = [];
 
@@ -443,7 +433,7 @@ export default function App() {
       });
     }
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length) });
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort) });
 
     const res = await fetch("/api/generate-plan", {
       method:"POST",
@@ -470,7 +460,7 @@ export default function App() {
         await new Promise(r => setTimeout(r, 3000));
       }
       // Generate the plan
-      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots);
+      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort);
       setPlan(result);
 
       // Save user to Supabase (counter)
@@ -549,7 +539,7 @@ export default function App() {
     reader.onload = async (e) => {
       const base64 = e.target.result.split(",")[1];
       // Limit to 400KB base64 to avoid request size limits
-      const limited = base64.slice(0, 400000);
+      const limited = base64.slice(0, 300000);
       setPdfText(`PDF_BASE64:${limited}`);
     };
     reader.readAsDataURL(file);
@@ -566,7 +556,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null);; setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
@@ -582,12 +572,60 @@ export default function App() {
   };
 
   // ── INTRO ──────────────────────────────────────────────────────────────────
+  const COHORTS = [
+    { id:"B2B Executive", emoji:"🏢", label:"B2B Executive", sub:"Building authority in my industry" },
+    { id:"Real Estate Professional", emoji:"🏠", label:"Real Estate Professional", sub:"Attracting high-value clients" },
+    { id:"Startup Founder", emoji:"🚀", label:"Startup Founder", sub:"Building visibility for my company" },
+    { id:"Job Seeker", emoji:"🎯", label:"Job Seeker", sub:"Landing my next role" },
+    { id:"Consultant or Coach", emoji:"💼", label:"Consultant / Coach", sub:"Growing my client base" },
+    { id:"Thought Leader", emoji:"🎤", label:"Thought Leader", sub:"Becoming a voice in my industry" },
+  ];
+
+  const COHORT_HEADLINES = {
+    "B2B Executive": "Your competitors are already building their LinkedIn brand.",
+    "Real Estate Professional": "Your listings deserve a LinkedIn that works as hard as you do.",
+    "Startup Founder": "Your next investor is already looking at your LinkedIn.",
+    "Job Seeker": "Your next employer is already looking at your LinkedIn.",
+    "Consultant or Coach": "Your best clients find you before you find them.",
+    "Thought Leader": "Your ideas deserve an audience. Let's build one.",
+  };
+
+  if (phase==="cohort") return (
+    <Layout>
+      <div className="page-enter">
+        <Logo />
+        <h2 style={{ ...s.h1, fontSize:26, marginBottom:8 }}>Which best describes you?</h2>
+        <p style={{ ...s.sub, marginBottom:28 }}>This shapes your entire plan — be honest.</p>
+        <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
+          {COHORTS.map(c => (
+            <button key={c.id}
+              onClick={()=>{ setCohort(c.id); setPhase("form"); }}
+              style={{
+                background: cohort===c.id ? "rgba(200,169,110,0.15)" : "#0d0d18",
+                border: cohort===c.id ? "1px solid #c8a96e" : "1px solid #1a1a2e",
+                borderRadius:14, padding:"14px 18px",
+                display:"flex", alignItems:"center", gap:14,
+                cursor:"pointer", textAlign:"left", transition:"all 0.2s"
+              }}
+            >
+              <span style={{ fontSize:22, flexShrink:0 }}>{c.emoji}</span>
+              <div>
+                <p style={{ color:"#F9FAFB", fontSize:15, fontWeight:700, marginBottom:2 }}>{c.label}</p>
+                <p style={{ color:"#3a3a5a", fontSize:12 }}>{c.sub}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </Layout>
+  );
+
   if (phase==="intro") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo />
         <Badge>LinkedIn Intelligence</Badge>
-        <h1 style={s.h1}>Your LinkedIn is<br /><span style={{ color:"#c8a96e" }}>invisible.</span></h1>
+        <h1 style={s.h1}>{cohort ? COHORT_HEADLINES[cohort] : <><span>Your LinkedIn is</span><br /><span style={{ color:"#c8a96e" }}>invisible.</span></>}</h1>
         <div className="gold-rule" />
         <p style={{ ...s.sub, maxWidth:380, margin:"0 auto 32px" }}>Upload your LinkedIn profile. Answer a few questions. Get a strategy built entirely around you.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:32, textAlign:"left" }}>
@@ -598,7 +636,7 @@ export default function App() {
             </div>
           ))}
         </div>
-        <button className="primary-btn" onClick={()=>setPhase("form")}>Begin Your Analysis →</button>
+        <button className="primary-btn" onClick={()=>setPhase(cohort ? "form" : "cohort")}>Begin Your Analysis →</button>
         {userCount !== null && <p style={{ color:"#c8a96e", fontSize:13, marginBottom:8, fontWeight:600 }}>✦ {userCount.toLocaleString()} professionals got their plan</p>}
         <p style={{ color:"#2a2a3a", fontSize:10, marginTop:12, letterSpacing:0.8 }}>10 MINUTES · COMPLETELY FREE</p>
       </div>
