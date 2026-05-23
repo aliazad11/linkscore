@@ -285,6 +285,7 @@ export default function App() {
   const [pdfText, setPdfText] = useState("");
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
+  const [cohort, setCohort] = useState(null);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -393,24 +394,7 @@ export default function App() {
 
   const handleNext = () => {
     if (!selected) return;
-    const COHORTS = [
-    { id:"B2B Executive", emoji:"🏢", label:"B2B Executive", sub:"Building authority in my industry" },
-    { id:"Real Estate Professional", emoji:"🏠", label:"Real Estate Professional", sub:"Attracting high-value clients" },
-    { id:"Startup Founder", emoji:"🚀", label:"Startup Founder", sub:"Building visibility for my company" },
-    { id:"Job Seeker", emoji:"🎯", label:"Job Seeker", sub:"Landing my next role" },
-    { id:"Consultant or Coach", emoji:"💼", label:"Consultant / Coach", sub:"Growing my client base" },
-    { id:"Thought Leader", emoji:"🎤", label:"Thought Leader", sub:"Becoming a voice in my industry" },
-  ];
-  const COHORT_HEADLINES = {
-    "B2B Executive": "Your competitors are already building their LinkedIn brand.",
-    "Real Estate Professional": "Your listings deserve a LinkedIn that works as hard as you do.",
-    "Startup Founder": "Your next investor is already looking at your LinkedIn.",
-    "Job Seeker": "Your next employer is already looking at your LinkedIn.",
-    "Consultant or Coach": "Your best clients find you before you find them.",
-    "Thought Leader": "Your ideas deserve an audience. Let's build one.",
-  };
-
-  const q = QUESTIONS[currentQ];
+    const q = QUESTIONS[currentQ];
     const a = {...answers, [q.id]:selected};
     setAnswers(a);
     setSelected(null);
@@ -589,6 +573,23 @@ export default function App() {
   };
 
   // ── INTRO ──────────────────────────────────────────────────────────────────
+  const COHORTS = [
+    { id:"B2B Executive", emoji:"🏢", label:"B2B Executive", sub:"Building authority in my industry" },
+    { id:"Real Estate Professional", emoji:"🏠", label:"Real Estate Professional", sub:"Attracting high-value clients" },
+    { id:"Startup Founder", emoji:"🚀", label:"Startup Founder", sub:"Building visibility for my company" },
+    { id:"Job Seeker", emoji:"🎯", label:"Job Seeker", sub:"Landing my next role" },
+    { id:"Consultant or Coach", emoji:"💼", label:"Consultant / Coach", sub:"Growing my client base" },
+    { id:"Thought Leader", emoji:"🎤", label:"Thought Leader", sub:"Becoming a voice in my industry" },
+  ];
+  const COHORT_HEADLINES = {
+    "B2B Executive": "Your competitors are already building their LinkedIn brand.",
+    "Real Estate Professional": "Your listings deserve a LinkedIn that works as hard as you do.",
+    "Startup Founder": "Your next investor is already looking at your LinkedIn.",
+    "Job Seeker": "Your next employer is already looking at your LinkedIn.",
+    "Consultant or Coach": "Your best clients find you before you find them.",
+    "Thought Leader": "Your ideas deserve an audience. Let's build one.",
+  };
+
   if (phase==="cohort") return (
     <Layout>
       <div className="page-enter">
