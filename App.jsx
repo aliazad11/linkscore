@@ -295,7 +295,6 @@ export default function App() {
   const [pdfText, setPdfText] = useState("");
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
-  const [activeThoughtTab, setActiveThoughtTab] = useState(0);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -901,8 +900,7 @@ export default function App() {
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
   if (phase==="result"&&plan) {
-    const TABS = ["Overview","Profile","Content","Hooks","Calendar","Rules"];
-    const THOUGHT_TABS = ["Analysis","Improvements"];
+    const TABS = ["Overview","Profile","Thought Leader","SSI Analysis","Content","Hooks","Calendar","Rules"];
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
@@ -970,7 +968,28 @@ export default function App() {
 
           {/* Tabs */}
           <div style={{ display:"flex", gap:6, marginBottom:20, flexWrap:"wrap" }}>
-            {TABS.map((t,i)=><button key={i} className={`tab-pill${activeSection===i?" active":""}`} onClick={()=>setActiveSection(i)}>{t}</button>)}
+            {TABS.map((t,i)=>{
+              const isThoughtLocked = t==="Thought Leader" && !plan.thought_leader?.available;
+              const isSSILocked = t==="SSI Analysis" && !plan.ssi_plan?.available;
+              const locked = isThoughtLocked || isSSILocked;
+              const lockMsg = isThoughtLocked ? "Upload posts to unlock" : "Add SSI scores to unlock";
+              return (
+                <div key={i} style={{ position:"relative" }} className="tab-tooltip-wrap">
+                  <button
+                    className={`tab-pill${activeSection===i?" active":""}`}
+                    style={{ opacity: locked ? 0.45 : 1, cursor: locked ? "not-allowed" : "pointer" }}
+                    onClick={()=>{ if(!locked) setActiveSection(i); }}
+                  >
+                    {locked && <span style={{ marginRight:4, fontSize:10 }}>🔒</span>}{t}
+                  </button>
+                  {locked && (
+                    <div style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#1a1a2e", border:"1px solid #2a2a4a", borderRadius:8, padding:"4px 10px", whiteSpace:"nowrap", fontSize:11, color:"#6a6a8a", pointerEvents:"none", zIndex:10 }}>
+                      {lockMsg}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
           <div className="section-reveal" key={activeSection}>
@@ -1002,8 +1021,84 @@ export default function App() {
               </div>
             )}
 
-            {/* Content Strategy */}
+            {/* Thought Leader */}
             {activeSection===2 && (
+              <div>
+                {plan.thought_leader?.available ? (
+                  <>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Analysis</p>
+                    {[["Hook Quality",plan.thought_leader.hook_score],["Engagement",plan.thought_leader.engagement_score],["Voice Consistency",plan.thought_leader.voice_score],["Post Structure",plan.thought_leader.structure_score]].map(([label,score])=>(
+                      <div key={label} style={{ marginBottom:12 }}>
+                        <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
+                          <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
+                          <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
+                        </div>
+                        <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
+                          <div style={{ height:"100%", width:`${score}%`, background:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", borderRadius:4, transition:"width 1.2s ease" }} />
+                        </div>
+                      </div>
+                    ))}
+                    <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e", marginBottom:20 }}>{plan.thought_leader.analysis}</p>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>How To Improve</p>
+                    {plan.thought_leader.improvements?.map((tip,i)=>(
+                      <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
+                        <div style={{ width:26, height:26, borderRadius:"50%", background:"rgba(167,139,250,0.1)", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#a78bfa", fontSize:12, fontWeight:700 }}>{i+1}</div>
+                        <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tip}</p>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                    <p style={{ fontSize:32, marginBottom:12 }}>📸</p>
+                    <p style={{ color:"#4a4a6a", fontSize:15, fontWeight:600, marginBottom:8 }}>No post screenshots uploaded</p>
+                    <p style={{ color:"#2a2a3a", fontSize:13, lineHeight:1.6 }}>Retake the quiz and upload your last 3 posts to unlock your Thought Leader analysis.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SSI Analysis */}
+            {activeSection===3 && (
+              <div>
+                {plan.ssi_plan?.available ? (
+                  <>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>SSI Overview</p>
+                    <div className="card-block" style={{ marginBottom:20 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                        <div style={{ width:52, height:52, borderRadius:"50%", border:"3px solid #38bdf8", display:"flex", alignItems:"center", justifyContent:"center", color:"#38bdf8", fontSize:18, fontWeight:800, flexShrink:0 }}>{plan.ssi_plan.total}</div>
+                        <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{plan.ssi_plan.overview}</p>
+                      </div>
+                    </div>
+                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Pillar Analysis</p>
+                    {plan.ssi_plan.pillars?.map((pillar,i)=>{
+                      const pct=(pillar.score/25)*100;
+                      const color=pillar.status==="WEAK"?"#ef4444":pillar.status==="AVERAGE"?"#f59e0b":"#10b981";
+                      return (
+                        <div key={i} className="card-block" style={{ marginBottom:12 }}>
+                          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
+                            <span style={{ color:"#e8e8f0", fontSize:13, fontWeight:600 }}>{pillar.name}</span>
+                            <span style={{ color, fontSize:13, fontWeight:700 }}>{pillar.score}/25</span>
+                          </div>
+                          <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden", marginBottom:10 }}>
+                            <div style={{ height:"100%", width:`${pct}%`, background:color, borderRadius:4, transition:"width 1.2s ease" }} />
+                          </div>
+                          <p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6 }}>{pillar.advice}</p>
+                        </div>
+                      );
+                    })}
+                  </>
+                ) : (
+                  <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                    <p style={{ fontSize:32, marginBottom:12 }}>📊</p>
+                    <p style={{ color:"#4a4a6a", fontSize:15, fontWeight:600, marginBottom:8 }}>No SSI scores provided</p>
+                    <p style={{ color:"#2a2a3a", fontSize:13, lineHeight:1.6 }}>Add your 4 SSI pillar scores in the form to unlock your personalized SSI analysis.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Content Strategy */}
+            {activeSection===4 && (
               <div>
                 {[["Post Frequency",plan.content_strategy?.post_frequency],["Best Posting Times",plan.content_strategy?.best_posting_times],["Content Mix",plan.content_strategy?.content_mix],["Hook Formula",plan.content_strategy?.hook_formula],["Formats to Use",plan.content_strategy?.content_types]].map(([label,val],i)=>(
                   <div key={i} className="card-block">
@@ -1015,7 +1110,7 @@ export default function App() {
             )}
 
             {/* Post Hooks */}
-            {activeSection===3 && (
+            {activeSection===5 && (
               <div>
                 <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>3 Custom Post Hooks — Written For Your Voice</p>
                 {plan.post_hooks?.map((hook,i)=>(
@@ -1028,7 +1123,7 @@ export default function App() {
             )}
 
             {/* Calendar */}
-            {activeSection===4 && (
+            {activeSection===6 && (
               <div>
                 <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Your 30-Day Roadmap</p>
                 {plan.content_calendar?.map((w,i)=>(
@@ -1045,7 +1140,7 @@ export default function App() {
             )}
 
             {/* Rules */}
-            {activeSection===5 && (
+            {activeSection===7 && (
               <div>
                 <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules — Don't Break These</p>
                 {plan.critical_rules?.map((rule,i)=>(
@@ -1059,101 +1154,9 @@ export default function App() {
 
           </div>
 
-          {/* Thought Leader Section */}
-          {plan.thought_leader?.available && (
-            <div style={{ marginTop:32 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
-                <div style={{ flex:1, height:1, background:"#1a1a2e" }} />
-                <p style={{ color:"#a78bfa", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", flexShrink:0 }}>Thought Leader Plan</p>
-                <div style={{ flex:1, height:1, background:"#1a1a2e" }} />
-              </div>
 
-              {/* Sub-scores */}
-              <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:16 }}>
-                {[["Hook Quality", plan.thought_leader.hook_score],["Engagement", plan.thought_leader.engagement_score],["Voice Consistency", plan.thought_leader.voice_score],["Post Structure", plan.thought_leader.structure_score]].map(([label,score])=>(
-                  <div key={label} style={{ marginBottom:12 }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                      <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
-                      <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
-                    </div>
-                    <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
-                      <div style={{ height:"100%", width:`${score}%`, background:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", borderRadius:4, transition:"width 1.2s ease" }} />
-                    </div>
-                  </div>
-                ))}
-                <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e" }}>{plan.thought_leader.analysis}</p>
-              </div>
 
-              {/* Thought Leader Tabs */}
-              <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-                {THOUGHT_TABS.map((t,i)=><button key={i} className={`tab-pill${activeThoughtTab===i?" active":""}`} style={{ borderColor: activeThoughtTab===i?"#a78bfa":"", color: activeThoughtTab===i?"#a78bfa":"" }} onClick={()=>setActiveThoughtTab(i)}>{t}</button>)}
-              </div>
 
-              <div className="section-reveal" key={activeThoughtTab}>
-                {/* Analysis */}
-                {activeThoughtTab===0 && (
-                  <div>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Post Analysis</p>
-                    <div className="card-block">
-                      <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.7 }}>{plan.thought_leader.analysis}</p>
-                    </div>
-                  </div>
-                )}
-                {/* Improvements */}
-                {activeThoughtTab===1 && (
-                  <div>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>How To Improve Your Posts</p>
-                    {plan.thought_leader.improvements?.map((tip,i)=>(
-                      <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
-                        <div style={{ width:26, height:26, borderRadius:"50%", background:"rgba(167,139,250,0.1)", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#a78bfa", fontSize:12, fontWeight:700 }}>{i+1}</div>
-                        <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tip}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* SSI Plan Section */}
-          {plan.ssi_plan?.available && (
-            <div style={{ marginTop:32 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
-                <div style={{ flex:1, height:1, background:"#1a1a2e" }} />
-                <p style={{ color:"#38bdf8", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", flexShrink:0 }}>SSI Plan</p>
-                <div style={{ flex:1, height:1, background:"#1a1a2e" }} />
-              </div>
-
-              {/* Overview */}
-              <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:16 }}>
-                <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:14 }}>
-                  <div style={{ flexShrink:0, width:56, height:56, borderRadius:"50%", border:"3px solid #38bdf8", display:"flex", alignItems:"center", justifyContent:"center", color:"#38bdf8", fontSize:18, fontWeight:800 }}>{plan.ssi_plan.total}</div>
-                  <div>
-                    <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Total SSI Score</p>
-                    <p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.5 }}>{plan.ssi_plan.overview}</p>
-                  </div>
-                </div>
-
-                {/* 4 Pillars */}
-                {plan.ssi_plan.pillars?.map((pillar, i) => {
-                  const pct = (pillar.score / 25) * 100;
-                  const color = pillar.status === "WEAK" ? "#ef4444" : pillar.status === "AVERAGE" ? "#f59e0b" : "#10b981";
-                  return (
-                    <div key={i} style={{ marginBottom:16, paddingBottom:16, borderBottom: i < 3 ? "1px solid #1a1a2e" : "none" }}>
-                      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
-                        <span style={{ color:"#e8e8f0", fontSize:13, fontWeight:600 }}>{pillar.name}</span>
-                        <span style={{ color, fontSize:13, fontWeight:700 }}>{pillar.score}/25</span>
-                      </div>
-                      <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden", marginBottom:8 }}>
-                        <div style={{ height:"100%", width:`${pct}%`, background:color, borderRadius:4, transition:"width 1.2s ease" }} />
-                      </div>
-                      <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6 }}>{pillar.advice}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
 
           <button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>Start Over</button>
         </div>
