@@ -618,6 +618,7 @@ export default function App() {
   const [cohort, setCohort] = useState(null);
   const [specialNote, setSpecialNote] = useState("");
   const [quizPhase, setQuizPhase] = useState("generic"); // "generic" | "cohort" | "note"
+  const QUESTIONS = getQuestionsForCohort(cohort);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -914,8 +915,6 @@ export default function App() {
   };
 
   // ── INTRO ──────────────────────────────────────────────────────────────────
-  const QUESTIONS = getQuestionsForCohort(cohort);
-
   const COHORTS = [
     { id:"B2B Executive", emoji:"🏢", label:"B2B Executive", sub:"Building authority in my industry" },
     { id:"Real Estate Professional", emoji:"🏠", label:"Real Estate Professional", sub:"Attracting high-value clients" },
