@@ -829,7 +829,16 @@ export default function App() {
           body: JSON.stringify({
             email,
             first_name: userData.firstName,
-            plan_data: result
+            plan_data: result,
+            cohort: cohort||null,
+            quiz_answers: answers,
+            special_note: specialNote||null,
+            ssi_scores: {
+              establish_brand: userData.establish_brand||null,
+              find_people: userData.find_people||null,
+              engage_insights: userData.engage_insights||null,
+              build_relationships: userData.build_relationships||null
+            }
           })
         });
         const planData = await planRes.json();
