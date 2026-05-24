@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 
 const LOGO_URL = "https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png";
 
-const QUESTIONS = [
-
+const GENERIC_QUESTIONS = [
   {
     id: "current_status", phase: "Where You Are",
     question: "How active are you on LinkedIn right now?",
@@ -13,31 +12,8 @@ const QUESTIONS = [
       { label: "I scroll but never post", emoji: "👁️" },
       { label: "I posted once or twice and gave up", emoji: "📝" },
       { label: "I post sometimes but get zero traction", emoji: "📉" },
-      { label: "I'm active but not growing", emoji: "🔄" },
-    ],
-  },
-  {
-    id: "industry", phase: "Your World",
-    question: "What industry are you in?",
-    subtitle: "This shapes your content strategy completely.",
-    options: [
-      { label: "Tech & Software", emoji: "💻" },
-      { label: "Marketing & Creative", emoji: "🎨" },
-      { label: "Finance & Consulting", emoji: "📊" },
-      { label: "Healthcare & Science", emoji: "🔬" },
-      { label: "Sales & Business Development", emoji: "🤝" },
-      { label: "Other", emoji: "🌍" },
-    ],
-  },
-  {
-    id: "experience", phase: "Your Background",
-    question: "How many years of professional experience do you have?",
-    subtitle: "Your seniority changes how you should position yourself.",
-    options: [
-      { label: "0–2 years (early career)", emoji: "🌱" },
-      { label: "3–5 years (building momentum)", emoji: "📈" },
-      { label: "6–10 years (mid-level expert)", emoji: "⚡" },
-      { label: "10+ years (senior / leadership)", emoji: "🏅" },
+      { label: "I'm active but not growing fast enough", emoji: "🔄" },
+      { label: "I post regularly and get good results", emoji: "🚀" },
     ],
   },
   {
@@ -50,18 +26,20 @@ const QUESTIONS = [
       { label: "Complete but no visual strategy", emoji: "🖼️" },
       { label: "Looks complete but feels generic", emoji: "😐" },
       { label: "Strong profile, but not getting results", emoji: "💪" },
+      { label: "Optimized profile getting consistent views", emoji: "⭐" },
     ],
   },
   {
-    id: "content_struggle", phase: "Your Obstacle",
-    question: "What stops you from posting consistently?",
-    subtitle: "Pick the one that hits hardest.",
+    id: "content_struggle", phase: "Your Challenge",
+    question: "What's your biggest content challenge?",
+    subtitle: "Pick the one that resonates most.",
     options: [
-      { label: "I don't know what to write about", emoji: "🤷" },
-      { label: "I'm scared of being judged", emoji: "😰" },
-      { label: "I write drafts but never post them", emoji: "🗂️" },
-      { label: "I post but nobody engages", emoji: "🦗" },
-      { label: "I simply don't have the time", emoji: "⏰" },
+      { label: "I don't know what topics to write about", emoji: "💡" },
+      { label: "I struggle to put my thoughts into words", emoji: "✍️" },
+      { label: "I don't have enough time to create content", emoji: "⏰" },
+      { label: "I publish but get little to no engagement", emoji: "📉" },
+      { label: "I'm not comfortable putting myself out there", emoji: "😰" },
+      { label: "I have ideas but never follow through", emoji: "🗂️" },
     ],
   },
   {
@@ -77,18 +55,6 @@ const QUESTIONS = [
     ],
   },
   {
-    id: "audience", phase: "Your Audience",
-    question: "Who do you most want to reach?",
-    subtitle: "Clarity on audience changes everything.",
-    options: [
-      { label: "Recruiters and hiring managers", emoji: "🔎" },
-      { label: "Potential clients and decision makers", emoji: "🤝" },
-      { label: "Peers and industry professionals", emoji: "👥" },
-      { label: "Founders and entrepreneurs", emoji: "🚀" },
-      { label: "Everyone in my industry", emoji: "🌍" },
-    ],
-  },
-  {
     id: "time_commitment", phase: "Your Commitment",
     question: "Realistically, how much time can you invest weekly?",
     subtitle: "Consistency always beats intensity.",
@@ -99,19 +65,374 @@ const QUESTIONS = [
       { label: "5+ hours — I'm fully committed", emoji: "🔥" },
     ],
   },
-  {
-    id: "biggest_win", phase: "Your Vision",
-    question: "What would make LinkedIn feel like it truly worked?",
-    subtitle: "Close your eyes and picture it.",
-    options: [
-      { label: "A recruiter DMing me out of nowhere", emoji: "📩" },
-      { label: "A post crossing 10,000 views", emoji: "👁️" },
-      { label: "An inbound client inquiry", emoji: "💰" },
-      { label: "Being seen as the go-to expert", emoji: "🎓" },
-      { label: "Hitting 1,000 followers organically", emoji: "📈" },
-    ],
-  },
 ];
+
+const COHORT_QUESTIONS = {
+  "Job Seeker": [
+    {
+      id: "target_role", phase: "Your Target",
+      question: "What role are you targeting?",
+      subtitle: "This shapes your entire positioning strategy.",
+      options: [
+        { label: "Same field, higher level", emoji: "🎯" },
+        { label: "Career change to a new industry", emoji: "🔄" },
+        { label: "Relocating and need to rebuild network", emoji: "🌍" },
+        { label: "Back to work after a break", emoji: "💼" },
+        { label: "First job or early career", emoji: "🚀" },
+      ],
+    },
+    {
+      id: "search_duration", phase: "Your Timeline",
+      question: "How long have you been searching?",
+      subtitle: "Your urgency changes the strategy.",
+      options: [
+        { label: "Just started", emoji: "⚡" },
+        { label: "1–3 months", emoji: "📅" },
+        { label: "3–6 months", emoji: "😰" },
+        { label: "6+ months — it's getting frustrating", emoji: "😓" },
+      ],
+    },
+    {
+      id: "recruiter_view", phase: "Your Visibility",
+      question: "What do recruiters currently see on your profile?",
+      subtitle: "Be honest — this is your starting point.",
+      options: [
+        { label: "Barely anything — it's almost empty", emoji: "🪨" },
+        { label: "Just my job history, nothing more", emoji: "📋" },
+        { label: "Complete but nothing stands out", emoji: "😐" },
+        { label: "Looks good but not getting responses", emoji: "💪" },
+        { label: "Strong profile, just need more visibility", emoji: "✨" },
+      ],
+    },
+    {
+      id: "job_obstacle", phase: "Your Obstacle",
+      question: "What's your biggest obstacle?",
+      subtitle: "Pick the one that hits hardest.",
+      options: [
+        { label: "I don't know how to position myself", emoji: "🤷" },
+        { label: "My profile is invisible to recruiters", emoji: "👻" },
+        { label: "I'm not sure what makes me different", emoji: "😰" },
+        { label: "I don't have the right connections", emoji: "🔗" },
+        { label: "I know what to say but can't write it", emoji: "📝" },
+      ],
+    },
+    {
+      id: "job_success", phase: "Your Vision",
+      question: "What would make LinkedIn feel like it truly worked?",
+      subtitle: "Picture it clearly.",
+      options: [
+        { label: "A recruiter DMing me out of nowhere", emoji: "📩" },
+        { label: "Landing interviews within 30 days", emoji: "🤝" },
+        { label: "Getting my dream job offer", emoji: "💼" },
+        { label: "Being seen as top talent in my field", emoji: "🌟" },
+      ],
+    },
+  ],
+  "B2B Executive": [
+    {
+      id: "seniority", phase: "Your Level",
+      question: "What's your seniority level?",
+      subtitle: "Your level determines your positioning angle.",
+      options: [
+        { label: "Manager / Senior Manager", emoji: "📈" },
+        { label: "Director / VP", emoji: "🏢" },
+        { label: "C-Suite / Partner", emoji: "👑" },
+        { label: "Individual contributor but expert level", emoji: "🎯" },
+      ],
+    },
+    {
+      id: "employment_type", phase: "Your Situation",
+      question: "Are you an employee or do you run your own business?",
+      subtitle: "This changes everything about your strategy.",
+      options: [
+        { label: "Employee at a company", emoji: "🏢" },
+        { label: "I run my own business", emoji: "🚀" },
+        { label: "Both — corporate + side ventures", emoji: "🔄" },
+      ],
+    },
+    {
+      id: "target_audience", phase: "Your Audience",
+      question: "Who are you trying to influence on LinkedIn?",
+      subtitle: "Clarity on audience changes everything.",
+      options: [
+        { label: "Future employers or headhunters", emoji: "🤝" },
+        { label: "Potential clients or partners", emoji: "💼" },
+        { label: "Peers and industry professionals", emoji: "👥" },
+        { label: "A broad industry audience", emoji: "🎤" },
+      ],
+    },
+    {
+      id: "brand_gap", phase: "Your Gap",
+      question: "What's currently missing from your professional brand?",
+      subtitle: "This is what we'll fix first.",
+      options: [
+        { label: "Clear positioning — people don't know what I stand for", emoji: "🎯" },
+        { label: "Consistent content — I post sporadically", emoji: "📝" },
+        { label: "Visibility — I exist but nobody finds me", emoji: "🌟" },
+        { label: "Engagement — I post but get no reaction", emoji: "💬" },
+      ],
+    },
+    {
+      id: "exec_success", phase: "Your Vision",
+      question: "What does success look like in 90 days?",
+      subtitle: "This becomes your north star.",
+      options: [
+        { label: "Inbound opportunities coming to me", emoji: "📩" },
+        { label: "Being invited to speak or contribute", emoji: "🎤" },
+        { label: "Recognized as a go-to expert", emoji: "👑" },
+        { label: "Measurable follower and engagement growth", emoji: "📈" },
+      ],
+    },
+  ],
+  "Startup Founder": [
+    {
+      id: "startup_stage", phase: "Your Stage",
+      question: "What stage is your startup?",
+      subtitle: "Your stage shapes your entire content strategy.",
+      options: [
+        { label: "Idea / Pre-product", emoji: "🌱" },
+        { label: "Building — early users", emoji: "🔨" },
+        { label: "Growing — have traction", emoji: "📈" },
+        { label: "Scaling — raising or expanding", emoji: "🚀" },
+      ],
+    },
+    {
+      id: "founder_goal", phase: "Your Goal",
+      question: "What's your primary LinkedIn goal?",
+      subtitle: "Pick your biggest priority right now.",
+      options: [
+        { label: "Attract investors", emoji: "💰" },
+        { label: "Acquire early customers", emoji: "👥" },
+        { label: "Build credibility in the space", emoji: "🏆" },
+        { label: "Find co-founders or key hires", emoji: "🤝" },
+      ],
+    },
+    {
+      id: "founder_challenge", phase: "Your Challenge",
+      question: "What's your content challenge as a founder?",
+      subtitle: "Be honest — this is common.",
+      options: [
+        { label: "No time — building takes everything", emoji: "⏰" },
+        { label: "Don't know what to share publicly", emoji: "🤷" },
+        { label: "Afraid to share before product is ready", emoji: "😰" },
+        { label: "Post but get zero traction", emoji: "📉" },
+      ],
+    },
+    {
+      id: "founder_perception", phase: "Your Brand",
+      question: "How do you want to be perceived?",
+      subtitle: "This becomes your content persona.",
+      options: [
+        { label: "Visionary building the future", emoji: "🔭" },
+        { label: "Operator who gets things done", emoji: "🛠️" },
+        { label: "Deep expert in my domain", emoji: "🎓" },
+        { label: "Mission-driven founder with purpose", emoji: "🌍" },
+      ],
+    },
+    {
+      id: "founder_success", phase: "Your Vision",
+      question: "What would 90-day success look like?",
+      subtitle: "Make it specific.",
+      options: [
+        { label: "First 10 paying customers from LinkedIn", emoji: "💼" },
+        { label: "Investor conversations started", emoji: "💰" },
+        { label: "Recognized in my startup ecosystem", emoji: "🌟" },
+        { label: "500+ relevant followers gained", emoji: "📈" },
+      ],
+    },
+  ],
+  "Real Estate Professional": [
+    {
+      id: "re_focus", phase: "Your Market",
+      question: "What's your focus area?",
+      subtitle: "Your niche is your superpower.",
+      options: [
+        { label: "Residential — helping families find homes", emoji: "🏠" },
+        { label: "Commercial — working with businesses", emoji: "🏢" },
+        { label: "Luxury — high-end properties", emoji: "💎" },
+        { label: "New development — off-plan sales", emoji: "🏗️" },
+        { label: "International — cross-border clients", emoji: "🌍" },
+      ],
+    },
+    {
+      id: "re_client", phase: "Your Client",
+      question: "Who is your ideal client?",
+      subtitle: "Speak to one person, reach thousands.",
+      options: [
+        { label: "First-time buyers", emoji: "👨‍👩‍👧" },
+        { label: "Investors looking for returns", emoji: "💼" },
+        { label: "HNWIs and luxury buyers", emoji: "👑" },
+        { label: "Corporate clients and businesses", emoji: "🏢" },
+        { label: "Expats and international buyers", emoji: "🌍" },
+      ],
+    },
+    {
+      id: "re_source", phase: "Your Leads",
+      question: "How do clients currently find you?",
+      subtitle: "Understanding your current channels helps us build better ones.",
+      options: [
+        { label: "Referrals only", emoji: "🤝" },
+        { label: "Social media (Instagram/TikTok)", emoji: "📱" },
+        { label: "Google and online listings", emoji: "🔍" },
+        { label: "Walk-ins and agency leads", emoji: "🏢" },
+        { label: "LinkedIn — but it's not working well", emoji: "🔗" },
+      ],
+    },
+    {
+      id: "re_differentiator", phase: "Your Edge",
+      question: "What's your biggest differentiator?",
+      subtitle: "This becomes the core of your LinkedIn brand.",
+      options: [
+        { label: "Local market expertise", emoji: "🗺️" },
+        { label: "Corporate and investment focus", emoji: "💼" },
+        { label: "Relationship-first approach", emoji: "🤝" },
+        { label: "Data-driven advice", emoji: "📊" },
+        { label: "Access to exclusive properties", emoji: "💎" },
+      ],
+    },
+    {
+      id: "re_success", phase: "Your Vision",
+      question: "What would LinkedIn success look like?",
+      subtitle: "Picture your ideal outcome.",
+      options: [
+        { label: "High-value clients reaching out directly", emoji: "📩" },
+        { label: "Being the go-to agent in my market", emoji: "🌟" },
+        { label: "Building a referral network of professionals", emoji: "🤝" },
+        { label: "Closing deals sourced from LinkedIn", emoji: "💰" },
+      ],
+    },
+  ],
+  "Consultant or Coach": [
+    {
+      id: "consulting_niche", phase: "Your Niche",
+      question: "What's your niche?",
+      subtitle: "The riches are in the niches.",
+      options: [
+        { label: "Business strategy and operations", emoji: "💼" },
+        { label: "Leadership and executive coaching", emoji: "🧠" },
+        { label: "Sales and revenue growth", emoji: "📈" },
+        { label: "Marketing and brand building", emoji: "🎨" },
+        { label: "Personal development and life coaching", emoji: "🌱" },
+        { label: "Tech and digital transformation", emoji: "💻" },
+      ],
+    },
+    {
+      id: "client_source", phase: "Your Leads",
+      question: "How do clients currently find you?",
+      subtitle: "This tells us what's working and what's not.",
+      options: [
+        { label: "Word of mouth and referrals only", emoji: "🤝" },
+        { label: "Social media — but inconsistently", emoji: "📱" },
+        { label: "My website or blog", emoji: "🌐" },
+        { label: "Conferences and events", emoji: "🏢" },
+        { label: "They don't — I'm chasing them", emoji: "😓" },
+      ],
+    },
+    {
+      id: "consulting_challenge", phase: "Your Challenge",
+      question: "What's your biggest business challenge?",
+      subtitle: "Pick the one holding you back most.",
+      options: [
+        { label: "Positioning — I'm too broad, clients don't get it", emoji: "🎯" },
+        { label: "Content — I know my stuff but can't explain it simply", emoji: "📝" },
+        { label: "Visibility — nobody knows I exist", emoji: "👻" },
+        { label: "Pricing — I undercharge because I'm not seen as premium", emoji: "💰" },
+        { label: "Time — client work leaves no time for marketing", emoji: "⏰" },
+      ],
+    },
+    {
+      id: "target_client", phase: "Your Client",
+      question: "What kind of clients do you want to attract?",
+      subtitle: "Your dream client shapes your entire content.",
+      options: [
+        { label: "Large corporates and enterprises", emoji: "🏢" },
+        { label: "Fast-growing SMEs", emoji: "📈" },
+        { label: "Startups and founders", emoji: "🚀" },
+        { label: "C-Suite and senior executives", emoji: "👑" },
+        { label: "International clients", emoji: "🌍" },
+      ],
+    },
+    {
+      id: "consulting_success", phase: "Your Vision",
+      question: "What does winning look like?",
+      subtitle: "Define it clearly.",
+      options: [
+        { label: "Inbound leads coming without outreach", emoji: "📩" },
+        { label: "Raising my rates and attracting premium clients", emoji: "💰" },
+        { label: "Getting speaking invitations and media features", emoji: "🎤" },
+        { label: "Becoming the obvious expert in my niche", emoji: "🌟" },
+      ],
+    },
+  ],
+  "Thought Leader": [
+    {
+      id: "tl_topic", phase: "Your Topic",
+      question: "What topic do you want to own?",
+      subtitle: "Own one topic completely.",
+      options: [
+        { label: "AI and the future of work", emoji: "🤖" },
+        { label: "Sustainability and impact", emoji: "🌱" },
+        { label: "Leadership and management", emoji: "💼" },
+        { label: "Marketing and growth", emoji: "📈" },
+        { label: "Mental health and wellbeing at work", emoji: "🧠" },
+        { label: "Something else entirely", emoji: "🌍" },
+      ],
+    },
+    {
+      id: "tl_presence", phase: "Your Presence",
+      question: "What's your current LinkedIn presence?",
+      subtitle: "Be honest — this is your baseline.",
+      options: [
+        { label: "Starting from zero", emoji: "👻" },
+        { label: "Under 500 followers, low engagement", emoji: "📉" },
+        { label: "500–5K followers, inconsistent posts", emoji: "📈" },
+        { label: "5K+ followers but want faster growth", emoji: "🚀" },
+      ],
+    },
+    {
+      id: "tl_frequency", phase: "Your Habit",
+      question: "How often do you currently post?",
+      subtitle: "No judgment — this shapes your plan.",
+      options: [
+        { label: "Rarely or never", emoji: "😓" },
+        { label: "Once or twice a month", emoji: "📅" },
+        { label: "Once a week", emoji: "📆" },
+        { label: "Multiple times a week", emoji: "🔥" },
+      ],
+    },
+    {
+      id: "tl_obstacle", phase: "Your Obstacle",
+      question: "What's your biggest content obstacle?",
+      subtitle: "Pick the one that stops you most.",
+      options: [
+        { label: "Running out of ideas", emoji: "💡" },
+        { label: "Writing takes too long", emoji: "✍️" },
+        { label: "Fear of being wrong publicly", emoji: "😰" },
+        { label: "I post but get no engagement", emoji: "📉" },
+        { label: "Not sure how to stand out in a crowded space", emoji: "🎯" },
+      ],
+    },
+    {
+      id: "tl_success", phase: "Your Vision",
+      question: "What would success look like?",
+      subtitle: "Make it ambitious.",
+      options: [
+        { label: "A post crossing 50K views", emoji: "👁️" },
+        { label: "Being invited to speak at events", emoji: "🎤" },
+        { label: "Media and podcast interview requests", emoji: "📩" },
+        { label: "Recognized as the voice in my topic", emoji: "🌟" },
+        { label: "10K+ followers in 6 months", emoji: "📈" },
+      ],
+    },
+  ],
+};
+
+// Dynamic questions based on cohort
+function getQuestionsForCohort(cohortId) {
+  const generic = GENERIC_QUESTIONS;
+  const cohortQ = cohortId && COHORT_QUESTIONS[cohortId] ? COHORT_QUESTIONS[cohortId] : [];
+  return [...generic, ...cohortQ];
+}
 
 const ANALYSIS_STEPS = [
   { text: "Scanning your profile data...", duration: 1600 },
@@ -155,7 +476,7 @@ function buildEmailHTML(firstName, plan) {
 </html>`;
 }
 
-function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null) {
+function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "") {
   const profileSection = profileText
     ? `\nLINKEDIN PROFILE (extracted from PDF):\n${profileText.slice(0, 2000)}\n`
     : "\nNo profile PDF provided.\n";
@@ -167,16 +488,15 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
     ? `\nSSI SCORES PROVIDED: Set ssi_plan.available=true. Give specific actionable advice for EACH of the 4 pillars based on their exact scores. Be direct and practical — tell them exactly what to do to improve each pillar.\n`
     : `\nNO SSI SCORES: Set ssi_plan.available=false.\n`;
 
+  const answersText = Object.entries(answers).map(([k,v]) => `${k}: ${v}`).join(', ');
+
   return `User data:
 Cohort: ${cohort||"Professional"} — tailor ALL advice, hooks, and recommendations specifically for this type of professional.
 Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: ${userData.jobTitle}, LinkedIn: ${userData.linkedinUrl}
 SSI Scores: ${(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships) ? 
   "Establish Brand: "+(userData.establish_brand||"?")+"/25, Find People: "+(userData.find_people||"?")+"/25, Engage Insights: "+(userData.engage_insights||"?")+"/25, Build Relationships: "+(userData.build_relationships||"?")+"/25, Total: "+((parseInt(userData.establish_brand||0)+parseInt(userData.find_people||0)+parseInt(userData.engage_insights||0)+parseInt(userData.build_relationships||0)))+"/100"
   : "Not provided"}
-Industry: ${answers.industry}, Experience: ${answers.experience}
-Goal: ${answers.goal}, Activity: ${answers.current_status}
-Profile completeness: ${answers.profile_completeness}, Struggle: ${answers.content_struggle}
-Content style: ${answers.content_style}, Audience: ${answers.audience}
+All quiz answers: ${answersText}
 Time available: ${answers.time_commitment}, Success vision: ${answers.biggest_win}
 ${profileSection}
 Return ONLY this JSON, no other text:
@@ -184,7 +504,17 @@ Return ONLY this JSON, no other text:
 
 ${postSection}
 ${ssiPlanSection}
-Replace ALL placeholder values with real personalized content based on the user data and profile above. Make post_hooks genuinely specific to their industry, experience level, and content style.`;
+CRITICAL PERSONALIZATION RULES — apply all of these:
+1. COHORT: Every hook, rule, and recommendation must speak directly to a ${cohort||"professional"}. Use their language, their pain points, their goals.
+2. TIME: If weekly time is under 2 hours → max 2 posts/week in calendar. If 5+ hours → daily content plan.
+3. ACTIVITY LEVEL: Ghost account → start with commenting strategy before posting. Active but not growing → focus on hook optimization and posting time.
+4. CONTENT CHALLENGE: If they struggle with ideas → give a 30-day topic bank. If they fear judgment → give psychological reframing in rules. If no engagement → fix hook structure first.
+5. SUCCESS VISION: Their answer to "what would success look like" becomes the NORTH STAR of the entire plan. Every recommendation must connect back to this goal.
+6. OBSTACLES: Their specific obstacle (visibility, positioning, time, engagement) must be addressed directly in the Overview tab with a concrete action plan.
+7. CONTENT STYLE: Match ALL hooks and examples to their declared content style (storytelling, analytical, bold opinions, how-tos, personal stories).
+8. COHORT-SPECIFIC ANSWERS: Use ALL their quiz answers. A realtor targeting luxury buyers needs different hooks than one targeting first-time buyers. A founder at idea stage needs different advice than one scaling.
+9. SPECIAL NOTE: If provided, this is the highest priority context — override general advice to address their specific situation first.
+Replace ALL placeholder values with hyper-specific content for this exact person. Zero generic advice.`;
 }
 
 const GLOBAL_CSS = `
@@ -286,6 +616,8 @@ export default function App() {
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
   const [cohort, setCohort] = useState(null);
+  const [specialNote, setSpecialNote] = useState("");
+  const [quizPhase, setQuizPhase] = useState("generic"); // "generic" | "cohort" | "note"
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -413,10 +745,10 @@ export default function App() {
     }
     setAnswers(a);
     if (nextQ < QUESTIONS.length) setCurrentQ(nextQ);
-    else setPhase("post_screenshots");
+    else setPhase("note");
   };
 
-  const callAPI = async (user, ans, profile, screenshots, cohort=null) => {
+  const callAPI = async (user, ans, profile, screenshots, cohort=null, specialNote="") => {
     const validScreenshots = screenshots.filter(s => s !== null);
     const messageContent = [];
 
@@ -434,7 +766,7 @@ export default function App() {
       });
     }
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort) });
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote) });
 
     const res = await fetch("/api/generate-plan", {
       method:"POST",
@@ -461,7 +793,7 @@ export default function App() {
         await new Promise(r => setTimeout(r, 3000));
       }
       // Generate the plan
-      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort);
+      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote);
       setPlan(result);
 
       // Save user to Supabase (counter)
@@ -557,7 +889,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null);; setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
@@ -573,6 +905,8 @@ export default function App() {
   };
 
   // ── INTRO ──────────────────────────────────────────────────────────────────
+  const QUESTIONS = getQuestionsForCohort(cohort);
+
   const COHORTS = [
     { id:"B2B Executive", emoji:"🏢", label:"B2B Executive", sub:"Building authority in my industry" },
     { id:"Real Estate Professional", emoji:"🏠", label:"Real Estate Professional", sub:"Attracting high-value clients" },
@@ -737,7 +1071,7 @@ export default function App() {
           ))}
         </div>
         <button className="primary-btn" disabled={!selected} onClick={handleNext}>
-          {currentQ+1===QUESTIONS.length?"Upload Your Posts →":"Continue →"}
+          {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
         </button>
       </div>
     </Layout>
@@ -802,6 +1136,36 @@ export default function App() {
           {pdfName?"Continue to Questions →":"Skip & Continue →"}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>← Back</button>
+      </div>
+    </Layout>
+  );
+
+  // ── SPECIAL NOTE ──────────────────────────────────────────────────────────
+  if (phase==="note") return (
+    <Layout>
+      <div className="page-enter">
+        <Logo />
+        <Badge>Almost There</Badge>
+        <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>Anything specific we should know?</h2>
+        <p style={{ ...s.sub, marginBottom:20 }}>A job interview in 30 days? A product launch coming up? A specific person you want to impress? Tell us — this makes your plan dramatically more accurate.</p>
+        <textarea
+          value={specialNote}
+          onChange={e=>setSpecialNote(e.target.value)}
+          placeholder="e.g. I have a final round interview at Google in 3 weeks and need to build credibility fast..."
+          style={{
+            width:"100%", minHeight:120, background:"#0d0d18",
+            border:"1px solid #1a1a2e", borderRadius:12,
+            padding:"14px 16px", color:"#F9FAFB", fontSize:14,
+            lineHeight:1.6, resize:"vertical", fontFamily:"inherit",
+            outline:"none", boxSizing:"border-box", marginBottom:16
+          }}
+          maxLength={500}
+        />
+        <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"right", marginBottom:20 }}>{specialNote.length}/500</p>
+        <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>
+          {specialNote ? "Got it →" : "Skip & Continue →"}
+        </button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setCurrentQ(QUESTIONS.length-1); setPhase("quiz"); }}>← Back</button>
       </div>
     </Layout>
   );
