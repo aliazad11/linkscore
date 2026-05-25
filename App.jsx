@@ -769,7 +769,7 @@ export default function App() {
   };
 
   const handleNext = () => {
-    if (!selected) return;
+    if (q.multiSelect ? multiSelected.length === 0 : !selected) return;
     const q = QUESTIONS[currentQ];
     let finalAnswer;
     if (q.multiSelect) {
@@ -1176,7 +1176,11 @@ export default function App() {
             />
           </div>
         )}
-        <button className="primary-btn" disabled={q.multiSelect ? (multiSelected.length===0 || (multiSelected.includes("Other / Something else") && !otherText.trim())) : (!selected || (selected==="Other / Something else" && !otherText.trim()))} onClick={handleNext}>
+        <button className="primary-btn" disabled={
+          q.multiSelect
+            ? (multiSelected.length === 0 || (multiSelected.includes("Other / Something else") && !otherText.trim()))
+            : (!selected || (selected === "Other / Something else" && !otherText.trim()))
+        } onClick={handleNext}>
           {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
         </button>
       </div>
