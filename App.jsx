@@ -522,7 +522,13 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
     ? `\nSSI SCORES PROVIDED: Set ssi_plan.available=true. Give specific actionable advice for EACH of the 4 pillars based on their exact scores. Be direct and practical — tell them exactly what to do to improve each pillar.\n`
     : `\nNO SSI SCORES: Set ssi_plan.available=false.\n`;
 
-  const answersText = Object.entries(answers).map(([k,v]) => `${k}: ${v}`).join(', ');
+  const answersText = Object.entries(answers).map(([k,v]) => {
+    if (v && v.startsWith('Other: ')) {
+      const userText = v.replace('Other: ', '').trim();
+      return `${k}: "${userText}" [This is the user's own words — analyze this as a specific prompt, not a category. Extract their real pain point, context, or goal from this text and use it to personalize their entire plan.]`;
+    }
+    return `${k}: ${v}`;
+  }).join('\n');
 
   return `User data:
 Cohort: ${cohort||"Professional"} — tailor ALL advice, hooks, and recommendations specifically for this type of professional.
@@ -530,8 +536,9 @@ Name: ${userData.firstName} ${userData.lastName}, Age: ${userData.age}, Title: $
 SSI Scores: ${(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships) ? 
   "Establish Brand: "+(userData.establish_brand||"?")+"/25, Find People: "+(userData.find_people||"?")+"/25, Engage Insights: "+(userData.engage_insights||"?")+"/25, Build Relationships: "+(userData.build_relationships||"?")+"/25, Total: "+((parseInt(userData.establish_brand||0)+parseInt(userData.find_people||0)+parseInt(userData.engage_insights||0)+parseInt(userData.build_relationships||0)))+"/100"
   : "Not provided"}
-All quiz answers: ${answersText}
-Time available: ${answers.time_commitment}, Success vision: ${answers.biggest_win}
+All quiz answers:
+${answersText}
+${specialNote ? `Special focus from user: ${specialNote}` : ""}
 ${profileSection}
 Return ONLY this JSON, no other text:
 {"score":72,"archetype":"The Silent Expert","headline":"You have the expertise — now make it visible.","urgency":"Every day without a strategy is a day a less-qualified person gets the opportunity you deserve.","profile_scores":{"headline":45,"about":30,"experience":60,"overall":45},"profile_fixes":["Rewrite your headline to include who you help and how — not just your job title","Add a compelling About section in first person that tells your story and outcome","Add 2-3 bullet points per role with quantified achievements"],"content_strategy":{"post_frequency":"Maximum 2 posts per month — LinkedIn rewards depth over volume.","best_posting_times":"Tuesday to Thursday, 7–9am or 5–6pm your local time. Never post on weekends.","content_mix":"60% personal lessons from your work, 30% practical tips for your audience, 10% bold opinions.","hook_formula":"Start with a counterintuitive statement or a specific number. Never start with I.","content_types":"Rotate: document carousels for reach, text-only for stories, photos with you in them for engagement."},"post_hooks":["I made a mistake that cost my team 3 months of work. Here is what I learned:","Most people optimize their LinkedIn headline wrong. Here is the one change that got me 5x more profile views:","Nobody told me this when I started my career in [industry]. 5 years later, I wish someone had:"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"Share one hard lesson from your career","hook":"[use hook #1 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 2","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Comment meaningfully on 10 posts in your niche. Send 15 personalized connection requests to people in your target audience. Update one section of your profile."},{"week":"Week 3","type":"POST","topic":"A practical tip your audience wishes they knew","hook":"[use hook #2 above]","action":"Publish Tuesday 8am. Drop your own first comment immediately. Reply to every comment within 60 minutes."},{"week":"Week 4","type":"ENGAGEMENT","topic":"No post this week","hook":null,"action":"Reply to every comment from Week 3 post. Send 10 more connection requests. Review your profile analytics and note what improved."}],"critical_rules":["Never edit a post after publishing — LinkedIn immediately cuts its reach in the algorithm.","Never reshare others posts to grow your account — comment and like instead.","Post your own first comment immediately after publishing to trigger early engagement.","Stay active for 60 minutes after posting and reply to every comment — this is your reach ceiling window.","Tag people only when genuinely relevant — LinkedIn detects and penalizes tag-for-reach behavior.","Send 10 personalized connection requests per week to people in your exact niche."],"growth_tactics":["Search your target audience by job title and send 10 tailored connection requests per week with a short personal note.","Ask two former colleagues or managers for a written recommendation this week.","Check your LinkedIn SSI score at linkedin.com/sales/ssi and improve the weakest pillar first.","Use document carousels — they get 3x more reach than single images on LinkedIn right now."],"closing_message":"You already have everything it takes. The experience, the story, the expertise. The only thing missing was a clear system — and now you have one.","thought_leader":{"available":BOOL_TRUE_IF_SCREENSHOTS_PROVIDED,"score":SCORE_0_100,"hook_score":SCORE_0_100,"engagement_score":SCORE_0_100,"voice_score":SCORE_0_100,"structure_score":SCORE_0_100,"analysis":"ANALYSIS_TEXT","improvements":["IMPROVEMENT_1","IMPROVEMENT_2","IMPROVEMENT_3"]},"ssi_plan":{"available":BOOL_TRUE_IF_SSI_SCORES_PROVIDED,"total":TOTAL_0_100,"overview":"2_SENTENCE_OVERVIEW","pillars":[{"name":"Establish Your Brand","score":SCORE_0_25,"status":"WEAK|AVERAGE|STRONG","advice":"SPECIFIC_ACTIONABLE_ADVICE"},{"name":"Find the Right People","score":SCORE_0_25,"status":"WEAK|AVERAGE|STRONG","advice":"SPECIFIC_ACTIONABLE_ADVICE"},{"name":"Engage with Insights","score":SCORE_0_25,"status":"WEAK|AVERAGE|STRONG","advice":"SPECIFIC_ACTIONABLE_ADVICE"},{"name":"Build Relationships","score":SCORE_0_25,"status":"WEAK|AVERAGE|STRONG","advice":"SPECIFIC_ACTIONABLE_ADVICE"}]}}
@@ -1119,7 +1126,7 @@ export default function App() {
             <input
               autoFocus
               className="field-input"
-              placeholder="Please describe..."
+              placeholder="Describe your specific situation in detail — the more you write, the more accurate your plan will be..."
               value={otherText}
               onChange={e=>setOtherText(e.target.value)}
               style={{ width:"100%", boxSizing:"border-box" }}
