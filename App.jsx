@@ -661,7 +661,6 @@ export default function App() {
   const [otherText, setOtherText] = useState("");
   const [multiSelected, setMultiSelected] = useState([]);
   const [quizPhase, setQuizPhase] = useState("generic"); // "generic" | "cohort" | "note"
-  const QUESTIONS = getQuestionsForCohort(cohort);
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [industryOther, setIndustryOther] = useState("");
@@ -768,9 +767,11 @@ export default function App() {
     return Object.keys(e).length===0;
   };
 
+  const QUESTIONS = getQuestionsForCohort(cohort);
+  const q = QUESTIONS[currentQ];
+
   const handleNext = () => {
     if (q.multiSelect ? multiSelected.length === 0 : !selected) return;
-    const q = QUESTIONS[currentQ];
     // Read otherText from DOM directly in case React state is stale
     const otherInputEl = document.querySelector('input[placeholder*="Describe your specific"]');
     const currentOtherText = otherInputEl?.value || otherText;
@@ -966,7 +967,6 @@ export default function App() {
 
   const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
-  const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
   const effectiveTotal = QUESTIONS.length - skipIds.length;
   const effectiveCurrent = QUESTIONS.slice(0, currentQ).filter(q => !skipIds.includes(q.id)).length;
