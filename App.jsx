@@ -849,19 +849,8 @@ export default function App() {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
-      // Wait for plan if not ready yet
-      let result = plan;
-      if (!result || result._error) {
-        if (result?._error) throw new Error(result._error);
-        // Plan not ready yet — wait for it
-        result = await new Promise((resolve, reject) => {
-          const interval = setInterval(() => {
-            if (plan && !plan._error) { clearInterval(interval); resolve(plan); }
-            else if (plan?._error) { clearInterval(interval); reject(new Error(plan._error)); }
-          }, 500);
-          setTimeout(() => { clearInterval(interval); reject(new Error("Timeout waiting for plan")); }, 55000);
-        });
-      }
+      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote);
+      setPlan(result);
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
@@ -1341,13 +1330,7 @@ export default function App() {
           <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>I haven't posted on LinkedIn yet</p>
         </div>
 
-        <button className="primary-btn" onClick={()=>{
-          setPhase("analyzing");
-          // Start API call immediately — runs parallel with animation
-          callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
-            .then(result => setPlan(result))
-            .catch(err => setPlan({_error: err.message}));
-        }}>
+        <button className="primary-btn" onClick={()=>setPhase("analyzing")}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("pdf_upload")}>← Back</button>
@@ -1687,4 +1670,3 @@ export default function App() {
   }
   return null;
 }
-
