@@ -14,6 +14,7 @@ const GENERIC_QUESTIONS = [
       { label: "I post sometimes but get zero traction", emoji: "📉" },
       { label: "I'm active but not growing fast enough", emoji: "🔄" },
       { label: "I post regularly and get good results", emoji: "🚀" },
+      { label: "Other / Something else", emoji: "🌍" },
     ],
   },
   {
@@ -27,6 +28,7 @@ const GENERIC_QUESTIONS = [
       { label: "Looks complete but feels generic", emoji: "😐" },
       { label: "Strong profile, but not getting results", emoji: "💪" },
       { label: "Optimized profile getting consistent views", emoji: "⭐" },
+      { label: "Other / Something else", emoji: "🌍" },
     ],
   },
   {
@@ -40,6 +42,7 @@ const GENERIC_QUESTIONS = [
       { label: "I publish but get little to no engagement", emoji: "📉" },
       { label: "I'm not comfortable putting myself out there", emoji: "😰" },
       { label: "I have ideas but never follow through", emoji: "🗂️" },
+      { label: "Other / Something else", emoji: "🌍" },
     ],
   },
   {
@@ -52,6 +55,7 @@ const GENERIC_QUESTIONS = [
       { label: "Controversial or bold industry opinions", emoji: "🔥" },
       { label: "Practical tips and how-tos", emoji: "🛠️" },
       { label: "Personal stories and career journey", emoji: "🌱" },
+      { label: "Other / Something else", emoji: "🌍" },
     ],
   },
   {
@@ -63,6 +67,7 @@ const GENERIC_QUESTIONS = [
       { label: "1–2 hours", emoji: "🕐" },
       { label: "3–5 hours", emoji: "🕒" },
       { label: "5+ hours — I'm fully committed", emoji: "🔥" },
+      { label: "Other / Something else", emoji: "🌍" },
     ],
   },
 ];
@@ -79,6 +84,7 @@ const COHORT_QUESTIONS = {
         { label: "Relocating and need to rebuild network", emoji: "🌍" },
         { label: "Back to work after a break", emoji: "💼" },
         { label: "First job or early career", emoji: "🚀" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -90,6 +96,7 @@ const COHORT_QUESTIONS = {
         { label: "1–3 months", emoji: "📅" },
         { label: "3–6 months", emoji: "😰" },
         { label: "6+ months — it's getting frustrating", emoji: "😓" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -102,6 +109,7 @@ const COHORT_QUESTIONS = {
         { label: "Complete but nothing stands out", emoji: "😐" },
         { label: "Looks good but not getting responses", emoji: "💪" },
         { label: "Strong profile, just need more visibility", emoji: "✨" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -114,6 +122,7 @@ const COHORT_QUESTIONS = {
         { label: "I'm not sure what makes me different", emoji: "😰" },
         { label: "I don't have the right connections", emoji: "🔗" },
         { label: "I know what to say but can't write it", emoji: "📝" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -125,6 +134,7 @@ const COHORT_QUESTIONS = {
         { label: "Landing interviews within 30 days", emoji: "🤝" },
         { label: "Getting my dream job offer", emoji: "💼" },
         { label: "Being seen as top talent in my field", emoji: "🌟" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
   ],
@@ -138,6 +148,7 @@ const COHORT_QUESTIONS = {
         { label: "Director / VP", emoji: "🏢" },
         { label: "C-Suite / Partner", emoji: "👑" },
         { label: "Individual contributor but expert level", emoji: "🎯" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -148,6 +159,7 @@ const COHORT_QUESTIONS = {
         { label: "Employee at a company", emoji: "🏢" },
         { label: "I run my own business", emoji: "🚀" },
         { label: "Both — corporate + side ventures", emoji: "🔄" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -159,6 +171,7 @@ const COHORT_QUESTIONS = {
         { label: "Potential clients or partners", emoji: "💼" },
         { label: "Peers and industry professionals", emoji: "👥" },
         { label: "A broad industry audience", emoji: "🎤" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -170,6 +183,7 @@ const COHORT_QUESTIONS = {
         { label: "Consistent content — I post sporadically", emoji: "📝" },
         { label: "Visibility — I exist but nobody finds me", emoji: "🌟" },
         { label: "Engagement — I post but get no reaction", emoji: "💬" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -181,6 +195,7 @@ const COHORT_QUESTIONS = {
         { label: "Being invited to speak or contribute", emoji: "🎤" },
         { label: "Recognized as a go-to expert", emoji: "👑" },
         { label: "Measurable follower and engagement growth", emoji: "📈" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
   ],
@@ -194,6 +209,7 @@ const COHORT_QUESTIONS = {
         { label: "Building — early users", emoji: "🔨" },
         { label: "Growing — have traction", emoji: "📈" },
         { label: "Scaling — raising or expanding", emoji: "🚀" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -205,6 +221,7 @@ const COHORT_QUESTIONS = {
         { label: "Acquire early customers", emoji: "👥" },
         { label: "Build credibility in the space", emoji: "🏆" },
         { label: "Find co-founders or key hires", emoji: "🤝" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -216,6 +233,7 @@ const COHORT_QUESTIONS = {
         { label: "Don't know what to share publicly", emoji: "🤷" },
         { label: "Afraid to share before product is ready", emoji: "😰" },
         { label: "Post but get zero traction", emoji: "📉" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -227,6 +245,7 @@ const COHORT_QUESTIONS = {
         { label: "Operator who gets things done", emoji: "🛠️" },
         { label: "Deep expert in my domain", emoji: "🎓" },
         { label: "Mission-driven founder with purpose", emoji: "🌍" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -238,6 +257,7 @@ const COHORT_QUESTIONS = {
         { label: "Investor conversations started", emoji: "💰" },
         { label: "Recognized in my startup ecosystem", emoji: "🌟" },
         { label: "500+ relevant followers gained", emoji: "📈" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
   ],
@@ -252,6 +272,7 @@ const COHORT_QUESTIONS = {
         { label: "Luxury — high-end properties", emoji: "💎" },
         { label: "New development — off-plan sales", emoji: "🏗️" },
         { label: "International — cross-border clients", emoji: "🌍" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -264,6 +285,7 @@ const COHORT_QUESTIONS = {
         { label: "HNWIs and luxury buyers", emoji: "👑" },
         { label: "Corporate clients and businesses", emoji: "🏢" },
         { label: "Expats and international buyers", emoji: "🌍" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -276,6 +298,7 @@ const COHORT_QUESTIONS = {
         { label: "Google and online listings", emoji: "🔍" },
         { label: "Walk-ins and agency leads", emoji: "🏢" },
         { label: "LinkedIn — but it's not working well", emoji: "🔗" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -288,6 +311,7 @@ const COHORT_QUESTIONS = {
         { label: "Relationship-first approach", emoji: "🤝" },
         { label: "Data-driven advice", emoji: "📊" },
         { label: "Access to exclusive properties", emoji: "💎" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -299,6 +323,7 @@ const COHORT_QUESTIONS = {
         { label: "Being the go-to agent in my market", emoji: "🌟" },
         { label: "Building a referral network of professionals", emoji: "🤝" },
         { label: "Closing deals sourced from LinkedIn", emoji: "💰" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
   ],
@@ -314,6 +339,7 @@ const COHORT_QUESTIONS = {
         { label: "Marketing and brand building", emoji: "🎨" },
         { label: "Personal development and life coaching", emoji: "🌱" },
         { label: "Tech and digital transformation", emoji: "💻" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -326,6 +352,7 @@ const COHORT_QUESTIONS = {
         { label: "My website or blog", emoji: "🌐" },
         { label: "Conferences and events", emoji: "🏢" },
         { label: "They don't — I'm chasing them", emoji: "😓" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -338,6 +365,7 @@ const COHORT_QUESTIONS = {
         { label: "Visibility — nobody knows I exist", emoji: "👻" },
         { label: "Pricing — I undercharge because I'm not seen as premium", emoji: "💰" },
         { label: "Time — client work leaves no time for marketing", emoji: "⏰" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -350,6 +378,7 @@ const COHORT_QUESTIONS = {
         { label: "Startups and founders", emoji: "🚀" },
         { label: "C-Suite and senior executives", emoji: "👑" },
         { label: "International clients", emoji: "🌍" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -361,6 +390,7 @@ const COHORT_QUESTIONS = {
         { label: "Raising my rates and attracting premium clients", emoji: "💰" },
         { label: "Getting speaking invitations and media features", emoji: "🎤" },
         { label: "Becoming the obvious expert in my niche", emoji: "🌟" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
   ],
@@ -387,6 +417,7 @@ const COHORT_QUESTIONS = {
         { label: "Under 500 followers, low engagement", emoji: "📉" },
         { label: "500–5K followers, inconsistent posts", emoji: "📈" },
         { label: "5K+ followers but want faster growth", emoji: "🚀" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -398,6 +429,7 @@ const COHORT_QUESTIONS = {
         { label: "Once or twice a month", emoji: "📅" },
         { label: "Once a week", emoji: "📆" },
         { label: "Multiple times a week", emoji: "🔥" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -410,6 +442,7 @@ const COHORT_QUESTIONS = {
         { label: "Fear of being wrong publicly", emoji: "😰" },
         { label: "I post but get no engagement", emoji: "📉" },
         { label: "Not sure how to stand out in a crowded space", emoji: "🎯" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
@@ -422,6 +455,7 @@ const COHORT_QUESTIONS = {
         { label: "Media and podcast interview requests", emoji: "📩" },
         { label: "Recognized as the voice in my topic", emoji: "🌟" },
         { label: "10K+ followers in 6 months", emoji: "📈" },
+      { label: "Other / Something else", emoji: "🌍" },
       ],
     },
   ],
