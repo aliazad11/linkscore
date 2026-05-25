@@ -651,6 +651,7 @@ export default function App() {
   const [planId, setPlanId] = useState(null);
   const [cohort, setCohort] = useState(null);
   const [specialNote, setSpecialNote] = useState("");
+  const [otherText, setOtherText] = useState("");
   const [quizPhase, setQuizPhase] = useState("generic"); // "generic" | "cohort" | "note"
   const QUESTIONS = getQuestionsForCohort(cohort);
   const [pdfName, setPdfName] = useState("");
@@ -762,9 +763,10 @@ export default function App() {
   const handleNext = () => {
     if (!selected) return;
     const q = QUESTIONS[currentQ];
-    const a = {...answers, [q.id]:selected};
+    const finalAnswer = selected === "Other / Something else" && otherText.trim() ? `Other: ${otherText.trim()}` : selected;
+    const a = {...answers, [q.id]:finalAnswer};
     setAnswers(a);
-    setSelected(null);
+    setSelected(null); setOtherText("");
     // If industry is "Other", show custom input
     if (q.id === "industry" && selected === "Other") {
       setPhase("industry_other");
@@ -933,7 +935,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
@@ -1112,7 +1114,19 @@ export default function App() {
             </button>
           ))}
         </div>
-        <button className="primary-btn" disabled={!selected} onClick={handleNext}>
+        {selected === "Other / Something else" && (
+          <div style={{ marginBottom:16 }}>
+            <input
+              autoFocus
+              className="field-input"
+              placeholder="Please describe..."
+              value={otherText}
+              onChange={e=>setOtherText(e.target.value)}
+              style={{ width:"100%", boxSizing:"border-box" }}
+            />
+          </div>
+        )}
+        <button className="primary-btn" disabled={!selected || (selected==="Other / Something else" && !otherText.trim())} onClick={handleNext}>
           {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
         </button>
       </div>
@@ -1139,7 +1153,7 @@ export default function App() {
           setPhase("quiz");
           setCurrentQ(q=>q+1);
         }}>Continue →</button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setPhase("quiz"); setSelected(null); }}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setPhase("quiz"); setSelected(null); setOtherText(""); }}>← Back</button>
       </div>
     </Layout>
   );
