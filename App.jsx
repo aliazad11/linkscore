@@ -771,16 +771,20 @@ export default function App() {
   const handleNext = () => {
     if (q.multiSelect ? multiSelected.length === 0 : !selected) return;
     const q = QUESTIONS[currentQ];
+    // Read otherText from DOM directly in case React state is stale
+    const otherInputEl = document.querySelector('input[placeholder*="Describe your specific"]');
+    const currentOtherText = otherInputEl?.value || otherText;
+
     let finalAnswer;
     if (q.multiSelect) {
       const hasOther = multiSelected.includes("Other / Something else");
       const others = multiSelected.filter(x => x !== "Other / Something else");
-      finalAnswer = hasOther && otherText.trim() 
-        ? [...others, `Other: ${otherText.trim()}`].join(", ")
+      finalAnswer = hasOther && currentOtherText.trim()
+        ? [...others, `Other: ${currentOtherText.trim()}`].join(", ")
         : multiSelected.join(", ");
     } else {
-      finalAnswer = selected === "Other / Something else" && otherText.trim() 
-        ? `Other: ${otherText.trim()}` 
+      finalAnswer = selected === "Other / Something else" && currentOtherText.trim()
+        ? `Other: ${currentOtherText.trim()}`
         : selected;
     }
     const a = {...answers, [q.id]:finalAnswer};
@@ -1178,8 +1182,8 @@ export default function App() {
         )}
         <button className="primary-btn" disabled={
           q.multiSelect
-            ? (multiSelected.length === 0 || (multiSelected.includes("Other / Something else") && !otherText.trim()))
-            : (!selected || (selected === "Other / Something else" && !otherText.trim()))
+            ? multiSelected.length === 0
+            : !selected
         } onClick={handleNext}>
           {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
         </button>
