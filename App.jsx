@@ -32,7 +32,7 @@ const GENERIC_QUESTIONS = [
     ],
   },
   {
-    id: "content_struggle", phase: "Your Challenge",
+    id: "content_struggle", multiSelect: true, phase: "Your Challenge",
     question: "What's your biggest content challenge?",
     subtitle: "Pick the one that resonates most.",
     options: [
@@ -46,7 +46,7 @@ const GENERIC_QUESTIONS = [
     ],
   },
   {
-    id: "content_style", phase: "Your Voice",
+    id: "content_style", multiSelect: true, phase: "Your Voice",
     question: "Which content style feels most natural to you?",
     subtitle: "Your authentic voice is your biggest competitive advantage.",
     options: [
@@ -163,7 +163,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "target_audience", phase: "Your Audience",
+      id: "target_audience", multiSelect: true, phase: "Your Audience",
       question: "Who are you trying to influence on LinkedIn?",
       subtitle: "Clarity on audience changes everything.",
       options: [
@@ -175,7 +175,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "brand_gap", phase: "Your Gap",
+      id: "brand_gap", multiSelect: true, phase: "Your Gap",
       question: "What's currently missing from your professional brand?",
       subtitle: "This is what we'll fix first.",
       options: [
@@ -213,7 +213,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "founder_goal", phase: "Your Goal",
+      id: "founder_goal", multiSelect: true, phase: "Your Goal",
       question: "What's your primary LinkedIn goal?",
       subtitle: "Pick your biggest priority right now.",
       options: [
@@ -237,7 +237,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "founder_perception", phase: "Your Brand",
+      id: "founder_perception", multiSelect: true, phase: "Your Brand",
       question: "How do you want to be perceived?",
       subtitle: "This becomes your content persona.",
       options: [
@@ -276,7 +276,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "re_client", phase: "Your Client",
+      id: "re_client", multiSelect: true, phase: "Your Client",
       question: "Who is your ideal client?",
       subtitle: "Speak to one person, reach thousands.",
       options: [
@@ -302,7 +302,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "re_differentiator", phase: "Your Edge",
+      id: "re_differentiator", multiSelect: true, phase: "Your Edge",
       question: "What's your biggest differentiator?",
       subtitle: "This becomes the core of your LinkedIn brand.",
       options: [
@@ -329,7 +329,7 @@ const COHORT_QUESTIONS = {
   ],
   "Consultant or Coach": [
     {
-      id: "consulting_niche", phase: "Your Niche",
+      id: "consulting_niche", multiSelect: true, phase: "Your Niche",
       question: "What's your niche?",
       subtitle: "The riches are in the niches.",
       options: [
@@ -369,7 +369,7 @@ const COHORT_QUESTIONS = {
       ],
     },
     {
-      id: "target_client", phase: "Your Client",
+      id: "target_client", multiSelect: true, phase: "Your Client",
       question: "What kind of clients do you want to attract?",
       subtitle: "Your dream client shapes your entire content.",
       options: [
@@ -396,7 +396,7 @@ const COHORT_QUESTIONS = {
   ],
   "Thought Leader": [
     {
-      id: "tl_topic", phase: "Your Topic",
+      id: "tl_topic", multiSelect: true, phase: "Your Topic",
       question: "What topic do you want to own?",
       subtitle: "Own one topic completely.",
       options: [
@@ -659,6 +659,7 @@ export default function App() {
   const [cohort, setCohort] = useState(null);
   const [specialNote, setSpecialNote] = useState("");
   const [otherText, setOtherText] = useState("");
+  const [multiSelected, setMultiSelected] = useState([]);
   const [quizPhase, setQuizPhase] = useState("generic"); // "generic" | "cohort" | "note"
   const QUESTIONS = getQuestionsForCohort(cohort);
   const [pdfName, setPdfName] = useState("");
@@ -770,10 +771,21 @@ export default function App() {
   const handleNext = () => {
     if (!selected) return;
     const q = QUESTIONS[currentQ];
-    const finalAnswer = selected === "Other / Something else" && otherText.trim() ? `Other: ${otherText.trim()}` : selected;
+    let finalAnswer;
+    if (q.multiSelect) {
+      const hasOther = multiSelected.includes("Other / Something else");
+      const others = multiSelected.filter(x => x !== "Other / Something else");
+      finalAnswer = hasOther && otherText.trim() 
+        ? [...others, `Other: ${otherText.trim()}`].join(", ")
+        : multiSelected.join(", ");
+    } else {
+      finalAnswer = selected === "Other / Something else" && otherText.trim() 
+        ? `Other: ${otherText.trim()}` 
+        : selected;
+    }
     const a = {...answers, [q.id]:finalAnswer};
     setAnswers(a);
-    setSelected(null); setOtherText("");
+    setSelected(null); setOtherText(""); setMultiSelected([]);
     // If industry is "Other", show custom input
     if (q.id === "industry" && selected === "Other") {
       setPhase("industry_other");
@@ -832,13 +844,19 @@ export default function App() {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
-      // Small delay to avoid rate limiting when PDF + screenshots are uploaded
-      if (pdfText || (!noPostsYet && postScreenshots.some(s=>s))) {
-        await new Promise(r => setTimeout(r, 3000));
+      // Wait for plan if not ready yet
+      let result = plan;
+      if (!result || result._error) {
+        if (result?._error) throw new Error(result._error);
+        // Plan not ready yet — wait for it
+        result = await new Promise((resolve, reject) => {
+          const interval = setInterval(() => {
+            if (plan && !plan._error) { clearInterval(interval); resolve(plan); }
+            else if (plan?._error) { clearInterval(interval); reject(new Error(plan._error)); }
+          }, 500);
+          setTimeout(() => { clearInterval(interval); reject(new Error("Timeout waiting for plan")); }, 55000);
+        });
       }
-      // Generate the plan
-      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote);
-      setPlan(result);
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
@@ -942,7 +960,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const q = QUESTIONS[currentQ];
   const skipIds = pdfText ? ["industry", "experience"] : [];
@@ -1113,15 +1131,40 @@ export default function App() {
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8, lineHeight:1.3 }}>{q.question}</h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
-          {q.options.map(opt=>(
-            <button key={opt.label} className={`opt-row${selected===opt.label?" selected":""}`} onClick={()=>setSelected(opt.label)}>
-              <span style={{ fontSize:18, flexShrink:0 }}>{opt.emoji}</span>
-              <span style={{ color:selected===opt.label?"#c8a96e":"#6a6a8a", fontSize:14, fontWeight:selected===opt.label?600:400, flex:1 }}>{opt.label}</span>
-              {selected===opt.label&&<span style={{ color:"#c8a96e", fontSize:12 }}>◆</span>}
-            </button>
-          ))}
+          {q.multiSelect && <p style={{ color:"#3a3a5a", fontSize:11, marginBottom:4 }}>Select all that apply</p>}
+          {q.options.map(opt=>{
+            const isMultiActive = q.multiSelect && multiSelected.includes(opt.label);
+            const isSingleActive = !q.multiSelect && selected===opt.label;
+            const isActive = isMultiActive || isSingleActive;
+            return (
+              <button key={opt.label}
+                className={`opt-row${isActive?" selected":""}`}
+                onClick={()=>{
+                  if (q.multiSelect) {
+                    setMultiSelected(prev =>
+                      prev.includes(opt.label)
+                        ? prev.filter(x=>x!==opt.label)
+                        : [...prev, opt.label]
+                    );
+                  } else {
+                    setSelected(opt.label);
+                    setOtherText("");
+                  }
+                }}
+              >
+                <span style={{ fontSize:18, flexShrink:0 }}>{opt.emoji}</span>
+                <span style={{ color:isActive?"#c8a96e":"#6a6a8a", fontSize:14, fontWeight:isActive?600:400, flex:1 }}>{opt.label}</span>
+                {q.multiSelect
+                  ? <span style={{ width:18, height:18, borderRadius:4, border:`2px solid ${isActive?"#c8a96e":"#2a2a4a"}`, background:isActive?"#c8a96e":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {isActive && <span style={{ color:"#0d0d18", fontSize:12, fontWeight:900 }}>✓</span>}
+                    </span>
+                  : isActive && <span style={{ color:"#c8a96e", fontSize:12 }}>◆</span>
+                }
+              </button>
+            );
+          })}
         </div>
-        {selected === "Other / Something else" && (
+        {(selected === "Other / Something else" || (q.multiSelect && multiSelected.includes("Other / Something else"))) && (
           <div style={{ marginBottom:16 }}>
             <input
               autoFocus
@@ -1133,7 +1176,7 @@ export default function App() {
             />
           </div>
         )}
-        <button className="primary-btn" disabled={!selected || (selected==="Other / Something else" && !otherText.trim())} onClick={handleNext}>
+        <button className="primary-btn" disabled={q.multiSelect ? (multiSelected.length===0 || (multiSelected.includes("Other / Something else") && !otherText.trim())) : (!selected || (selected==="Other / Something else" && !otherText.trim()))} onClick={handleNext}>
           {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
         </button>
       </div>
@@ -1160,7 +1203,7 @@ export default function App() {
           setPhase("quiz");
           setCurrentQ(q=>q+1);
         }}>Continue →</button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setPhase("quiz"); setSelected(null); setOtherText(""); }}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setPhase("quiz"); setSelected(null); setOtherText(""); setMultiSelected([]); }}>← Back</button>
       </div>
     </Layout>
   );
@@ -1290,7 +1333,13 @@ export default function App() {
           <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>I haven't posted on LinkedIn yet</p>
         </div>
 
-        <button className="primary-btn" onClick={()=>setPhase("analyzing")}>
+        <button className="primary-btn" onClick={()=>{
+          setPhase("analyzing");
+          // Start API call immediately — runs parallel with animation
+          callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
+            .then(result => setPlan(result))
+            .catch(err => setPlan({_error: err.message}));
+        }}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("pdf_upload")}>← Back</button>
