@@ -745,7 +745,15 @@ export default function App() {
     let step = 0, elapsed = 0;
     const total = ANALYSIS_STEPS.reduce((s,a)=>s+a.duration,0);
     const run = () => {
-      if (step >= ANALYSIS_STEPS.length) { setTimeout(()=>setPhase("paywall"),500); return; }
+      if (step >= ANALYSIS_STEPS.length) {
+        // Wait for plan to be ready before going to paywall
+        const waitForPlan = () => {
+          if (plan) { setTimeout(()=>setPhase("paywall"), 500); }
+          else { setTimeout(waitForPlan, 300); }
+        };
+        waitForPlan();
+        return;
+      }
       setAnalysisStep(step);
       const dur = ANALYSIS_STEPS[step].duration;
       elapsed += dur;
@@ -864,8 +872,19 @@ export default function App() {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
-      const result = await callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote);
-      setPlan(result);
+      // Plan was already fetched during animation — wait for it if not ready
+      let result = plan;
+      if (!result) {
+        // Still loading — wait up to 55s
+        result = await new Promise((resolve, reject) => {
+          const start = Date.now();
+          const check = setInterval(() => {
+            if (plan) { clearInterval(check); resolve(plan); }
+            else if (Date.now() - start > 55000) { clearInterval(check); reject(new Error("Analysis is taking longer than expected. Please try again.")); }
+          }, 300);
+        });
+      }
+      if (result._error) throw new Error(result._error);
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
@@ -1345,7 +1364,13 @@ export default function App() {
           <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>I haven't posted on LinkedIn yet</p>
         </div>
 
-        <button className="primary-btn" onClick={()=>setPhase("analyzing")}>
+        <button className="primary-btn" onClick={()=>{
+          setPhase("analyzing");
+          // Start API call immediately parallel to animation
+          callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
+            .then(result => { setPlan(result); })
+            .catch(err => { setPlan({_error: err.message}); });
+        }}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("pdf_upload")}>← Back</button>
@@ -1358,7 +1383,9 @@ export default function App() {
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo />
-        <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>Analyzing, {userData.firstName}...</h2>
+        <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
+          {step >= ANALYSIS_STEPS.length && !plan ? `Almost ready, ${userData.firstName}...` : `Analyzing, ${userData.firstName}...`}
+        </h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building something made only for you.</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${analysisProgress}%`, background:"linear-gradient(90deg,#c8a96e,#e8c98e)", borderRadius:100, transition:"width 0.3s ease" }} />
