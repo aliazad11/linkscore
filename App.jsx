@@ -1384,7 +1384,7 @@ export default function App() {
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
-          {step >= ANALYSIS_STEPS.length && !plan ? `Almost ready, ${userData.firstName}...` : `Analyzing, ${userData.firstName}...`}
+          {analysisStep >= ANALYSIS_STEPS.length - 1 && !plan ? `Almost ready, ${userData.firstName}...` : `Analyzing, ${userData.firstName}...`}
         </h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building something made only for you.</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
