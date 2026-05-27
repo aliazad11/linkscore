@@ -656,6 +656,7 @@ export default function App() {
   const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
   const [cohort, setCohort] = useState(null);
+  const planRef = useRef(null);
   const [specialNote, setSpecialNote] = useState("");
   const [otherText, setOtherText] = useState("");
   const [multiSelected, setMultiSelected] = useState([]);
@@ -748,7 +749,7 @@ export default function App() {
       if (step >= ANALYSIS_STEPS.length) {
         // Wait for plan to be ready before going to paywall
         const waitForPlan = () => {
-          if (plan) { setTimeout(()=>setPhase("paywall"), 500); }
+          if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); }
           else { setTimeout(waitForPlan, 300); }
         };
         waitForPlan();
@@ -816,19 +817,26 @@ export default function App() {
     else setPhase("note");
   };
 
-  // Compress image to reduce payload size
+  // Compress image to reduce payload size — with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      const compressed = canvas.toDataURL('image/jpeg', quality).split(',')[1];
-      resolve({ base64: compressed, type: 'image/jpeg' });
-    };
-    img.src = `data:${mimeType};base64,${base64}`;
+    try {
+      const img = new Image();
+      const timeout = setTimeout(() => resolve({ base64, type: mimeType }), 5000); // fallback after 5s
+      img.onload = () => {
+        clearTimeout(timeout);
+        try {
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressed = canvas.toDataURL('image/jpeg', quality).split(',')[1];
+          resolve({ base64: compressed, type: 'image/jpeg' });
+        } catch(e) { resolve({ base64, type: mimeType }); }
+      };
+      img.onerror = () => { clearTimeout(timeout); resolve({ base64, type: mimeType }); };
+      img.src = `data:${mimeType};base64,${base64}`;
+    } catch(e) { resolve({ base64, type: mimeType }); }
   });
 
   const callAPI = async (user, ans, profile, screenshots, cohort=null, specialNote="") => {
@@ -873,13 +881,12 @@ export default function App() {
     setEmailError(""); setLoading(true);
     try {
       // Plan was already fetched during animation — wait for it if not ready
-      let result = plan;
+      let result = planRef.current;
       if (!result) {
-        // Still loading — wait up to 55s
         result = await new Promise((resolve, reject) => {
           const start = Date.now();
           const check = setInterval(() => {
-            if (plan) { clearInterval(check); resolve(plan); }
+            if (planRef.current) { clearInterval(check); resolve(planRef.current); }
             else if (Date.now() - start > 55000) { clearInterval(check); reject(new Error("Analysis is taking longer than expected. Please try again.")); }
           }, 300);
         });
@@ -988,7 +995,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
 
   const skipIds = pdfText ? ["industry", "experience"] : [];
   const effectiveTotal = QUESTIONS.length - skipIds.length;
@@ -1368,8 +1375,8 @@ export default function App() {
           setPhase("analyzing");
           // Start API call immediately parallel to animation
           callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
-            .then(result => { setPlan(result); })
-            .catch(err => { setPlan({_error: err.message}); });
+            .then(result => { setPlan(result); planRef.current = result; })
+            .catch(err => { const e = {_error: err.message}; setPlan(e); planRef.current = e; });
         }}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
