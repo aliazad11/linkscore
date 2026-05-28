@@ -843,13 +843,13 @@ export default function App() {
     const validScreenshots = screenshots.filter(s => s !== null);
     const messageContent = [];
 
-    // Add PDF as document if available (single API call instead of two)
+    // Add PDF as document if available
     if (profile && profile.startsWith("PDF_BASE64:")) {
       const base64 = profile.replace("PDF_BASE64:", "");
       messageContent.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } });
     }
 
-    // Add post screenshots — compressed to reduce payload
+    // Add post screenshots — compressed
     if (validScreenshots.length > 0) {
       const compressed = await Promise.all(validScreenshots.map(s => compressImage(s.base64, s.type)));
       compressed.forEach((s, i) => {
@@ -857,24 +857,56 @@ export default function App() {
         messageContent.push({ type:"image", source:{ type:"base64", media_type:s.type, data:s.base64 } });
       });
     }
+
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote) });
+    // Prefix JSON
+    messageContent.push({ type:"text", text:"Respond with only raw JSON starting with {" });
 
-    const res = await fetch("/api/generate-plan", {
+    const payloadSize = JSON.stringify(messageContent).length;
+    console.log(`[api] Payload size: ${(payloadSize/1024).toFixed(1)}KB`);
+
+    // Step 1: Create job, get jobId immediately
+    const startRes = await fetch("/api/generate-plan", {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        messages:[{ role:"user", content:messageContent }, { role:"assistant", content:"{" }],
-      }),
+      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
     });
-    if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error?.message||`HTTP ${res.status}`); }
-    const data = await res.json();
-    const rawText = data.content?.find(b=>b.type==="text")?.text||"";
-    const text = "{" + rawText;
-    const m = text.match(/\{[\s\S]*\}/s);
-    if (!m) throw new Error("No JSON: " + rawText.slice(0,200));
-    return JSON.parse(m[0]);
+    if (!startRes.ok) { const d=await startRes.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${startRes.status}`); }
+    const { jobId } = await startRes.json();
+    if (!jobId) throw new Error("Failed to start analysis job");
+    console.log(`[api] Job created: ${jobId}`);
+
+    // Step 2: Poll for result
+    return new Promise((resolve, reject) => {
+      const pollStart = Date.now();
+      const poll = async () => {
+        try {
+          const pollRes = await fetch(`/api/generate-plan`, {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ jobId }),
+          });
+          const data = await pollRes.json();
+          console.log(`[api] Job ${jobId} status: ${data.status}`);
+
+          if (data.status === "done") {
+            resolve(data.result);
+          } else if (data.status === "error") {
+            reject(new Error(data.error || "Analysis failed"));
+          } else if (Date.now() - pollStart > 120000) {
+            reject(new Error("Analysis is taking too long. Please try again."));
+          } else {
+            setTimeout(poll, 2000); // poll every 2s
+          }
+        } catch(e) {
+          reject(e);
+        }
+      };
+      setTimeout(poll, 3000); // first poll after 3s
+    });
   };
+
 
   const handlePaywall = async () => {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
