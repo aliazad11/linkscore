@@ -7,11 +7,14 @@ export default async function handler(req, res) {
   if (!messages) return res.status(400).json({ error: 'Missing messages' });
 
   const payloadSize = JSON.stringify(messages).length;
-  console.log('[api] Payload: ' + (payloadSize/1024).toFixed(1) + 'KB | ' + new Date().toISOString());
+  console.log('[api] Payload: ' + (payloadSize/1024).toFixed(1) + 'KB');
 
   const claudeStart = Date.now();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 55000); // abort after 55s
 
   try {
+    console.log('[claude] Calling Anthropic API...');
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -25,25 +28,31 @@ export default async function handler(req, res) {
         system: 'You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.',
         messages,
       }),
+      signal: controller.signal,
     });
 
+    clearTimeout(timeout);
     const claudeTime = ((Date.now() - claudeStart) / 1000).toFixed(1);
-    console.log('[claude] Status: ' + response.status + ' | Time: ' + claudeTime + 's');
+    console.log('[claude] Response: ' + response.status + ' in ' + claudeTime + 's');
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      console.error('[claude] Error: ' + JSON.stringify(err));
+      console.error('[claude] API Error: ' + JSON.stringify(err));
       return res.status(400).json({ error: err?.error?.message || 'HTTP ' + response.status });
     }
 
     const data = await response.json();
-    console.log('[claude] Done | Total: ' + ((Date.now() - claudeStart)/1000).toFixed(1) + 's');
+    console.log('[claude] Done in ' + ((Date.now() - claudeStart)/1000).toFixed(1) + 's');
     return res.status(200).json(data);
 
   } catch (e) {
+    clearTimeout(timeout);
     const claudeTime = ((Date.now() - claudeStart) / 1000).toFixed(1);
-    const timedOut = claudeTime > 55;
-    console.error('[claude] Exception | Time: ' + claudeTime + 's | Timeout: ' + timedOut + ' | ' + e.message);
-    return res.status(504).json({ error: timedOut ? 'timeout' : e.message });
+    if (e.name === 'AbortError') {
+      console.error('[claude] ABORTED after ' + claudeTime + 's - Claude API not responding');
+      return res.status(504).json({ error: 'Claude API did not respond within 55 seconds. Please try again.' });
+    }
+    console.error('[claude] Error after ' + claudeTime + 's: ' + e.message);
+    return res.status(500).json({ error: e.message });
   }
 }
