@@ -512,7 +512,7 @@ function buildEmailHTML(firstName, plan) {
 
 function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "") {
   const profileSection = profileText
-    ? `\nPROFILE PDF:\n${profileText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').slice(0, 600)}\n`
+    ? `\nPROFILE PDF:\n${profileText}\n`
     : "";
 
   const answersText = Object.entries(answers).map(([k,v]) => {
