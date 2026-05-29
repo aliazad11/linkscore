@@ -512,12 +512,13 @@ function buildEmailHTML(firstName, plan) {
 
 function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "") {
   const profileSection = profileText
-    ? `\nPROFILE PDF:\n${profileText.slice(0, 1500)}\n`
+    ? `\nPROFILE PDF:\n${profileText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').slice(0, 600)}\n`
     : "";
 
   const answersText = Object.entries(answers).map(([k,v]) => {
     if (v && v.startsWith('Other: ')) {
-      return `${k}: [user wrote: "${v.replace('Other: ', '').trim()}"] — treat as a prompt, analyze deeply`;
+      const clean = v.replace('Other: ','').trim().replace(/[\n\r"]/g,' ').slice(0,150);
+      return `${k}: [user wrote: "${clean}"] — analyze deeply`;
     }
     return `${k}: ${v}`;
   }).join('\n');
@@ -878,7 +879,11 @@ export default function App() {
     const jsonStart = text.indexOf('{');
     const jsonEnd = text.lastIndexOf('}');
     if (jsonStart === -1 || jsonEnd === -1) throw new Error('Invalid response format');
-    const plan = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+    let jsonStr = text.slice(jsonStart, jsonEnd + 1);
+    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/,(\s*[}\]])/g, '$1');
+    let plan;
+    try { plan = JSON.parse(jsonStr); }
+    catch(e) { throw new Error('Analysis response was malformed. Try again without screenshots or PDF.'); }
     return plan;
   };
 
