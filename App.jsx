@@ -873,6 +873,13 @@ export default function App() {
     });
     if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${res.status}`); }
     const data = await res.json();
+    // Extract plan from Anthropic response format
+    const text = data.content?.[0]?.text || '';
+    const jsonStart = text.indexOf('{');
+    const jsonEnd = text.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) throw new Error('Invalid response format');
+    const plan = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+    return plan;
   };
 
 
