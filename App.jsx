@@ -873,17 +873,16 @@ export default function App() {
       body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
     });
     if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${res.status}`); }
-    const data = await res.json();
-    // Extract plan from Anthropic response format
-    const text = data.content?.[0]?.text || '';
-    const jsonStart = text.indexOf('{');
-    const jsonEnd = text.lastIndexOf('}');
-    if (jsonStart === -1 || jsonEnd === -1) throw new Error('Invalid response format');
-    let jsonStr = text.slice(jsonStart, jsonEnd + 1);
-    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/,(\s*[}\]])/g, '$1');
+        const data = await res.json();
+    // Server returns { text: "{...json with { prefill}" }
+    const rawText = data.text || (data.content?.[0]?.text ? '{' + data.content[0].text : '');
+    const jsonEnd = rawText.lastIndexOf('}');
+    if (jsonEnd === -1) throw new Error('Invalid response format');
+    let jsonStr = rawText.slice(0, jsonEnd + 1);
+    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g,' ').replace(/,(\s*[}\]])/g,'$1');
     let plan;
     try { plan = JSON.parse(jsonStr); }
-    catch(e) { throw new Error('Analysis response was malformed. Try again without screenshots or PDF.'); }
+    catch(e) { throw new Error('Analysis response was malformed. Please try again.'); }
     return plan;
   };
 
