@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   const claudeStart = Date.now();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000); // abort after 55s
+  const timeout = setTimeout(() => controller.abort(), 55000);
 
   try {
     console.log('[claude] Calling Anthropic API...');
@@ -23,9 +23,9 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4000,
-        system: 'You are a JSON API. You MUST output ONLY a raw JSON object. Start your response with { and end with }. Zero other text allowed.',
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        system: 'You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.',
         messages,
       }),
       signal: controller.signal,
@@ -37,20 +37,20 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      console.error('[claude] API Error: ' + JSON.stringify(err));
+      console.error('[claude] Error: ' + JSON.stringify(err));
       return res.status(400).json({ error: err?.error?.message || 'HTTP ' + response.status });
     }
 
     const data = await response.json();
-    console.log('[claude] Done in ' + ((Date.now() - claudeStart)/1000).toFixed(1) + 's');
+    console.log('[claude] Done in ' + ((Date.now() - claudeStart)/1000).toFixed(1) + 's | tokens: ' + data.usage?.output_tokens);
     return res.status(200).json(data);
 
   } catch (e) {
     clearTimeout(timeout);
     const claudeTime = ((Date.now() - claudeStart) / 1000).toFixed(1);
     if (e.name === 'AbortError') {
-      console.error('[claude] ABORTED after ' + claudeTime + 's - Claude API not responding');
-      return res.status(504).json({ error: 'Claude API did not respond within 55 seconds. Please try again.' });
+      console.error('[claude] ABORTED after ' + claudeTime + 's');
+      return res.status(504).json({ error: 'Analysis timed out. Please try again.' });
     }
     console.error('[claude] Error after ' + claudeTime + 's: ' + e.message);
     return res.status(500).json({ error: e.message });
