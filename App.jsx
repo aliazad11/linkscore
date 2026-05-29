@@ -866,45 +866,13 @@ export default function App() {
     const payloadSize = JSON.stringify(messageContent).length;
     console.log(`[api] Payload size: ${(payloadSize/1024).toFixed(1)}KB`);
 
-    // Step 1: Create job, get jobId immediately
-    const startRes = await fetch("/api/generate-plan", {
+    const res = await fetch("/api/generate-plan", {
       method:"POST",
       headers:{ "Content-Type":"application/json" },
       body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
     });
-    if (!startRes.ok) { const d=await startRes.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${startRes.status}`); }
-    const { jobId } = await startRes.json();
-    if (!jobId) throw new Error("Failed to start analysis job");
-    console.log(`[api] Job created: ${jobId}`);
-
-    // Step 2: Poll for result
-    return new Promise((resolve, reject) => {
-      const pollStart = Date.now();
-      const poll = async () => {
-        try {
-          const pollRes = await fetch(`/api/generate-plan`, {
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({ jobId }),
-          });
-          const data = await pollRes.json();
-          console.log(`[api] Job ${jobId} status: ${data.status}`);
-
-          if (data.status === "done") {
-            resolve(data.result);
-          } else if (data.status === "error") {
-            reject(new Error(data.error || "Analysis failed"));
-          } else if (Date.now() - pollStart > 120000) {
-            reject(new Error("Analysis is taking too long. Please try again."));
-          } else {
-            setTimeout(poll, 2000); // poll every 2s
-          }
-        } catch(e) {
-          reject(e);
-        }
-      };
-      setTimeout(poll, 3000); // first poll after 3s
-    });
+    if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${res.status}`); }
+    const data = await res.json();
   };
 
 
