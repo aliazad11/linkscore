@@ -1,4 +1,4 @@
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 300 };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -11,12 +11,11 @@ export default async function handler(req, res) {
 
   const claudeStart = Date.now();
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 55000);
+  const timeout = setTimeout(() => controller.abort(), 290000);
 
   try {
     console.log('[claude] Calling Anthropic API...');
 
-    // Add assistant prefill to force JSON output without backticks
     const messagesWithPrefill = [
       ...messages,
       { role: 'assistant', content: '{' }
@@ -30,8 +29,8 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 3000,
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 4000,
         system: 'You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.',
         messages: messagesWithPrefill,
       }),
@@ -49,12 +48,10 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const tokens = data.usage?.output_tokens;
-    console.log('[claude] Done in ' + ((Date.now() - claudeStart)/1000).toFixed(1) + 's | tokens: ' + tokens);
+    console.log('[claude] Done in ' + ((Date.now() - claudeStart)/1000).toFixed(1) + 's | tokens: ' + data.usage?.output_tokens);
 
-    // Prepend the { we used as prefill
     const rawText = '{' + (data.content?.[0]?.text || '');
-    return res.status(200).json({ text: rawText, tokens });
+    return res.status(200).json({ text: rawText });
 
   } catch (e) {
     clearTimeout(timeout);
