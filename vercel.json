@@ -1,10 +1,9 @@
 {
+  "rewrites": [
+    { "source": "/plan/:path*", "destination": "/index.html" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
   "functions": {
-    "api/generate-plan.js": {
-      "maxDuration": 60
-    },
-    "api/send-email.js": {
-      "maxDuration": 30
-    }
+    "api/generate-plan.js": { "maxDuration": 300 }
   }
 }
