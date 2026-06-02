@@ -612,6 +612,12 @@ STYLE: American English, no Oxford comma, and never use em dashes or long dashes
 
 Replace ALL schema values with hyper-specific content for this exact person. Zero generic advice.
 
+HALLUCINATION GUARD, applies to every generation: only reference employers, job titles, schools, and biographical details that appear verbatim in the parsed profile text provided above. Never invent or infer company names, employers, schools, certifications, or metrics. If a relevant detail is absent, use a generic phrase such as 'a past role' instead of naming a company. If no profile text was provided, do not name any specific employer or school.
+
+HOOKS, the three post_hooks must be structurally distinct from each other: make one a contrarian claim, one a short personal-observation hook, and one a question or a single data point. Never reuse the same template across all three. Never fabricate first-person results, metrics, follower counts, or posting cadences the user did not state. Treat the hooks as editable drafts, not copy-paste-ready text.
+
+TIMELINE CONSISTENCY, if the user states a timeframe or deadline anywhere in their answers or note, keep every week reference consistent with it. Either generate a roadmap that spans up to the stated date, or clearly state that it covers the first weeks of a longer runway. Never mix conflicting week counts within one plan.
+
 SCHEMA:
 ${schema}`;
 }
