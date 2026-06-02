@@ -30,7 +30,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5-20250929',
-        max_tokens: 4000,
+        max_tokens: 6000,
         system: 'You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.',
         messages: messagesWithPrefill,
       }),
