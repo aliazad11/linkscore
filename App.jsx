@@ -559,22 +559,43 @@ CRITICAL PERSONALIZATION RULES — apply ALL of these:
 ${specialNote ? `HIGHEST PRIORITY FOCUS: ${specialNote}` : ""}
 Replace ALL schema values with hyper-specific content for this exact person. Zero generic advice.
 
-LINKEDIN ALGORITHM RULES — these are NON-NEGOTIABLE and must appear in critical_rules:
-1. MAX 2 posts per month — quality over quantity always
+LINKEDIN RULES — NON-NEGOTIABLE, always appear in critical_rules, stick to these exactly:
+1. MAX 2 posts per month — quality beats quantity always
 2. Never post during low-traffic hours — best times are Tue-Thu 8-10am and 12-2pm local time
-3. NEVER edit a post after publishing — the algorithm punishes edited posts severely
-4. NEVER reshare posts — if they want visibility, comment and like only. Resharing kills reach
-5. Complete LinkedIn profile — every role must have descriptions, skills, and dates filled in
-6. Profile photo + banner must be professional and industry-relevant
-7. Tag people mentioned in posts — increases reach to their network
-8. Use diverse content formats — documents (carousels), polls, images, video in the content plan
-9. Always have a content roadmap aligned to their long-term goal
-10. Tell personal stories — people follow to hear YOUR story, not industry news. Show your face in images
-11. Find and connect with relevant people via search — critical for first months of growth
-12. First 60 minutes after posting are critical — reply to every comment to boost the algorithm
-13. Max 3-5 hashtags per post — targeted and relevant only
-14. Every post needs a CTA — ask a question or request an opinion to drive engagement
-15. First 3 lines of every post must be a hook strong enough to make people click "see more" 
+3. NEVER edit a post after publishing — the algorithm penalizes edited posts
+4. NEVER reshare other posts — if they want someone's post seen, comment or like only. Resharing kills reach
+5. Complete LinkedIn profile — every role needs descriptions, skills, and dates
+6. Profile photo and banner must be professional and industry-relevant
+7. Tag people mentioned in posts — it extends reach to their network
+8. Use diverse content formats — carousels, polls, images, video — not just text posts
+9. Have a content roadmap aligned to their long-term personal brand goal
+10. Tell personal stories — people follow to hear YOUR story, not just industry news. Showing your face increases reach
+11. Connect with relevant people via search — important for growing audience in first months
+12. First 60 minutes after posting: reply to every comment — this signals the algorithm to boost the post
+13. Max 3-5 hashtags per post — targeted and relevant
+14. Every post needs a clear CTA — end with a question or opinion request
+15. First 3 lines must hook the reader enough to click "see more"
+
+PROFILE SCORE CALIBRATION — important:
+- Scores should be encouraging and realistic, not punishing
+- A profile with photo, headline, and some experience is at minimum 50-60, not 5-10
+- Reserve scores below 40 only for truly empty profiles with no photo, no headline, no experience
+- The goal is to motivate improvement, not discourage the user
+- Overall score of 60-75 is a normal active professional. 40-60 is someone who needs work. Below 40 is almost empty.
+
+ENGAGEMENT RULES — STRICT:
+- FORBIDDEN: any specific daily numbers like "comment 3 times a day", "like 10 posts daily", "send 10 connection requests"
+- FORBIDDEN: telling people to comment on every post they see — this looks like spam and confuses the algorithm
+- CORRECT: "engage meaningfully with posts from people in your niche" — no numbers, no quotas
+- CORRECT: "reply to every comment on your own posts within the first hour" — this is fine
+- When not posting: the advice is simply to be present and engage authentically with relevant content. No specific daily targets.
+
+PROFILE SCORING RULES — STRICT:
+- You have NO information about their About section — do NOT score it 0. Score it as unknown or 50 by default
+- Score based only on what is known from their answers
+- Ghost account = overall score 35-45 range. Not 22. Not 15.
+- Someone with a complete profile = 60-75. Someone active and growing = 75-85.
+- The score should motivate, not crush.
 
 SCHEMA:
 ${schema}`;
@@ -772,12 +793,15 @@ export default function App() {
     const run = () => {
       // If plan is ready, go to paywall immediately
       if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); return; }
-      // If we've finished all steps but plan not ready yet, loop back to step 4
-      if (step >= ANALYSIS_STEPS.length) { step = 4; }
+      // If we've finished all steps but plan not ready yet, stay on last step and pulse
+      if (step >= ANALYSIS_STEPS.length) {
+        setAnalysisStep(ANALYSIS_STEPS.length - 1);
+        setTimeout(() => { if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); } else { run(); } }, 800);
+        return;
+      }
       setAnalysisStep(step);
       const dur = ANALYSIS_STEPS[step].duration;
       elapsed += dur;
-      // Progress goes to max 95% until plan is ready, then jumps to 100%
       const targetPct = Math.min(95, Math.round((elapsed/total)*100));
       const iv = setInterval(()=>setAnalysisProgress(p => Math.min(targetPct, p+1)),40);
       setTimeout(()=>{ clearInterval(iv); step++; run(); }, dur);
