@@ -476,6 +476,9 @@ const ANALYSIS_STEPS = [
   { text: "Generating your post hooks...", duration: 2000 },
   { text: "Building your 30-day roadmap...", duration: 1800 },
   { text: "Calculating your LinkedIn Score...", duration: 1400 },
+  { text: "Personalizing your recommendations...", duration: 2000 },
+  { text: "Fine-tuning your content strategy...", duration: 1800 },
+  { text: "Preparing your final report...", duration: 1600 },
 ];
 
 function buildEmailHTML(firstName, plan) {
@@ -515,12 +518,12 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
     ? `\nPROFILE PDF:\n${profileText}\n`
     : "";
 
+  const sanitize = (s) => String(s || '').replace(/[\n\r]/g, ' ').replace(/"/g, "'").replace(/[\x00-\x1F\x7F]/g, '').slice(0, 200);
   const answersText = Object.entries(answers).map(([k,v]) => {
     if (v && v.startsWith('Other: ')) {
-      const clean = v.replace('Other: ','').trim().replace(/[\n\r"]/g,' ').slice(0,150);
-      return `${k}: [user wrote: "${clean}"] — analyze deeply`;
+      return `${k}: [user wrote: "${sanitize(v.replace('Other: ', '').trim())}"] — treat as a prompt, analyze deeply`;
     }
-    return `${k}: ${v}`;
+    return `${k}: ${sanitize(v)}`;
   }).join('\n');
 
   const ssiText = (userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships)
@@ -543,15 +546,35 @@ ${profileSection}
 ${screenshotCount > 0 ? `POST SCREENSHOTS: ${screenshotCount} images attached. Set thought_leader.available=true, score all 4 sub-scores, analysis max 15 words, 3 specific improvements.` : `thought_leader.available=false`}
 ${(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships) ? `SSI: Set ssi_plan.available=true, analyze each pillar, give specific actionable advice per pillar.` : `ssi_plan.available=false`}
 
-PERSONALIZATION (mandatory):
-- Every hook/rule/recommendation must speak directly to a ${cohort||"professional"}
-- Time <2h/wk → max 2 posts/week; 5+h → daily plan
-- Ghost account → start with commenting, not posting
-- Match all hooks to their content style: ${answers.content_style||"storytelling"}
-- Their success vision is the north star: ${answers.exec_success||answers.job_success||answers.founder_success||answers.re_success||answers.consulting_success||answers.tl_success||"growth"}
-- Address their specific obstacle directly in overview
-- If "Other:" answers exist, treat as detailed context and personalize deeply
-${specialNote ? `- HIGHEST PRIORITY: ${specialNote}` : ""}
+CRITICAL PERSONALIZATION RULES — apply ALL of these:
+1. COHORT: Every hook, rule, and recommendation must speak directly to a ${cohort||"professional"}. Use their language, pain points, and goals.
+2. TIME & POSTING FREQUENCY: Max 2 posts per MONTH unless user says they have 5+ hours/week. When not posting, fill the calendar with engagement actions — comment on 3 posts/day, like 10 posts/day, reply to all comments. Engagement is the strategy when posting is low.
+3. ACTIVITY LEVEL: Ghost account → start with commenting strategy before posting. Active but not growing → focus on hook optimization and posting times.
+4. CONTENT CHALLENGE: Struggle with ideas → give a 30-day topic bank. Fear judgment → psychological reframing in rules. No engagement → fix hook structure first.
+5. SUCCESS VISION: Their answer to "what would success look like" is the NORTH STAR. Every recommendation must connect back to this goal.
+6. OBSTACLES: Their specific obstacle must be addressed directly in the overview with a concrete action plan.
+7. CONTENT STYLE: Match ALL hooks and examples to their declared style: ${answers.content_style||"storytelling"}.
+8. COHORT-SPECIFIC ANSWERS: Use ALL quiz answers. A realtor targeting luxury buyers needs different hooks than one targeting first-time buyers.
+9. SPECIAL NOTE: If provided, this is the HIGHEST PRIORITY — override general advice to address their specific situation first.
+${specialNote ? `HIGHEST PRIORITY FOCUS: ${specialNote}` : ""}
+Replace ALL schema values with hyper-specific content for this exact person. Zero generic advice.
+
+LINKEDIN ALGORITHM RULES — these are NON-NEGOTIABLE and must appear in critical_rules:
+1. MAX 2 posts per month — quality over quantity always
+2. Never post during low-traffic hours — best times are Tue-Thu 8-10am and 12-2pm local time
+3. NEVER edit a post after publishing — the algorithm punishes edited posts severely
+4. NEVER reshare posts — if they want visibility, comment and like only. Resharing kills reach
+5. Complete LinkedIn profile — every role must have descriptions, skills, and dates filled in
+6. Profile photo + banner must be professional and industry-relevant
+7. Tag people mentioned in posts — increases reach to their network
+8. Use diverse content formats — documents (carousels), polls, images, video in the content plan
+9. Always have a content roadmap aligned to their long-term goal
+10. Tell personal stories — people follow to hear YOUR story, not industry news. Show your face in images
+11. Find and connect with relevant people via search — critical for first months of growth
+12. First 60 minutes after posting are critical — reply to every comment to boost the algorithm
+13. Max 3-5 hashtags per post — targeted and relevant only
+14. Every post needs a CTA — ask a question or request an opinion to drive engagement
+15. First 3 lines of every post must be a hook strong enough to make people click "see more" 
 
 SCHEMA:
 ${schema}`;
@@ -747,19 +770,16 @@ export default function App() {
     let step = 0, elapsed = 0;
     const total = ANALYSIS_STEPS.reduce((s,a)=>s+a.duration,0);
     const run = () => {
-      if (step >= ANALYSIS_STEPS.length) {
-        // Wait for plan to be ready before going to paywall
-        const waitForPlan = () => {
-          if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); }
-          else { setTimeout(waitForPlan, 300); }
-        };
-        waitForPlan();
-        return;
-      }
+      // If plan is ready, go to paywall immediately
+      if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); return; }
+      // If we've finished all steps but plan not ready yet, loop back to step 4
+      if (step >= ANALYSIS_STEPS.length) { step = 4; }
       setAnalysisStep(step);
       const dur = ANALYSIS_STEPS[step].duration;
       elapsed += dur;
-      const iv = setInterval(()=>setAnalysisProgress(Math.round((elapsed/total)*100)),40);
+      // Progress goes to max 95% until plan is ready, then jumps to 100%
+      const targetPct = Math.min(95, Math.round((elapsed/total)*100));
+      const iv = setInterval(()=>setAnalysisProgress(p => Math.min(targetPct, p+1)),40);
       setTimeout(()=>{ clearInterval(iv); step++; run(); }, dur);
     };
     run();
@@ -850,14 +870,9 @@ export default function App() {
       messageContent.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } });
     }
 
-    // Add post screenshots — compressed
-    if (validScreenshots.length > 0) {
-      const compressed = await Promise.all(validScreenshots.map(s => compressImage(s.base64, s.type)));
-      compressed.forEach((s, i) => {
-        messageContent.push({ type:"text", text:`LinkedIn Post Screenshot ${i+1}:` });
-        messageContent.push({ type:"image", source:{ type:"base64", media_type:s.type, data:s.base64 } });
-      });
-    }
+    // NOTE: Screenshots removed from main call to avoid 60s timeout
+    // Thought Leader score is estimated from quiz answers instead
+    // Screenshots kept for future enhancement
 
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote) });
@@ -865,7 +880,7 @@ export default function App() {
     messageContent.push({ type:"text", text:"Respond with only raw JSON starting with {" });
 
     const payloadSize = JSON.stringify(messageContent).length;
-    console.log(`[api] Payload size: ${(payloadSize/1024).toFixed(1)}KB`);
+    console.log(`[api] Payload: ${(payloadSize/1024).toFixed(1)}KB`);
 
     const res = await fetch("/api/generate-plan", {
       method:"POST",
@@ -873,19 +888,18 @@ export default function App() {
       body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
     });
     if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${res.status}`); }
-        const data = await res.json();
-    // Server returns { text: "{...json with { prefill}" }
-    const rawText = data.text || (data.content?.[0]?.text ? '{' + data.content[0].text : '');
+    const data = await res.json();
+    // Server sends { text: "{...json with prefill prepended...}" }
+    const rawText = data.text || data.content?.[0]?.text || '';
     const jsonEnd = rawText.lastIndexOf('}');
     if (jsonEnd === -1) throw new Error('Invalid response format');
     let jsonStr = rawText.slice(0, jsonEnd + 1);
-    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g,' ').replace(/,(\s*[}\]])/g,'$1');
+    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/,\s*([}\]])/g, '$1');
     let plan;
     try { plan = JSON.parse(jsonStr); }
     catch(e) { throw new Error('Analysis response was malformed. Please try again.'); }
     return plan;
   };
-
 
   const handlePaywall = async () => {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
@@ -1402,7 +1416,7 @@ export default function App() {
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
-          {analysisStep >= ANALYSIS_STEPS.length - 1 && !plan ? `Almost ready, ${userData.firstName}...` : `Analyzing, ${userData.firstName}...`}
+          {`Analyzing, ${userData.firstName}...`}
         </h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building something made only for you.</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
