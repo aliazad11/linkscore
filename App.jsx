@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 
 const LOGO_URL = "https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png";
 
+const FOUNDER_RULES = ["Post no more than twice a month. Quality beats quantity.","Don't post during low-traffic hours.","Never edit a post after publishing.","Never reshare. If you want a post seen, or your own account seen more, comment and like instead.","Fill in your full work history with proper, relevant descriptions on your profile.","Have a profile photo and banner that fit your industry.","Tag anyone you mention in a post.","Use a mix of content formats: documents, polls, images, video.","Have a content plan and roadmap built around what you want to become.","People follow you to hear your story, not industry news. Put yourself in the story, and show your face so posts get more reach.","Find relevant people in your field through search and send connection requests, to grow your following in the first months.","The first 60 minutes after posting matter most. Reply to every comment.","Use only 3 to 5 targeted, relevant hashtags.","End every post with a clear CTA, a question or an opinion request.","The first three lines must hook hard enough to earn the 'see more' click."];
+
 const GENERIC_QUESTIONS = [
   {
     id: "current_status", phase: "Where You Are",
@@ -943,6 +945,7 @@ export default function App() {
     let plan;
     try { plan = JSON.parse(jsonStr); }
     catch(e) { throw new Error('Analysis response was malformed. Please try again.'); }
+    plan.critical_rules = FOUNDER_RULES;
     return plan;
   };
 
