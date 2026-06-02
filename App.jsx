@@ -1345,7 +1345,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>PDF stays on your device. We only read the text.</p>
+        <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>We don't store your PDF. We process the text to build your plan and don't keep it.</p>
         <button className="primary-btn" onClick={()=>setPhase("quiz")}>
           {pdfName?"Continue to Questions →":"Skip & Continue →"}
         </button>
