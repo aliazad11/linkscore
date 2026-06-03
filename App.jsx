@@ -967,6 +967,7 @@ export default function App() {
       const result = gateData.plan;
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
+      setPlan(result);
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
