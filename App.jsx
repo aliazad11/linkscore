@@ -616,7 +616,7 @@ Replace ALL schema values with hyper-specific content for this exact person. Zer
 
 HALLUCINATION GUARD, applies to every generation: only reference employers, job titles, schools, and biographical details that appear verbatim in the parsed profile text provided above. Never invent or infer company names, employers, schools, certifications, or metrics. If a relevant detail is absent, use a generic phrase such as 'a past role' instead of naming a company. If no profile text was provided, do not name any specific employer or school.
 
-HOOKS, the three post_hooks must be structurally distinct from each other: make one a contrarian claim, one a short personal-observation hook, and one a question or a single data point. Never reuse the same template across all three. Never fabricate first-person results, metrics, follower counts, or posting cadences the user did not state. Treat the hooks as editable drafts, not copy-paste-ready text.
+HOOKS, the three post_hooks must be structurally distinct from each other: make one a contrarian claim, one a short personal-observation hook, and one a question or a single data point. Never reuse the same template across all three. Never fabricate first-person facts of any kind, no invented anecdotes, results, metrics, follower counts, events, or posting cadences the user did not provide. If you need a concrete example, frame it as a template the user fills in, not as something they already did. Treat the hooks as editable drafts, not copy-paste-ready text.
 
 TIMELINE CONSISTENCY, if the user states a timeframe or deadline anywhere in their answers or note, keep every week reference consistent with it. Either generate a roadmap that spans up to the stated date, or clearly state that it covers the first weeks of a longer runway. Never mix conflicting week counts within one plan.
 
@@ -825,7 +825,7 @@ export default function App() {
       setAnalysisStep(step);
       const dur = ANALYSIS_STEPS[step].duration;
       elapsed += dur;
-      const targetPct = Math.min(95, Math.round((elapsed/total)*100));
+      const targetPct = Math.min(90, Math.round((elapsed/total)*100));
       const iv = setInterval(()=>setAnalysisProgress(p => Math.min(targetPct, p+1)),40);
       setTimeout(()=>{ clearInterval(iv); step++; run(); }, dur);
     };
@@ -937,16 +937,8 @@ export default function App() {
     if (!res.ok) { const d=await res.json().catch(()=>({})); throw new Error(d?.error||`HTTP ${res.status}`); }
     const data = await res.json();
     // Server sends { text: "{...json with prefill prepended...}" }
-    const rawText = data.text || data.content?.[0]?.text || '';
-    const jsonEnd = rawText.lastIndexOf('}');
-    if (jsonEnd === -1) throw new Error('Invalid response format');
-    let jsonStr = rawText.slice(0, jsonEnd + 1);
-    jsonStr = jsonStr.replace(/[\u0000-\u001F\u007F-\u009F]/g, ' ').replace(/,\s*([}\]])/g, '$1');
-    let plan;
-    try { plan = JSON.parse(jsonStr); }
-    catch(e) { throw new Error('Analysis response was malformed. Please try again.'); }
-    plan.critical_rules = FOUNDER_RULES;
-    return plan;
+    if (!data.planId) throw new Error('Analysis response was malformed. Please try again.');
+    return data.planId;
   };
 
   const handlePaywall = async () => {
@@ -954,17 +946,28 @@ export default function App() {
     setEmailError(""); setLoading(true);
     try {
       // Plan was already fetched during animation — wait for it if not ready
-      let result = planRef.current;
-      if (!result) {
-        result = await new Promise((resolve, reject) => {
+      let pid = planRef.current;
+      if (!pid) {
+        pid = await new Promise((resolve, reject) => {
           const start = Date.now();
           const check = setInterval(() => {
             if (planRef.current) { clearInterval(check); resolve(planRef.current); }
-            else if (Date.now() - start > 55000) { clearInterval(check); reject(new Error("Analysis is taking longer than expected. Please try again.")); }
+            else if (Date.now() - start > 120000) { clearInterval(check); reject(new Error("Analysis is taking longer than expected. Please try again.")); }
           }, 300);
         });
       }
-      if (result._error) throw new Error(result._error);
+      if (pid && pid._error) throw new Error(pid._error);
+      const gateRes = await fetch("/api/get-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ planId: pid, email: email })
+      });
+      if (!gateRes.ok) { const gd = await gateRes.json().catch(()=>({})); throw new Error((gd && gd.error) || ("HTTP " + gateRes.status)); }
+      const gateData = await gateRes.json();
+      const result = gateData.plan;
+      if (!result) throw new Error("Could not load your plan. Please try again.");
+      result.critical_rules = FOUNDER_RULES;
+      setPlan(result);
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
@@ -1448,8 +1451,8 @@ export default function App() {
           setPhase("analyzing");
           // Start API call immediately parallel to animation
           callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
-            .then(result => { setPlan(result); planRef.current = result; })
-            .catch(err => { const e = {_error: err.message}; setPlan(e); planRef.current = e; });
+            .then(id => { planRef.current = id; setPlanId(id); })
+            .catch(err => { planRef.current = {_error: err.message}; });
         }}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
@@ -1466,7 +1469,7 @@ export default function App() {
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
           {`Analyzing, ${userData.firstName}...`}
         </h2>
-        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building something made only for you.</p>
+        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building your plan, this takes 30 to 60 seconds.</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${analysisProgress}%`, background:"linear-gradient(90deg,#c8a96e,#e8c98e)", borderRadius:100, transition:"width 0.3s ease" }} />
         </div>
