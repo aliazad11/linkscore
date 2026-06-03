@@ -8,9 +8,9 @@ const GENERIC_QUESTIONS = [
   {
     id: "current_status", phase: "Where You Are",
     question: "How active are you on LinkedIn right now?",
-    subtitle: "No judgment — everyone starts somewhere.",
+    subtitle: "No judgment, everyone starts somewhere.",
     options: [
-      { label: "Ghost account — I barely log in", emoji: "👻" },
+      { label: "Ghost account, I barely log in", emoji: "👻" },
       { label: "I scroll but never post", emoji: "👁️" },
       { label: "I posted once or twice and gave up", emoji: "📝" },
       { label: "I post sometimes but get zero traction", emoji: "📉" },
@@ -36,7 +36,7 @@ const GENERIC_QUESTIONS = [
   {
     id: "content_struggle", multiSelect: true, phase: "Your Challenge",
     question: "What's your biggest content challenge?",
-    subtitle: "Pick the one that resonates most.",
+    subtitle: "Pick all that apply.",
     options: [
       { label: "I don't know what topics to write about", emoji: "💡" },
       { label: "I struggle to put my thoughts into words", emoji: "✍️" },
@@ -68,7 +68,7 @@ const GENERIC_QUESTIONS = [
       { label: "Less than 1 hour", emoji: "⚡" },
       { label: "1–2 hours", emoji: "🕐" },
       { label: "3–5 hours", emoji: "🕒" },
-      { label: "5+ hours — I'm fully committed", emoji: "🔥" },
+      { label: "5+ hours, I'm fully committed", emoji: "🔥" },
       { label: "Other / Something else", emoji: "🌍" },
     ],
   },
@@ -97,16 +97,16 @@ const COHORT_QUESTIONS = {
         { label: "Just started", emoji: "⚡" },
         { label: "1–3 months", emoji: "📅" },
         { label: "3–6 months", emoji: "😰" },
-        { label: "6+ months — it's getting frustrating", emoji: "😓" },
+        { label: "6+ months, it's getting frustrating", emoji: "😓" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
     {
       id: "recruiter_view", phase: "Your Visibility",
       question: "What do recruiters currently see on your profile?",
-      subtitle: "Be honest — this is your starting point.",
+      subtitle: "Be honest, this is your starting point.",
       options: [
-        { label: "Barely anything — it's almost empty", emoji: "🪨" },
+        { label: "Barely anything, it's almost empty", emoji: "🪨" },
         { label: "Just my job history, nothing more", emoji: "📋" },
         { label: "Complete but nothing stands out", emoji: "😐" },
         { label: "Looks good but not getting responses", emoji: "💪" },
@@ -160,7 +160,7 @@ const COHORT_QUESTIONS = {
       options: [
         { label: "Employee at a company", emoji: "🏢" },
         { label: "I run my own business", emoji: "🚀" },
-        { label: "Both — corporate + side ventures", emoji: "🔄" },
+        { label: "Both, corporate + side ventures", emoji: "🔄" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -181,10 +181,10 @@ const COHORT_QUESTIONS = {
       question: "What's currently missing from your professional brand?",
       subtitle: "This is what we'll fix first.",
       options: [
-        { label: "Clear positioning — people don't know what I stand for", emoji: "🎯" },
-        { label: "Consistent content — I post sporadically", emoji: "📝" },
-        { label: "Visibility — I exist but nobody finds me", emoji: "🌟" },
-        { label: "Engagement — I post but get no reaction", emoji: "💬" },
+        { label: "Clear positioning, people don't know what I stand for", emoji: "🎯" },
+        { label: "Consistent content, I post sporadically", emoji: "📝" },
+        { label: "Visibility, I exist but nobody finds me", emoji: "🌟" },
+        { label: "Engagement, I post but get no reaction", emoji: "💬" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -208,9 +208,9 @@ const COHORT_QUESTIONS = {
       subtitle: "Your stage shapes your entire content strategy.",
       options: [
         { label: "Idea / Pre-product", emoji: "🌱" },
-        { label: "Building — early users", emoji: "🔨" },
-        { label: "Growing — have traction", emoji: "📈" },
-        { label: "Scaling — raising or expanding", emoji: "🚀" },
+        { label: "Building, early users", emoji: "🔨" },
+        { label: "Growing, have traction", emoji: "📈" },
+        { label: "Scaling, raising or expanding", emoji: "🚀" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -229,9 +229,9 @@ const COHORT_QUESTIONS = {
     {
       id: "founder_challenge", phase: "Your Challenge",
       question: "What's your content challenge as a founder?",
-      subtitle: "Be honest — this is common.",
+      subtitle: "Be honest, this is common.",
       options: [
-        { label: "No time — building takes everything", emoji: "⏰" },
+        { label: "No time, building takes everything", emoji: "⏰" },
         { label: "Don't know what to share publicly", emoji: "🤷" },
         { label: "Afraid to share before product is ready", emoji: "😰" },
         { label: "Post but get zero traction", emoji: "📉" },
@@ -269,11 +269,11 @@ const COHORT_QUESTIONS = {
       question: "What's your focus area?",
       subtitle: "Your niche is your superpower.",
       options: [
-        { label: "Residential — helping families find homes", emoji: "🏠" },
-        { label: "Commercial — working with businesses", emoji: "🏢" },
-        { label: "Luxury — high-end properties", emoji: "💎" },
-        { label: "New development — off-plan sales", emoji: "🏗️" },
-        { label: "International — cross-border clients", emoji: "🌍" },
+        { label: "Residential, helping families find homes", emoji: "🏠" },
+        { label: "Commercial, working with businesses", emoji: "🏢" },
+        { label: "Luxury, high-end properties", emoji: "💎" },
+        { label: "New development, off-plan sales", emoji: "🏗️" },
+        { label: "International, cross-border clients", emoji: "🌍" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -299,7 +299,7 @@ const COHORT_QUESTIONS = {
         { label: "Social media (Instagram/TikTok)", emoji: "📱" },
         { label: "Google and online listings", emoji: "🔍" },
         { label: "Walk-ins and agency leads", emoji: "🏢" },
-        { label: "LinkedIn — but it's not working well", emoji: "🔗" },
+        { label: "LinkedIn, but it's not working well", emoji: "🔗" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -350,10 +350,10 @@ const COHORT_QUESTIONS = {
       subtitle: "This tells us what's working and what's not.",
       options: [
         { label: "Word of mouth and referrals only", emoji: "🤝" },
-        { label: "Social media — but inconsistently", emoji: "📱" },
+        { label: "Social media, but inconsistently", emoji: "📱" },
         { label: "My website or blog", emoji: "🌐" },
         { label: "Conferences and events", emoji: "🏢" },
-        { label: "They don't — I'm chasing them", emoji: "😓" },
+        { label: "They don't, I'm chasing them", emoji: "😓" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -362,11 +362,11 @@ const COHORT_QUESTIONS = {
       question: "What's your biggest business challenge?",
       subtitle: "Pick the one holding you back most.",
       options: [
-        { label: "Positioning — I'm too broad, clients don't get it", emoji: "🎯" },
-        { label: "Content — I know my stuff but can't explain it simply", emoji: "📝" },
-        { label: "Visibility — nobody knows I exist", emoji: "👻" },
-        { label: "Pricing — I undercharge because I'm not seen as premium", emoji: "💰" },
-        { label: "Time — client work leaves no time for marketing", emoji: "⏰" },
+        { label: "Positioning, I'm too broad, clients don't get it", emoji: "🎯" },
+        { label: "Content, I know my stuff but can't explain it simply", emoji: "📝" },
+        { label: "Visibility, nobody knows I exist", emoji: "👻" },
+        { label: "Pricing, I undercharge because I'm not seen as premium", emoji: "💰" },
+        { label: "Time, client work leaves no time for marketing", emoji: "⏰" },
       { label: "Other / Something else", emoji: "🌍" },
       ],
     },
@@ -413,7 +413,7 @@ const COHORT_QUESTIONS = {
     {
       id: "tl_presence", phase: "Your Presence",
       question: "What's your current LinkedIn presence?",
-      subtitle: "Be honest — this is your baseline.",
+      subtitle: "Be honest, this is your baseline.",
       options: [
         { label: "Starting from zero", emoji: "👻" },
         { label: "Under 500 followers, low engagement", emoji: "📉" },
@@ -425,7 +425,7 @@ const COHORT_QUESTIONS = {
     {
       id: "tl_frequency", phase: "Your Habit",
       question: "How often do you currently post?",
-      subtitle: "No judgment — this shapes your plan.",
+      subtitle: "No judgment, this shapes your plan.",
       options: [
         { label: "Rarely or never", emoji: "😓" },
         { label: "Once or twice a month", emoji: "📅" },
@@ -523,7 +523,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
   const sanitize = (s) => String(s || '').replace(/[\n\r]/g, ' ').replace(/"/g, "'").replace(/[\x00-\x1F\x7F]/g, '').slice(0, 200);
   const answersText = Object.entries(answers).map(([k,v]) => {
     if (v && v.startsWith('Other: ')) {
-      return `${k}: [user wrote: "${sanitize(v.replace('Other: ', '').trim())}"] — treat as a prompt, analyze deeply`;
+      return `${k}: [user wrote: "${sanitize(v.replace('Other: ', '').trim())}"], treat as a prompt, analyze deeply`;
     }
     return `${k}: ${sanitize(v)}`;
   }).join('\n');
@@ -532,7 +532,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
     ? `SSI: Brand=${userData.establish_brand||"?"}/25 People=${userData.find_people||"?"}/25 Insights=${userData.engage_insights||"?"}/25 Relations=${userData.build_relationships||"?"}/25 Total=${parseInt(userData.establish_brand||0)+parseInt(userData.find_people||0)+parseInt(userData.engage_insights||0)+parseInt(userData.build_relationships||0)}/100`
     : "SSI: not provided";
 
-  // Compact JSON schema — replace UPPER_CASE placeholders with real values
+  // Compact JSON schema, replace UPPER_CASE placeholders with real values
   const schema = `{"score":INT,"archetype":"STR","headline":"STR","urgency":"STR","profile_scores":{"headline":INT,"about":INT,"experience":INT,"overall":INT},"profile_fixes":["STR","STR","STR"],"content_strategy":{"post_frequency":"STR","best_posting_times":"STR","content_mix":"STR","hook_formula":"STR","content_types":"STR"},"post_hooks":["STR","STR","STR"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"STR","hook":"STR","action":"STR"},{"week":"Week 2","type":"ENGAGEMENT","topic":"STR","hook":null,"action":"STR"},{"week":"Week 3","type":"POST","topic":"STR","hook":"STR","action":"STR"},{"week":"Week 4","type":"ENGAGEMENT","topic":"STR","hook":null,"action":"STR"}],"critical_rules":["STR","STR","STR","STR","STR","STR"],"growth_tactics":["STR","STR","STR","STR"],"closing_message":"STR","thought_leader":{"available":${screenshotCount>0},"score":INT,"hook_score":INT,"engagement_score":INT,"voice_score":INT,"structure_score":INT,"analysis":"MAX_15_WORDS","improvements":["STR","STR","STR"]},"ssi_plan":{"available":${!!(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships)},"total":INT,"overview":"STR","pillars":[{"name":"Establish Your Brand","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Find the Right People","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Engage with Insights","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Build Relationships","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"}]}}`;
 
   return `OUTPUT: raw JSON only, no markdown, no commentary.
@@ -838,7 +838,7 @@ export default function App() {
     if (!userData.lastName.trim()) e.lastName = "Required";
     if (!userData.age || isNaN(userData.age) || userData.age<16||userData.age>80) e.age = "Invalid";
     if (!userData.jobTitle.trim()) e.jobTitle = "Required";
-    if (!userData.linkedinUrl.trim()||!userData.linkedinUrl.includes("linkedin")) e.linkedinUrl = "Invalid URL";
+    if (!userData.linkedinUrl.trim()||!userData.linkedinUrl.toLowerCase().includes("linkedin.com/in/")) e.linkedinUrl = "Enter your LinkedIn profile URL (linkedin.com/in/...)";
     setFormErrors(e);
     return Object.keys(e).length===0;
   };
@@ -885,7 +885,7 @@ export default function App() {
     else setPhase("note");
   };
 
-  // Compress image to reduce payload size — with fallback to original
+  // Compress image to reduce payload size, with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
     try {
       const img = new Image();
@@ -945,7 +945,7 @@ export default function App() {
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
-      // Plan was already fetched during animation — wait for it if not ready
+      // Plan was already fetched during animation, wait for it if not ready
       let pid = planRef.current;
       if (!pid) {
         pid = await new Promise((resolve, reject) => {
@@ -1039,7 +1039,7 @@ export default function App() {
       setPhase("result");
     } catch(e) {
       if (e.message === "Failed to fetch") {
-        setEmailError("Connection error — please check your internet and try again.");
+        setEmailError("Connection error, please check your internet and try again.");
       } else {
         setEmailError(`Error: ${e.message}`);
       }
@@ -1108,7 +1108,7 @@ export default function App() {
       <div className="page-enter">
         <Logo />
         <h2 style={{ ...s.h1, fontSize:26, marginBottom:8 }}>Which best describes you?</h2>
-        <p style={{ ...s.sub, marginBottom:28 }}>This shapes your entire plan — be honest.</p>
+        <p style={{ ...s.sub, marginBottom:28 }}>This shapes your entire plan, be honest.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
           {COHORTS.map(c => (
             <button key={c.id}
@@ -1161,7 +1161,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
-        <Badge>Step 1 of 3 — About You</Badge>
+        <Badge>Step 1 of 3, About You</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Let's make this personal.</h2>
         <p style={{ ...s.sub }}>We need a few details to tailor your plan.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -1196,7 +1196,7 @@ export default function App() {
               <span style={{ fontSize:16 }}>📊</span>
               <label style={{ ...s.label, margin:0 }}>LinkedIn SSI Score <span style={{ color:"#3a3a5a", fontWeight:400 }}>(optional)</span></label>
             </div>
-            <p style={{ color:"#2a2a3a", fontSize:11, marginBottom:12 }}>Find your scores at <a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</a> — each pillar is scored 0–25</p>
+            <p style={{ color:"#2a2a3a", fontSize:11, marginBottom:12 }}>Find your scores at <a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</a>, each pillar is scored 0–25</p>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {[
                 ["establish_brand", "Establish Your Brand"],
@@ -1211,7 +1211,7 @@ export default function App() {
                     type="number" min="0" max="25"
                     placeholder="0–25"
                     value={userData[key]||""}
-                    onChange={e=>setUserData({...userData,[key]:e.target.value})}
+                    onChange={e=>{let val=e.target.value; if(val!==""){val=String(Math.max(0,Math.min(25,Math.floor(Number(val)||0))));} setUserData({...userData,[key]:val});}}
                     style={{ padding:"8px 12px", fontSize:14 }}
                   />
                 </div>
@@ -1232,8 +1232,8 @@ export default function App() {
       <div className="page-enter" key={currentQ}>
         <Logo />
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <Badge color="#6a5a9a">Step 3 of 3 — {q.phase}</Badge>
-          <span style={{ color:"#2a2a4a", fontSize:12 }}>{effectiveCurrent+1} / {effectiveTotal}</span>
+          <Badge color="#6a5a9a">Step 3 of 3, {q.phase}</Badge>
+          <span style={{ color:"#2a2a4a", fontSize:12 }}>{Math.min(currentQ + 1, QUESTIONS.length)} / {QUESTIONS.length}</span>
         </div>
         <div className="progress-bar" style={{ marginBottom:24 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
@@ -1276,14 +1276,15 @@ export default function App() {
         </div>
         {(selected === "Other / Something else" || (q.multiSelect && multiSelected.includes("Other / Something else"))) && (
           <div style={{ marginBottom:16 }}>
-            <input
+            <textarea
               autoFocus
-              className="field-input"
-              placeholder="Describe your specific situation in detail — the more you write, the more accurate your plan will be..."
+              placeholder="Describe your specific situation in detail, the more you write, the more accurate your plan will be..."
               value={otherText}
               onChange={e=>setOtherText(e.target.value)}
-              style={{ width:"100%", boxSizing:"border-box" }}
+              maxLength={500}
+              style={{ width:"100%", minHeight:90, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:12, padding:"12px 14px", color:"#F9FAFB", fontSize:14, lineHeight:1.6, resize:"vertical", fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}
             />
+            <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"right", marginTop:4 }}>{otherText.length}/500</p>
           </div>
         )}
         <button className="primary-btn" disabled={
@@ -1327,7 +1328,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
-        <Badge>Step 2 of 3 — Your Profile</Badge>
+        <Badge>Step 2 of 3, Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
         <p style={{ ...s.sub }}>This makes your plan 3x more accurate. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</p>
         <div
@@ -1367,7 +1368,7 @@ export default function App() {
         <Logo />
         <Badge>Almost There</Badge>
         <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>Anything specific we should know?</h2>
-        <p style={{ ...s.sub, marginBottom:20 }}>A job interview in 30 days? A product launch coming up? A specific person you want to impress? Tell us — this makes your plan dramatically more accurate.</p>
+        <p style={{ ...s.sub, marginBottom:20 }}>A job interview in 30 days? A product launch coming up? A specific person you want to impress? Tell us, this makes your plan dramatically more accurate.</p>
         <textarea
           value={specialNote}
           onChange={e=>setSpecialNote(e.target.value)}
@@ -1395,7 +1396,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
-        <Badge>Step 3 of 3 — Your Posts</Badge>
+        <Badge>Step 3 of 3, Your Posts</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>This unlocks your Thought Leader Score and makes your hooks much more specific to what already works for you.</p>
         
@@ -1551,7 +1552,7 @@ export default function App() {
             <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
               <ScoreRing score={plan.score} />
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Profile Score</p>
+                <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>LinkedIn Score</p>
                 <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.score<40?"Needs work":plan.score<70?"Good foundation":"Strong profile"}</p>
                 <p style={{ color:"#ef4444", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.urgency}</p>
               </div>
@@ -1742,7 +1743,7 @@ export default function App() {
             {/* Post Hooks */}
             {activeSection===5 && (
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>3 Custom Post Hooks — Written For Your Voice</p>
+                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>3 Custom Post Hooks, Written For Your Voice</p>
                 {plan.post_hooks?.map((hook,i)=>(
                   <div key={i} style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:20, marginBottom:10, borderLeft:"3px solid #c8a96e" }}>
                     <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1, marginBottom:8 }}>HOOK {i+1}</p>
@@ -1772,7 +1773,7 @@ export default function App() {
             {/* Rules */}
             {activeSection===7 && (
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules — Don't Break These</p>
+                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules, Don't Break These</p>
                 {plan.critical_rules?.map((rule,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:12 }}>
                     <span style={{ fontSize:14, flexShrink:0 }}>⚠</span>
