@@ -515,6 +515,28 @@ function buildEmailHTML(firstName, plan) {
 </html>`;
 }
 
+function finalizePlan(plan) {
+  if (!plan || typeof plan !== "object") return plan;
+  const strip = (s) => typeof s === "string" ? s.replace(/\[([^\]\[]{1,80})\]/g, "$1") : s;
+  const walk = (v) => {
+    if (typeof v === "string") return strip(v);
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === "object") { const o = {}; for (const k in v) o[k] = walk(v[k]); return o; }
+    return v;
+  };
+  plan = walk(plan);
+  const ps = plan.profile_scores || {};
+  let overall = Number(ps.overall);
+  if (!overall) { const h = Number(ps.headline) || 0, a = Number(ps.about) || 0, e = Number(ps.experience) || 0; overall = Math.round((h + a + e) / 3) || 50; }
+  overall = Math.max(0, Math.min(100, overall));
+  const ssiTotal = (plan.ssi_plan && plan.ssi_plan.available && Number(plan.ssi_plan.total)) ? Number(plan.ssi_plan.total) : null;
+  let score = ssiTotal != null ? Math.round(0.6 * overall + 0.4 * ssiTotal) : Math.round(overall);
+  score = Math.max(35, Math.min(95, score));
+  plan.score = score;
+  if (!plan.headline_rewrite) plan.headline_rewrite = "";
+  return plan;
+}
+
 function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "") {
   const profileSection = profileText
     ? `\nPROFILE PDF:\n${profileText}\n`
@@ -533,7 +555,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
     : "SSI: not provided";
 
   // Compact JSON schema, replace UPPER_CASE placeholders with real values
-  const schema = `{"score":INT,"archetype":"STR","headline":"STR","urgency":"STR","profile_scores":{"headline":INT,"about":INT,"experience":INT,"overall":INT},"profile_fixes":["STR","STR","STR"],"content_strategy":{"post_frequency":"STR","best_posting_times":"STR","content_mix":"STR","hook_formula":"STR","content_types":"STR"},"post_hooks":["STR","STR","STR"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"STR","hook":"STR","action":"STR"},{"week":"Week 2","type":"ENGAGEMENT","topic":"STR","hook":null,"action":"STR"},{"week":"Week 3","type":"POST","topic":"STR","hook":"STR","action":"STR"},{"week":"Week 4","type":"ENGAGEMENT","topic":"STR","hook":null,"action":"STR"}],"critical_rules":["STR","STR","STR","STR","STR","STR"],"growth_tactics":["STR","STR","STR","STR"],"closing_message":"STR","thought_leader":{"available":${screenshotCount>0},"score":INT,"hook_score":INT,"engagement_score":INT,"voice_score":INT,"structure_score":INT,"analysis":"MAX_15_WORDS","improvements":["STR","STR","STR"]},"ssi_plan":{"available":${!!(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships)},"total":INT,"overview":"STR","pillars":[{"name":"Establish Your Brand","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Find the Right People","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Engage with Insights","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Build Relationships","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"}]}}`;
+  const schema = `{"score":INT,"archetype":"STR","headline":"STR","headline_rewrite":"STR","urgency":"STR","profile_scores":{"headline":INT,"about":INT,"experience":INT,"overall":INT},"profile_fixes":["STR","STR","STR"],"content_strategy":{"post_frequency":"STR","best_posting_times":"STR","content_mix":"STR","hook_formula":"STR","content_types":"STR"},"post_hooks":["STR","STR","STR"],"content_calendar":[{"week":"Week 1","type":"POST","topic":"STR","hook":"STR","action":"STR"},{"week":"Week 2","type":"ENGAGEMENT","topic":"STR","hook":null,"action":"STR"},{"week":"Week 3","type":"POST","topic":"STR","hook":"STR","action":"STR"},{"week":"Week 4","type":"ENGAGEMENT","topic":"STR","hook":null,"action":"STR"}],"critical_rules":["STR","STR","STR","STR","STR","STR"],"growth_tactics":["STR","STR","STR","STR"],"closing_message":"STR","thought_leader":{"available":true,"score":INT,"hook_score":INT,"engagement_score":INT,"voice_score":INT,"structure_score":INT,"analysis":"MAX_15_WORDS","improvements":["STR","STR","STR"]},"ssi_plan":{"available":${!!(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships)},"total":INT,"overview":"STR","pillars":[{"name":"Establish Your Brand","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Find the Right People","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Engage with Insights","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"},{"name":"Build Relationships","score":INT,"status":"WEAK|AVERAGE|STRONG","advice":"STR"}]}}`;
 
   return `OUTPUT: raw JSON only, no markdown, no commentary.
 
@@ -545,7 +567,7 @@ Answers:
 ${answersText}
 ${specialNote ? `Priority focus: ${specialNote}` : ""}
 ${profileSection}
-${screenshotCount > 0 ? `POST SCREENSHOTS: ${screenshotCount} images attached. Set thought_leader.available=true, score all 4 sub-scores, analysis max 15 words, 3 specific improvements.` : `thought_leader.available=false`}
+THOUGHT LEADER: always provide a preliminary read from their answers and profile. Set thought_leader.available=true and score all 4 sub-scores as best estimates from their stated behavior. In 'analysis' (max 15 words) note it is a preliminary estimate that sharpens when they upload recent post screenshots. Give 3 specific improvements.
 ${(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships) ? `SSI: Set ssi_plan.available=true, analyze each pillar, give specific actionable advice per pillar.` : `ssi_plan.available=false`}
 
 CORE PRINCIPLE:
@@ -610,13 +632,21 @@ PERSONALIZATION:
 - SPECIAL NOTE: if provided, it is the highest priority.
 ${specialNote ? ("HIGHEST PRIORITY for this user, override conflicting general advice: " + specialNote) : ""}
 
-STYLE: American English, no Oxford comma, and never use em dashes or long dashes anywhere in the generated copy. Use commas or periods instead.
+STYLE: American English. NO Oxford comma: write lists as "A, B and C", never "A, B, and C", and do not put a comma before the final and or or in any list. Never use em dashes or long dashes anywhere; use commas, periods, or parentheses instead.
 
 Replace ALL schema values with hyper-specific content for this exact person. Zero generic advice.
 
 HALLUCINATION GUARD, applies to every generation: only reference employers, job titles, schools, and biographical details that appear verbatim in the parsed profile text provided above. Never invent or infer company names, employers, schools, certifications, or metrics. If a relevant detail is absent, use a generic phrase such as 'a past role' instead of naming a company. If no profile text was provided, do not name any specific employer or school.
 
 HOOKS, the three post_hooks must be structurally distinct from each other: make one a contrarian claim, one a short personal-observation hook, and one a question or a single data point. Never reuse the same template across all three. Never fabricate first-person facts of any kind, no invented anecdotes, results, metrics, follower counts, events, or posting cadences the user did not provide. If you need a concrete example, frame it as a template the user fills in, not as something they already did. Treat the hooks as editable drafts, not copy-paste-ready text.
+
+ARCHETYPE: assign a 2 to 3 word archetype specific to THIS user's answers and cohort. It must fit a ${cohort||"professional"}. Do NOT default to "The Invisible ___" or "The Silent ___" and do not reuse one generic label across different people. Right flavor by cohort: B2B Executive to The Quiet Operator or The Boardroom Voice; Real Estate to The Off-Market Insider or The Local Authority; Startup Founder to The Stealth Builder or The Mission Magnet; Job Seeker to The Hidden Candidate or The Untapped Talent; Consultant or Coach to The Best-Kept Secret or The Underbooked Expert; Thought Leader to The Almost-Heard or The Plateaued Voice. Pick or coin one that matches their specific situation.
+
+HEADLINE FIELD: 'headline' is one plain-English sentence, max 16 words, naming who they are and their single biggest gap. No internal jargon, no SSI pillar names, no phrases like "relationship layer" or "distribution layer". Write it like a sharp peer describing them in a sentence.
+
+HEADLINE REWRITE: 'headline_rewrite' is a ready-to-paste LinkedIn headline for this exact person, in their voice, max 200 characters, using their real role and cohort. Use vertical bars to separate phrases if useful. No fabricated metrics.
+
+NO PLACEHOLDERS: never output square-bracket slots such as [industry], [your city], [company], [metric], [before] or [after] in ANY field. You already know their cohort, title, and answers, so use those real specifics. Where a detail is genuinely unknown, write it as natural prose like "your city", "your main service" or "a recent win", never a bracketed slot.
 
 TIMELINE CONSISTENCY, if the user states a timeframe or deadline anywhere in their answers or note, keep every week reference consistent with it. Either generate a roadmap that spans up to the stated date, or clearly state that it covers the first weeks of a longer runway. Never mix conflicting week counts within one plan.
 
@@ -772,7 +802,7 @@ export default function App() {
               thought_leader: p.thought_leader || { available: false, score: 0, hook_score: 0, engagement_score: 0, voice_score: 0, structure_score: 0, analysis: "", improvements: [] },
               ...p
             };
-            setPlan(safePlan);
+            setPlan(finalizePlan(safePlan));
             setUserData(d => ({ ...d, firstName: data[0].first_name || "there" }));
             setPhase("result");
           } else {
@@ -967,7 +997,7 @@ export default function App() {
       const result = gateData.plan;
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
-      setPlan(result);
+      setPlan(finalizePlan(result));
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
@@ -1643,6 +1673,12 @@ export default function App() {
             {/* Profile */}
             {activeSection===1 && (
               <div>
+                {plan.headline_rewrite && (
+                  <div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}>
+                    <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Your New Headline (copy and paste)</p>
+                    <p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.6, fontWeight:600 }}>{plan.headline_rewrite}</p>
+                  </div>
+                )}
                 {plan.profile_fixes?.map((fix,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                     <div style={{ width:24, height:24, borderRadius:"50%", background:"rgba(200,169,110,0.1)", border:"1px solid #c8a96e33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#c8a96e", fontSize:11, fontWeight:700 }}>{i+1}</div>
