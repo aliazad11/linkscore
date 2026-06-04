@@ -515,7 +515,32 @@ function buildEmailHTML(firstName, plan) {
 </html>`;
 }
 
-function finalizePlan(plan) {
+const REVENUE_COHORTS = ["Real Estate Professional", "Consultant or Coach", "Startup Founder"];
+const PINNED_CURRENCIES = ["USD","EUR","GBP","AED","SAR","CAD","AUD","CHF","INR","SGD"];
+function allCurrencyCodes() {
+  try {
+    const all = Intl.supportedValuesOf ? Intl.supportedValuesOf("currency") : PINNED_CURRENCIES;
+    const pinned = PINNED_CURRENCIES.filter(c => all.indexOf(c) !== -1);
+    const rest = all.filter(c => PINNED_CURRENCIES.indexOf(c) === -1);
+    return pinned.concat(rest);
+  } catch (e) { return PINNED_CURRENCIES; }
+}
+function currencyName(code) {
+  try { return new Intl.DisplayNames(undefined, { type: "currency" }).of(code) || code; } catch (e) { return code; }
+}
+function guessCurrency() {
+  try {
+    const region = (navigator.language || "en-US").split("-")[1];
+    const map = { US:"USD", GB:"GBP", AE:"AED", SA:"SAR", DE:"EUR", FR:"EUR", ES:"EUR", IT:"EUR", NL:"EUR", IE:"EUR", AT:"EUR", BE:"EUR", PT:"EUR", CA:"CAD", AU:"AUD", CH:"CHF", IN:"INR", SG:"SGD", QA:"QAR", KW:"KWD", TR:"TRY", ZA:"ZAR", BR:"BRL", JP:"JPY", CN:"CNY", HK:"HKD" };
+    return (region && map[region]) || "USD";
+  } catch (e) { return "USD"; }
+}
+function fmtMoney(n, code) {
+  try { return new Intl.NumberFormat(undefined, { style: "currency", currency: code || "USD", maximumFractionDigits: 0 }).format(Math.round(n)); }
+  catch (e) { return (code || "") + " " + Math.round(n).toLocaleString(); }
+}
+
+function finalizePlan(plan, rev) {
   if (!plan || typeof plan !== "object") return plan;
   const strip = (s) => typeof s === "string" ? s.replace(/\[([^\]\[]{1,80})\]/g, "$1") : s;
   const walk = (v) => {
@@ -534,6 +559,16 @@ function finalizePlan(plan) {
   score = Math.max(35, Math.min(95, score));
   plan.score = score;
   if (!plan.headline_rewrite) plan.headline_rewrite = "";
+  if (rev && rev.value && rev.target && REVENUE_COHORTS.indexOf(rev.cohort) !== -1 && !(rev.cohort === "Startup Founder" && rev.hasRevenue !== "yes")) {
+    const v = Number(rev.value), t = Number(rev.target);
+    if (v > 0 && t > 0) {
+      const gap = (100 - plan.score) / 100;
+      const missedLow = Math.max(1, Math.round(t * gap * 0.2));
+      const missedHigh = Math.max(missedLow, Math.round(t * gap * 0.4));
+      const noun = rev.cohort === "Real Estate Professional" ? "deal" : rev.cohort === "Startup Founder" ? "customer" : (rev.period === "per_project" ? "project" : "client");
+      plan.revenue_at_risk = { available: true, low: v * missedLow, high: v * missedHigh, currency: rev.currency || "USD", value: v, target: t, missedLow: missedLow, missedHigh: missedHigh, period: rev.period || "per_year", noun: noun };
+    }
+  }
   return plan;
 }
 
@@ -764,6 +799,12 @@ export default function App() {
   const [industryOther, setIndustryOther] = useState("");
   const [postScreenshots, setPostScreenshots] = useState([null, null, null]);
   const [noPostsYet, setNoPostsYet] = useState(false);
+  const [revCurrency, setRevCurrency] = useState("");
+  const [revValue, setRevValue] = useState("");
+  const [revPeriod, setRevPeriod] = useState("per_year");
+  const [revTarget, setRevTarget] = useState("");
+  const [founderHasRevenue, setFounderHasRevenue] = useState(null);
+  const [founderUnlock, setFounderUnlock] = useState("");
   const postRefs = [useRef(null), useRef(null), useRef(null)];
   const fileInputRef = useRef(null);
 
@@ -997,7 +1038,9 @@ export default function App() {
       const result = gateData.plan;
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
-      setPlan(finalizePlan(result));
+      const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue };
+      const finalized = finalizePlan(result, revInputs);
+      setPlan(finalized);
 
       // Save user to Supabase (counter)
       let savedPlanId = null;
@@ -1032,7 +1075,7 @@ export default function App() {
           body: JSON.stringify({
             email,
             first_name: userData.firstName,
-            plan_data: result,
+            plan_data: finalized,
             cohort: cohort||null,
             quiz_answers: answers,
             special_note: specialNote||null,
@@ -1058,7 +1101,7 @@ export default function App() {
           body: JSON.stringify({
             email,
             firstName: userData.firstName,
-            plan: result,
+            plan: finalized,
             planId: savedPlanId
           })
         });
@@ -1101,7 +1144,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); };
 
   const skipIds = pdfText ? ["industry", "experience"] : [];
   const effectiveTotal = QUESTIONS.length - skipIds.length;
@@ -1413,13 +1456,88 @@ export default function App() {
           maxLength={500}
         />
         <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"right", marginBottom:20 }}>{specialNote.length}/500</p>
-        <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>
+        <button className="primary-btn" onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "post_screenshots")}>
           {specialNote ? "Got it →" : "Skip & Continue →"}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setCurrentQ(QUESTIONS.length-1); setPhase("quiz"); }}>← Back</button>
       </div>
     </Layout>
   );
+
+  // ── REVENUE AT RISK INPUTS ───────────────────────────────────────────────
+  if (phase==="revenue") {
+    const isFounder = cohort === "Startup Founder";
+    const labels = {
+      "Consultant or Coach": { amt: "What does one client typically pay you?", tgt: "How many new clients are you aiming to win this year?" },
+      "Real Estate Professional": { amt: "What is your average commission per deal?", tgt: "How many deals are you targeting this year?" },
+      "Startup Founder": { amt: "What is one customer worth to you per year?", tgt: "How many new customers are you targeting this year?" }
+    };
+    const L = labels[cohort] || labels["Consultant or Coach"];
+    const showGate = isFounder && founderHasRevenue === null;
+    const preRevenue = isFounder && founderHasRevenue === "no";
+    const showMoney = !showGate && !preRevenue;
+    const curList = allCurrencyCodes();
+    const curVal = revCurrency || guessCurrency();
+    const isConsultant = cohort === "Consultant or Coach";
+    return (
+      <Layout>
+        <div className="page-enter">
+          <Logo />
+          <Badge>Almost There</Badge>
+          <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>What is being invisible costing you?</h2>
+          <p style={{ ...s.sub, marginBottom:20 }}>Two quick numbers in your own currency. We use them only to estimate your Revenue at Risk. Nothing is stored or shared.</p>
+          {showGate && (
+            <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
+              <button className="opt-row" onClick={()=>setFounderHasRevenue("yes")}>
+                <span style={{ fontSize:20 }}>💰</span>
+                <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>Yes, we have paying customers</span>
+              </button>
+              <button className="opt-row" onClick={()=>setFounderHasRevenue("no")}>
+                <span style={{ fontSize:20 }}>🌱</span>
+                <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>Not yet, pre-revenue</span>
+              </button>
+            </div>
+          )}
+          {showMoney && (
+            <>
+              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{L.amt}</label>
+              <div style={{ display:"flex", gap:8, marginBottom: isConsultant?6:18 }}>
+                <select value={curVal} onChange={e=>setRevCurrency(e.target.value)} className="field-input" style={{ flex:"0 0 130px", cursor:"pointer" }}>
+                  {curList.map(c => <option key={c} value={c}>{c} — {currencyName(c)}</option>)}
+                </select>
+                <input type="number" inputMode="numeric" value={revValue} onChange={e=>setRevValue(e.target.value)} placeholder="e.g. 8000" className="field-input" style={{ flex:1 }} />
+              </div>
+              {isConsultant && (
+                <div style={{ display:"flex", gap:8, marginBottom:18 }}>
+                  {[["per_year","Per year"],["per_project","Per project"]].map(pp=>(
+                    <button key={pp[0]} className="tab-pill" onClick={()=>setRevPeriod(pp[0])} style={{ flex:1, borderColor: revPeriod===pp[0]?"#c8a96e":"#1a1a2e", color: revPeriod===pp[0]?"#c8a96e":"#4a4a6a", background: revPeriod===pp[0]?"rgba(200,169,110,0.1)":"transparent" }}>{pp[1]}</button>
+                  ))}
+                </div>
+              )}
+              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{L.tgt}</label>
+              <input type="number" inputMode="numeric" value={revTarget} onChange={e=>setRevTarget(e.target.value)} placeholder="e.g. 10" className="field-input" style={{ marginBottom:24 }} />
+              <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>Continue →</button>
+              <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setRevValue(""); setRevTarget(""); setPhase("post_screenshots"); }}>Skip this step</button>
+            </>
+          )}
+          {preRevenue && (
+            <>
+              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:10 }}>What do you most need LinkedIn to unlock?</label>
+              <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
+                {["Investors","Customers","Hires","Partnerships"].map(o=>(
+                  <button key={o} className="opt-row" onClick={()=>setFounderUnlock(o)} style={{ borderColor: founderUnlock===o?"#c8a96e":"#1a1a2e" }}>
+                    <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>{o}</span>
+                  </button>
+                ))}
+              </div>
+              <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>Continue →</button>
+            </>
+          )}
+          <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ if (isFounder && founderHasRevenue !== null) { setFounderHasRevenue(null); } else { setPhase("note"); } }}>← Back</button>
+        </div>
+      </Layout>
+    );
+  }
 
   // ── POST SCREENSHOTS ──────────────────────────────────────────────────────
   if (phase==="post_screenshots") return (
@@ -1487,7 +1605,7 @@ export default function App() {
         }}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("pdf_upload")}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "pdf_upload")}>← Back</button>
       </div>
     </Layout>
   );
@@ -1528,7 +1646,7 @@ export default function App() {
         <p style={{ ...s.sub, marginBottom:24 }}>Enter your email to unlock your full personalized LinkedIn strategy.</p>
         <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:24, textAlign:"left" }}>
           <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>Your plan includes</p>
-          {["LinkedIn Score & personal archetype","Profile scoring: headline, about, experience","3 custom post hooks written for your voice","30-day content calendar with exact topics","Critical algorithm rules you're probably breaking","Full growth tactics for your specific goal"].map((item,i)=>(
+          {[...(REVENUE_COHORTS.indexOf(cohort) !== -1 ? ["Your Revenue at Risk estimate"] : []),"LinkedIn Score & personal archetype","Profile scoring: headline, about, experience","3 custom post hooks written for your voice","30-day content calendar with exact topics","Critical algorithm rules you're probably breaking","Full growth tactics for your specific goal"].map((item,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
               <span style={{ color:"#c8a96e", fontSize:10 }}>◆</span>
               <span style={{ color:"#4a4a6a", fontSize:13 }}>{item}</span>
@@ -1609,6 +1727,16 @@ export default function App() {
             )}
           </div>
 
+          {plan.revenue_at_risk && plan.revenue_at_risk.available && (
+            <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.14),rgba(200,169,110,0.04))", border:"1px solid #c8a96e55", borderRadius:16, padding:20, marginBottom:20 }}>
+              <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Revenue at Risk</p>
+              <p style={{ color:"#F9FAFB", fontSize:26, fontWeight:800, marginBottom:6 }}>
+                {fmtMoney(plan.revenue_at_risk.low, plan.revenue_at_risk.currency)}{plan.revenue_at_risk.high > plan.revenue_at_risk.low ? (" – " + fmtMoney(plan.revenue_at_risk.high, plan.revenue_at_risk.currency)) : ""}
+                <span style={{ fontSize:13, fontWeight:600, color:"#8a8a9a" }}> / year</span>
+              </p>
+              <p style={{ color:"#8a8a9a", fontSize:13, lineHeight:1.6 }}>A conservative estimate of the business you leave on the table while your LinkedIn presence stays weak. Based on your own numbers: {fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency)} per {plan.revenue_at_risk.noun || "client"} and a target of {plan.revenue_at_risk.target} this year.</p>
+            </div>
+          )}
           {/* Profile section scores */}
           {plan.profile_scores && (
             <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:20 }}>
