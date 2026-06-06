@@ -561,12 +561,18 @@ function finalizePlan(plan, rev) {
   if (!plan.headline_rewrite) plan.headline_rewrite = "";
   if (rev && rev.value && rev.target && REVENUE_COHORTS.indexOf(rev.cohort) !== -1 && !(rev.cohort === "Startup Founder" && rev.hasRevenue !== "yes")) {
     const v = Number(rev.value), t = Number(rev.target);
-    if (v > 0 && t > 0) {
+    const share = Number(rev.channelShare) > 0 ? Number(rev.channelShare) : 0.3;
+    if (v > 0 && t > 0 && share > 0) {
       const gap = (100 - plan.score) / 100;
-      const missedLow = Math.max(1, Math.round(t * gap * 0.2));
-      const missedHigh = Math.max(missedLow, Math.round(t * gap * 0.4));
-      const noun = rev.cohort === "Real Estate Professional" ? "deal" : rev.cohort === "Startup Founder" ? "customer" : (rev.period === "per_project" ? "project" : "client");
-      plan.revenue_at_risk = { available: true, low: v * missedLow, high: v * missedHigh, currency: rev.currency || "USD", value: v, target: t, missedLow: missedLow, missedHigh: missedHigh, period: rev.period || "per_year", noun: noun };
+      const core = t * share * gap;
+      const round2 = function(n){ if (n <= 0) return 0; var step = n < 1000 ? 50 : (n < 10000 ? 100 : (n < 100000 ? 1000 : 10000)); return Math.round(n / step) * step; };
+      const high = round2(v * core * 1.0);
+      const lowRaw = round2(v * core * 0.6);
+      const low = lowRaw > 0 ? lowRaw : high;
+      if (high >= 1) {
+        const noun = rev.cohort === "Real Estate Professional" ? "deal" : rev.cohort === "Startup Founder" ? "customer" : (rev.period === "per_project" ? "project" : "client");
+        plan.revenue_at_risk = { available: true, low: low, high: high, currency: rev.currency || "USD", value: v, target: t, sharePct: Math.round(share * 100), period: rev.period || "per_year", noun: noun };
+      }
     }
   }
   return plan;
@@ -671,7 +677,7 @@ STYLE: American English. NO Oxford comma: write lists as "A, B and C", never "A,
 
 Replace ALL schema values with hyper-specific content for this exact person. Zero generic advice.
 
-HALLUCINATION GUARD, applies to every generation: only reference employers, job titles, schools, and biographical details that appear verbatim in the parsed profile text provided above. Never invent or infer company names, employers, schools, certifications, or metrics. If a relevant detail is absent, use a generic phrase such as 'a past role' instead of naming a company. If no profile text was provided, do not name any specific employer or school.
+HALLUCINATION GUARD, applies to every generation: only reference employers, job titles, schools, and biographical details that appear verbatim in the parsed profile text provided above. Never invent or infer company names, employers, schools, certifications, or metrics. If a relevant detail is absent, use a generic phrase such as 'a past role' instead of naming a company. If no profile text was provided, do not name any specific employer or school. Never state or imply a specific number of customers, clients, deals, users, or followers, and never claim the user already has paying customers, has a certain revenue, or is or is not generating revenue. You were not given the user's revenue or customer count. This applies to every field, including urgency, the diagnosis and closing_message.
 
 HOOKS, the three post_hooks must be structurally distinct from each other: make one a contrarian claim, one a short personal-observation hook, and one a question or a single data point. Never reuse the same template across all three. Never fabricate first-person facts of any kind, no invented anecdotes, results, metrics, follower counts, events, or posting cadences the user did not provide. If you need a concrete example, frame it as a template the user fills in, not as something they already did. Treat the hooks as editable drafts, not copy-paste-ready text.
 
@@ -805,6 +811,7 @@ export default function App() {
   const [revTarget, setRevTarget] = useState("");
   const [founderHasRevenue, setFounderHasRevenue] = useState(null);
   const [founderUnlock, setFounderUnlock] = useState("");
+  const [revChannelShare, setRevChannelShare] = useState("0.3");
   const postRefs = [useRef(null), useRef(null), useRef(null)];
   const fileInputRef = useRef(null);
 
@@ -1038,7 +1045,7 @@ export default function App() {
       const result = gateData.plan;
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
-      const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue };
+      const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
       const finalized = finalizePlan(result, revInputs);
       setPlan(finalized);
 
@@ -1144,7 +1151,7 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); };
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); };
 
   const skipIds = pdfText ? ["industry", "experience"] : [];
   const effectiveTotal = QUESTIONS.length - skipIds.length;
@@ -1515,7 +1522,13 @@ export default function App() {
                 </div>
               )}
               <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{L.tgt}</label>
-              <input type="number" inputMode="numeric" value={revTarget} onChange={e=>setRevTarget(e.target.value)} placeholder="e.g. 10" className="field-input" style={{ marginBottom:24 }} />
+              <input type="number" inputMode="numeric" value={revTarget} onChange={e=>setRevTarget(e.target.value)} placeholder="e.g. 10" className="field-input" style={{ marginBottom:18 }} />
+              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>How much of your new business could come from LinkedIn?</label>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:24 }}>
+                {[["0.15","A little"],["0.3","Some"],["0.5","A lot"],["0.7","Most of it"]].map(cs=>(
+                  <button key={cs[0]} className="tab-pill" onClick={()=>setRevChannelShare(cs[0])} style={{ flexBasis:"47%", flexGrow:1, borderColor: revChannelShare===cs[0]?"#c8a96e":"#1a1a2e", color: revChannelShare===cs[0]?"#c8a96e":"#4a4a6a", background: revChannelShare===cs[0]?"rgba(200,169,110,0.1)":"transparent" }}>{cs[1]}</button>
+                ))}
+              </div>
               <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>Continue →</button>
               <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setRevValue(""); setRevTarget(""); setPhase("post_screenshots"); }}>Skip this step</button>
             </>
@@ -1646,7 +1659,7 @@ export default function App() {
         <p style={{ ...s.sub, marginBottom:24 }}>Enter your email to unlock your full personalized LinkedIn strategy.</p>
         <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:24, textAlign:"left" }}>
           <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>Your plan includes</p>
-          {[...(REVENUE_COHORTS.indexOf(cohort) !== -1 ? ["Your Revenue at Risk estimate"] : []),"LinkedIn Score & personal archetype","Profile scoring: headline, about, experience","3 custom post hooks written for your voice","30-day content calendar with exact topics","Critical algorithm rules you're probably breaking","Full growth tactics for your specific goal"].map((item,i)=>(
+          {[...((REVENUE_COHORTS.indexOf(cohort) !== -1 && revValue && revTarget && !(cohort === "Startup Founder" && founderHasRevenue !== "yes")) ? ["Your Revenue at Risk estimate"] : []),"LinkedIn Score & personal archetype","Profile scoring: headline, about, experience","3 custom post hooks written for your voice","30-day content calendar with exact topics","Critical algorithm rules you're probably breaking","Full growth tactics for your specific goal"].map((item,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
               <span style={{ color:"#c8a96e", fontSize:10 }}>◆</span>
               <span style={{ color:"#4a4a6a", fontSize:13 }}>{item}</span>
@@ -1734,7 +1747,7 @@ export default function App() {
                 {fmtMoney(plan.revenue_at_risk.low, plan.revenue_at_risk.currency)}{plan.revenue_at_risk.high > plan.revenue_at_risk.low ? (" – " + fmtMoney(plan.revenue_at_risk.high, plan.revenue_at_risk.currency)) : ""}
                 <span style={{ fontSize:13, fontWeight:600, color:"#8a8a9a" }}> / year</span>
               </p>
-              <p style={{ color:"#8a8a9a", fontSize:13, lineHeight:1.6 }}>A conservative estimate of the business you leave on the table while your LinkedIn presence stays weak. Based on your own numbers: {fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency)} per {plan.revenue_at_risk.noun || "client"} and a target of {plan.revenue_at_risk.target} this year.</p>
+              <p style={{ color:"#8a8a9a", fontSize:13, lineHeight:1.6 }}>A rough estimate, not a guarantee. It assumes about {plan.revenue_at_risk.sharePct}% of your new {(plan.revenue_at_risk.noun || "client")}s could come through LinkedIn, and that your current profile is leaving a meaningful share of them on the table. Based on {fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency)} per {plan.revenue_at_risk.noun || "client"} and a target of {plan.revenue_at_risk.target} this year.</p>
             </div>
           )}
           {/* Profile section scores */}
