@@ -1966,7 +1966,7 @@ export default function App() {
 
 
 
-          <button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>Start Over</button>
+          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>Work on this directly with Ali</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>Ali Azad has spent 10+ years building brands on social, from award-winning work at Huawei to leading corporate social media at QIAGEN, where he built the executive LinkedIn thought-leadership program that reached 3.5M+ impressions. He has grown his own 10k+ following and tests every tactic on his own profile first.</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>Book a 1:1 session whenever you want a human read on your profile, your posts and the exact moves to make next, tailored to your situation.</p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none" }}>Book a session with Ali</a></div><button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>Start Over</button>
         </div>
       </Layout>
     );
