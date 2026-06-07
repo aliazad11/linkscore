@@ -1148,9 +1148,11 @@ export default function App() {
     if (!file || !file.type.startsWith("image/")) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      const updated = [...postScreenshots];
-      updated[index] = { file, preview: e.target.result, base64: e.target.result.split(",")[1], type: file.type };
-      setPostScreenshots(updated);
+      setPostScreenshots(prev => {
+        const updated = [...prev];
+        updated[index] = { file, preview: e.target.result, base64: e.target.result.split(",")[1], type: file.type };
+        return updated;
+      });
     };
     reader.readAsDataURL(file);
   };
