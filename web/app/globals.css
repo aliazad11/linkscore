@@ -25,3 +25,12 @@ article strong { color:var(--text); }
 .cta { display:inline-block; margin-top:28px; background:var(--gold); color:#0a0a0f; font-weight:700; padding:12px 20px; border-radius:10px; }
 footer { border-top:1px solid rgba(255,255,255,0.06); color:var(--muted); font-size:13px; }
 footer .container { padding:32px 24px; }
+
+.hero { background: linear-gradient(135deg, rgba(200,169,110,0.18), rgba(18,18,26,0.9)); border: 1px solid var(--border); border-radius: 16px; padding: 36px 32px; margin: 24px 0 8px; }
+.hero .kicker { margin-bottom: 6px; }
+.hero h1 { margin: 6px 0 10px; }
+.hero-img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 20px; display: block; }
+.share { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); }
+.share-label { color: var(--muted); font-size: 13px; font-weight: 600; }
+.share button { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
+.share button:hover { border-color: var(--gold); color: var(--gold); }
