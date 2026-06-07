@@ -578,7 +578,7 @@ function finalizePlan(plan, rev) {
   return plan;
 }
 
-function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "") {
+function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "", hasPdf = false) {
   const profileSection = profileText
     ? `\nPROFILE PDF:\n${profileText}\n`
     : "";
@@ -690,6 +690,10 @@ HEADLINE REWRITE: 'headline_rewrite' is a ready-to-paste LinkedIn headline for t
 NO PLACEHOLDERS: never output square-bracket slots such as [industry], [your city], [company], [metric], [before] or [after] in ANY field. You already know their cohort, title, and answers, so use those real specifics. Where a detail is genuinely unknown, write it as natural prose like "your city", "your main service" or "a recent win", never a bracketed slot.
 
 TIMELINE CONSISTENCY, if the user states a timeframe or deadline anywhere in their answers or note, keep every week reference consistent with it. Either generate a roadmap that spans up to the stated date, or clearly state that it covers the first weeks of a longer runway. Never mix conflicting week counts within one plan.
+
+SECTION SOURCES (follow exactly):
+- profile_scores and profile_fixes: base these ONLY on the attached profile PDF.${hasPdf ? " Read the headline, About, and experience in the PDF and judge those." : " No PDF was attached, so set profile_scores conservatively from the quiz answers and keep profile_fixes as general best-practice advice for their role; never invent PDF contents."}
+- post_hooks (the 3 hooks): ${screenshotCount > 0 ? "base all 3 hooks ONLY on the attached post screenshots - their themes, topics, angles, and the voice shown in those posts. Do NOT take hook topics from the profile PDF or career history." : hasPdf ? "no post screenshots were attached, so base the 3 hooks on the profile PDF, meaning the experience, expertise and positioning shown there." : "no posts or PDF were attached, so base the 3 hooks on their role and what they do from the form plus their quiz answers."}
 
 SCHEMA:
 ${schema}`;
@@ -1004,7 +1008,7 @@ export default function App() {
     // Screenshots kept for future enhancement
 
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote, !!(profile && profile.startsWith("PDF_BASE64:"))) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
     // Prefix JSON
     messageContent.push({ type:"text", text:"Respond with only raw JSON starting with {" });
 
