@@ -963,6 +963,7 @@ export default function App() {
     else setPhase("note");
   };
 
+  const handlePrev = () => { const skipIds = pdfText ? ["industry","experience"] : []; let p = currentQ - 1; while (p >= 0 && skipIds.includes(QUESTIONS[p].id)) p--; if (p < 0) { setPhase("pdf_upload"); setSelected(null); setMultiSelected([]); setOtherText(""); return; } const pq = QUESTIONS[p]; const pv = answers[pq.id]; if (pq.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(p); };
   // Compress image to reduce payload size, with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
     try {
@@ -1374,6 +1375,7 @@ export default function App() {
         } onClick={handleNext}>
           {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
         </button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={handlePrev}>← Back</button>
       </div>
     </Layout>
   );
