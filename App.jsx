@@ -965,6 +965,8 @@ export default function App() {
 
   const handlePrev = () => { const skipIds = pdfText ? ["industry","experience"] : []; let p = currentQ - 1; while (p >= 0 && skipIds.includes(QUESTIONS[p].id)) p--; if (p < 0) { setPhase("pdf_upload"); setSelected(null); setMultiSelected([]); setOtherText(""); return; } const pq = QUESTIONS[p]; const pv = answers[pq.id]; if (pq.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(p); };
   const goToQuestion = (i) => { if (i === currentQ) return; const q = QUESTIONS[i]; if (!q || answers[q.id] == null) return; const pv = answers[q.id]; if (q.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(i); };
+  const goToPhase = (target) => { setOtherText(""); if (target === "quiz") { const qq = QUESTIONS[currentQ]; const pv = qq ? answers[qq.id] : null; if (qq && qq.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } } else { setSelected(null); setMultiSelected([]); } setPhase(target); };
+  const renderStepRail = (current) => { const STEPS = [["cohort","Category"],["form","About You"],["pdf_upload","Profile"],["quiz","Questions"],["post_screenshots","Posts"]]; const ci = STEPS.findIndex(function(s){ return s[0] === current; }); return (<div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16 }}>{STEPS.map(function(s, i){ var isCur = i === ci; var reached = i < ci; return (<button key={s[0]} onClick={function(){ if (reached) goToPhase(s[0]); }} disabled={!reached && !isCur} style={{ fontSize:11, fontWeight:600, padding:"5px 10px", borderRadius:8, border: isCur ? "1px solid #c8a96e" : (reached ? "1px solid #4a4a6a" : "1px solid #22223a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (reached ? "#c8a96e" : "#44445a"), cursor: reached ? "pointer" : "default", whiteSpace:"nowrap" }}>{s[1]}</button>); })}</div>); };
   // Compress image to reduce payload size, with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
     try {
@@ -1194,7 +1196,7 @@ export default function App() {
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
           {COHORTS.map(c => (
             <button key={c.id}
-              onClick={()=>{ setCohort(c.id); setPhase("form"); }}
+              onClick={()=>{ if (c.id !== cohort) { setAnswers({}); setCurrentQ(0); setSelected(null); setMultiSelected([]); setOtherText(""); } setCohort(c.id); setPhase("form"); }}
               style={{
                 background: cohort===c.id ? "rgba(200,169,110,0.15)" : "#0d0d18",
                 border: cohort===c.id ? "1px solid #c8a96e" : "1px solid #1a1a2e",
@@ -1243,6 +1245,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
+        {renderStepRail("form")}
         <Badge>Step 1 of 3, About You</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Let's make this personal.</h2>
         <p style={{ ...s.sub }}>We need a few details to tailor your plan.</p>
@@ -1313,6 +1316,7 @@ export default function App() {
     <Layout>
       <div className="page-enter" key={currentQ}>
         <Logo />
+        {renderStepRail("quiz")}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
           <Badge color="#6a5a9a">Step 3 of 3, {q.phase}</Badge>
           <span style={{ color:"#2a2a4a", fontSize:12 }}>{Math.min(currentQ + 1, QUESTIONS.length)} / {QUESTIONS.length}</span>
@@ -1412,6 +1416,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
+        {renderStepRail("pdf_upload")}
         <Badge>Step 2 of 3, Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
         <p style={{ ...s.sub }}>This makes your plan 3x more accurate. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</p>
@@ -1561,6 +1566,7 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo />
+        {renderStepRail("post_screenshots")}
         <Badge>Step 3 of 3, Your Posts</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>This unlocks your Thought Leader Score and makes your hooks much more specific to what already works for you.</p>
