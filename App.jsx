@@ -964,6 +964,7 @@ export default function App() {
   };
 
   const handlePrev = () => { const skipIds = pdfText ? ["industry","experience"] : []; let p = currentQ - 1; while (p >= 0 && skipIds.includes(QUESTIONS[p].id)) p--; if (p < 0) { setPhase("pdf_upload"); setSelected(null); setMultiSelected([]); setOtherText(""); return; } const pq = QUESTIONS[p]; const pv = answers[pq.id]; if (pq.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(p); };
+  const goToQuestion = (i) => { if (i === currentQ) return; const q = QUESTIONS[i]; if (!q || answers[q.id] == null) return; const pv = answers[q.id]; if (q.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(i); };
   // Compress image to reduce payload size, with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
     try {
@@ -1319,6 +1320,7 @@ export default function App() {
         <div className="progress-bar" style={{ marginBottom:24 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
         </div>
+        <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>{QUESTIONS.map(function(qq, i){ var answered = answers[qq.id] != null; var isCur = i === currentQ; var ok = isCur || answered; return (<button key={qq.id} onClick={function(){ if (ok) goToQuestion(i); }} disabled={!ok} style={{ width:30, height:30, borderRadius:"50%", border: isCur ? "2px solid #c8a96e" : (answered ? "1px solid #6a5a9a" : "1px solid #2a2a3a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (answered ? "#c8a96e" : "#3a3a5a"), fontSize:12, fontWeight:700, cursor: ok ? "pointer" : "default", padding:0 }}>{i + 1}</button>); })}</div>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8, lineHeight:1.3 }}>{q.question}</h2>
         <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
