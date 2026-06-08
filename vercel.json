@@ -1,9 +1,33 @@
 {
   "rewrites": [
-    { "source": "/plan/:path*", "destination": "/index.html" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/blog",
+      "destination": "https://linkscore-web.vercel.app/blog"
+    },
+    {
+      "source": "/blog/:path*",
+      "destination": "https://linkscore-web.vercel.app/blog/:path*"
+    },
+    {
+      "source": "/_next/:path*",
+      "destination": "https://linkscore-web.vercel.app/_next/:path*"
+    },
+    {
+      "source": "/:slug.png",
+      "destination": "https://linkscore-web.vercel.app/:slug.png"
+    },
+    {
+      "source": "/plan/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ],
   "functions": {
-    "api/generate-plan.js": { "maxDuration": 300 }
+    "api/generate-plan.js": {
+      "maxDuration": 300
+    }
   }
 }
