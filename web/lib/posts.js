@@ -3,6 +3,7 @@ const posts = [
     slug: "linkedin-golden-hour",
     title: "The LinkedIn Golden Hour That Gets Your Posts Seen",
     date: "2026-06-08",
+    image: "/golden-hour.png",
     excerpt: "Most dead LinkedIn posts are not bad. They are badly timed. Here's how the golden hour works and how to find the window that fits your audience, not an average.",
     html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no comments, the post just sits there while you refresh the page and pretend you are not.</p>
 <p>Most people blame the content. Usually that is not the problem. The problem is the hour you hit publish.</p>
