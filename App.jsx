@@ -775,8 +775,8 @@ function Layout({ children }) {
 
 function Logo() {
   return (
-    <div style={{ display:"flex", justifyContent:"center", marginBottom:24 }}>
-      <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
+    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>      <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
+            <a href="/blog" style={{ fontSize:13, fontWeight:600, color:"#c8a96e", textDecoration:"none", opacity:0.85 }}>Blog →</a>a>
     </div>
   );
 }
