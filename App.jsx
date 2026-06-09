@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { HOME_CSS, HOME_HTML } from "./home.js";
 
 const LOGO_URL = "https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png";
 
@@ -916,6 +917,60 @@ export default function App() {
     fetchCount();
   }, []);
 
+  // ── LANDING PAGE: animations + CTA wiring (intro phase only) ──
+  useEffect(() => {
+    if (phase !== "intro") return;
+    const root = document.querySelector(".ls-home");
+    if (!root) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const prevSB = document.documentElement.style.scrollBehavior;
+    document.documentElement.style.scrollBehavior = "smooth";
+    document.body.style.background = "#08080e";
+
+    if (userCount !== null) {
+      const uc = root.querySelector("[data-usercount]");
+      if (uc) uc.textContent = userCount.toLocaleString();
+    }
+
+    const start = () => setPhase(cohort ? "form" : "cohort");
+    const ctas = Array.from(root.querySelectorAll(".btn-gold"));
+    ctas.forEach(b => b.addEventListener("click", start));
+
+    const observers = [];
+    const fireHero = () => root.querySelectorAll(".hero .reveal").forEach(el => el.classList.add("in"));
+    if (!reduce) {
+      const targets = root.querySelectorAll(".sec-head, .step, .feat, .founder, .final .wrap > *");
+      targets.forEach(el => el.classList.add("reveal"));
+      const rio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.15, rootMargin: "0px 0px -8% 0px" });
+      targets.forEach(el => rio.observe(el));
+      observers.push(rio);
+      requestAnimationFrame(() => requestAnimationFrame(fireHero));
+    } else { fireHero(); }
+
+    const arc = root.querySelector("#arc"), num = root.querySelector("#score"), gaugeEl = root.querySelector(".gauge");
+    if (arc && num && gaugeEl) {
+      const target = 38, arcLen = 377;
+      const runGauge = () => {
+        if (reduce) { arc.style.strokeDashoffset = arcLen * (1 - target / 100); num.textContent = target; return; }
+        arc.style.transition = "stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)";
+        requestAnimationFrame(() => { arc.style.strokeDashoffset = arcLen * (1 - target / 100); });
+        let t0 = null;
+        const step = ts => { if (!t0) t0 = ts; const p = Math.min((ts - t0) / 1300, 1); num.textContent = Math.round(p * target); if (p < 1) requestAnimationFrame(step); };
+        requestAnimationFrame(step);
+      };
+      const gio = new IntersectionObserver(e => { if (e[0].isIntersecting) { runGauge(); gio.disconnect(); } }, { threshold: 0.4 });
+      gio.observe(gaugeEl);
+      observers.push(gio);
+    }
+
+    return () => {
+      ctas.forEach(b => b.removeEventListener("click", start));
+      observers.forEach(o => o.disconnect());
+      document.documentElement.style.scrollBehavior = prevSB;
+    };
+  }, [phase, cohort, userCount]);
+
   useEffect(() => {
     if (phase !== "analyzing") return;
     let step = 0, elapsed = 0;
@@ -1248,28 +1303,15 @@ export default function App() {
     </Layout>
   );
 
-  if (phase==="intro") return (
-    <Layout>
-      <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
-        <Badge>LinkedIn Intelligence</Badge>
-        <h1 style={s.h1}>{cohort ? COHORT_HEADLINES[cohort] : <><span>Your LinkedIn is</span><br /><span style={{ color:"#c8a96e" }}>invisible.</span></>}</h1>
-        <div className="gold-rule" />
-        <p style={{ ...s.sub, maxWidth:380, margin:"0 auto 32px" }}>Upload your LinkedIn profile. Answer a few questions. Get a strategy built entirely around you.</p>
-        <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:32, textAlign:"left" }}>
-          {["Personalized LinkedIn Score","Profile section-by-section scoring","3 custom post hooks for your voice","30-day content calendar","Critical algorithm rules"].map((f,i)=>(
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <span style={{ color:"#c8a96e", fontSize:11 }}>◆</span>
-              <span style={{ color:"#4a4a6a", fontSize:13 }}>{f}</span>
-            </div>
-          ))}
-        </div>
-        <button className="primary-btn" onClick={()=>setPhase(cohort ? "form" : "cohort")}>Begin Your Analysis →</button>
-        {userCount !== null && <p style={{ color:"#c8a96e", fontSize:13, marginBottom:8, fontWeight:600 }}>✦ {userCount.toLocaleString()} professionals got their plan</p>}
-        <p style={{ color:"#2a2a3a", fontSize:10, marginTop:12, letterSpacing:0.8 }}>10 MINUTES · COMPLETELY FREE</p>
-      </div>
-    </Layout>
-  );
+  if (phase==="intro") {
+    const animOK = typeof window !== "undefined" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return (
+      <>
+        <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
+        <div className={"ls-home" + (animOK ? " anim" : "")} dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
+      </>
+    );
+  }
 
   // ── FORM ───────────────────────────────────────────────────────────────────
   if (phase==="form") return (
