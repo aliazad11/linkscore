@@ -123,7 +123,7 @@ export default async function handler(req) {
       <ul style="padding-left:18px;margin:0;">${rules}</ul>
     </div>
     <a href="${planUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:28px;">View My Full Plan</a>
-    <p style="color:#2a2a3a;font-size:11px;text-align:center;">You received this because you used Linkedscore. &copy; 2025 Linkedscore</p>
+    <p style="color:#6a6a8a;font-size:11px;text-align:center;line-height:1.6;">You received this because you used Linkedscore. Unsubscribe anytime by replying to this email. <a href="https://www.linkedscore.app/privacy.html" style="color:#9696b4;">Privacy</a><br/>&copy; 2026 Linkedscore</p>
   </div>
 </body>
 </html>`;

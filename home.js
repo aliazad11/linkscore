@@ -94,6 +94,14 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home .founder{grid-template-columns:1fr;text-align:center;justify-items:center}
 .ls-home .hero{padding:54px 0 60px}
 }
+@media (max-width:640px){
+.ls-home .nav-r{gap:12px}
+.ls-home .nav-r a{display:none}
+.ls-home .nav-r .btn-gold{padding:10px 14px;font-size:13px}
+}
+.ls-home .foot-links{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ls-home .foot-links a{color:var(--sub);text-decoration:none}
+.ls-home .foot-links a:hover{color:var(--gold)}
 @media (prefers-reduced-motion:reduce){
 .ls-home *{animation:none!important;transition:none!important}
 }
@@ -162,15 +170,15 @@ export const HOME_HTML = `<nav><div class="wrap">
 <header class="hero"><div class="wrap hero-grid">
   <div>
     <span class="eyebrow reveal" style="transition-delay:0s">LinkedIn Intelligence</span>
-    <h1 class="reveal" style="transition-delay:.07s">Most profiles score <span class="gold">below 50.</span></h1>
+    <h1 class="reveal" style="transition-delay:.07s">Would your profile score <span class="gold">above 50?</span></h1>
     <p class="lede reveal" style="transition-delay:.14s">LinkedScore reads your profile, content and positioning, then hands you a scored, personalized plan to fix exactly what's costing you reach.</p>
     <div class="cta-row reveal" style="transition-delay:.21s">
-      <button class="btn btn-gold btn-lg">Get your score — free →</button>
+      <button class="btn btn-gold btn-lg">Get your score, free →</button>
       <a href="#get" class="btn btn-ghost btn-lg">See what's inside</a>
     </div>
     <div class="proof reveal" style="transition-delay:.28s">
-      <span><b data-usercount>113</b> professionals scored their profile</span>
-      <span class="dot"></span><span>10 minutes</span>
+      <span>Built on a LinkedIn program that hit 3.5M+ impressions</span>
+      <span class="dot"></span><span>About 5 minutes</span>
       <span class="dot"></span><span>No card required</span>
     </div>
   </div>
@@ -193,15 +201,14 @@ export const HOME_HTML = `<nav><div class="wrap">
         <div class="num"><b id="score">0</b><span>OUT OF 100</span></div>
       </div>
       <div class="gauge-note">
-        <div class="h">You're invisible to 8 of 10 searches</div>
-        <p>Your headline and About section are leaking authority. Five fixes move you to the top quartile.</p>
+        <div class="h">Example score. Yours is built from your real profile.</div>
+        <p>Your headline and About section are where most of the points are won or lost. The plan shows the exact fixes.</p>
       </div>
     </div>
     <div class="bars">
-      <div class="bar"><div class="top"><b>Headline</b><span class="sc gold">6 / 20</span></div><div class="track"><div class="fill" style="width:30%;background:linear-gradient(90deg,#e0556b,#e0a23c)"></div></div></div>
-      <div class="bar"><div class="top"><b>About section</b><span class="sc gold">4 / 20</span></div><div class="track"><div class="fill" style="width:20%;background:linear-gradient(90deg,#e0556b,#e0a23c);animation-delay:.1s"></div></div></div>
-      <div class="bar"><div class="top"><b>Activity & content</b><span class="sc gold">9 / 30</span></div><div class="track"><div class="fill" style="width:30%;background:linear-gradient(90deg,#e0a23c,#c8a96e);animation-delay:.2s"></div></div></div>
-      <div class="bar"><div class="top"><b>Network signal</b><span class="sc gold">15 / 30</span></div><div class="track"><div class="fill" style="width:50%;background:linear-gradient(90deg,#c8a96e,#56c08a);animation-delay:.3s"></div></div></div>
+      <div class="bar"><div class="top"><b>Headline</b><span class="sc gold">48 / 100</span></div><div class="track"><div class="fill" style="width:48%;background:linear-gradient(90deg,#e0556b,#e0a23c)"></div></div></div>
+      <div class="bar"><div class="top"><b>About section</b><span class="sc gold">41 / 100</span></div><div class="track"><div class="fill" style="width:41%;background:linear-gradient(90deg,#e0556b,#e0a23c);animation-delay:.1s"></div></div></div>
+      <div class="bar"><div class="top"><b>Experience</b><span class="sc gold">62 / 100</span></div><div class="track"><div class="fill" style="width:62%;background:linear-gradient(90deg,#e0a23c,#c8a96e);animation-delay:.2s"></div></div></div>
     </div>
   </div>
 </div></header>
@@ -214,8 +221,8 @@ export const HOME_HTML = `<nav><div class="wrap">
   </div>
   <div class="steps">
     <div class="step"><div class="ln"></div><div class="no">STEP 01</div><h3>Add your profile</h3><p>Drop your LinkedIn URL and export. We read your headline, About, experience and activity.</p></div>
-    <div class="step"><div class="ln"></div><div class="no">STEP 02</div><h3>Answer a few questions</h3><p>Tell us your goal and voice. Eight quick questions shape the entire plan around you.</p></div>
-    <div class="step"><div class="ln"></div><div class="no">STEP 03</div><h3>Get your scored report</h3><p>A 0–100 score, graded sections, rewrites, hooks and a 30-day calendar — in ten minutes.</p></div>
+    <div class="step"><div class="ln"></div><div class="no">STEP 02</div><h3>Answer a few questions</h3><p>Tell us your goal and voice. Ten quick questions shape the entire plan around you.</p></div>
+    <div class="step"><div class="ln"></div><div class="no">STEP 03</div><h3>Get your scored report</h3><p>A 0 to 100 score, graded sections, rewrites, hooks and a 30-day calendar, in about five minutes.</p></div>
   </div>
 </div></section>
 
@@ -227,10 +234,10 @@ export const HOME_HTML = `<nav><div class="wrap">
   </div>
   <div class="grid">
     <div class="feat"><div class="ic"><svg class="ic-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 0 1 16 0"/><line class="needle" x1="12" y1="16" x2="15.6" y2="11"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg></div><h3>Your LinkedScore</h3><p>One number, 0–100, with a section-by-section breakdown of where you stand.</p><div class="mini"><span>38/100</span><span class="b"></span></div></div>
-    <div class="feat"><div class="ic"><svg class="ic-risk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline class="trend" points="3 8 9 13 13 10 21 17"/><polyline points="21 12 21 17 16 17"/></svg></div><h3>Revenue at Risk™</h3><p>The estimated cost of weak positioning — the opportunities your profile is quietly losing.</p><div class="mini"><span>€ at risk</span><span class="b"></span></div></div>
+    <div class="feat"><div class="ic"><svg class="ic-risk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline class="trend" points="3 8 9 13 13 10 21 17"/><polyline points="21 12 21 17 16 17"/></svg></div><h3>Revenue at Risk™</h3><p>The estimated cost of weak positioning, the opportunities your profile is quietly losing.</p><div class="mini"><span>€ at risk</span><span class="b"></span></div></div>
     <div class="feat"><div class="ic"><svg class="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5l4 4L9 19l-4.5 1L5.5 15.5z"/><line x1="13" y1="7" x2="17" y2="11"/></svg></div><h3>Headline & About rewrites</h3><p>Ready-to-paste rewrites in your own voice, built for search and for humans.</p></div>
     <div class="feat"><div class="ic"><svg class="ic-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="sp1" d="M11 3.5l1.4 4.1 4.1 1.4-4.1 1.4L11 14.5 9.6 10.4 5.5 9l4.1-1.4z"/><path class="sp2" d="M17.5 14l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg></div><h3>3 post hooks</h3><p>Three opening hooks written for your voice, each engineered to earn the "see more" click.</p></div>
-    <div class="feat"><div class="ic"><svg class="ic-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><line x1="3.5" y1="9.2" x2="20.5" y2="9.2"/><line x1="8" y1="3.2" x2="8" y2="6.4"/><line x1="16" y1="3.2" x2="16" y2="6.4"/><circle class="cday" cx="9" cy="13.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="16" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="9" cy="16.8" r="1.1" fill="currentColor" stroke="none" opacity=".45"/></svg></div><h3>30-day calendar</h3><p>A day-by-day posting and engagement roadmap you can actually keep up with.</p></div>
+    <div class="feat"><div class="ic"><svg class="ic-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><line x1="3.5" y1="9.2" x2="20.5" y2="9.2"/><line x1="8" y1="3.2" x2="8" y2="6.4"/><line x1="16" y1="3.2" x2="16" y2="6.4"/><circle class="cday" cx="9" cy="13.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="16" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="9" cy="16.8" r="1.1" fill="currentColor" stroke="none" opacity=".45"/></svg></div><h3>30-day calendar</h3><p>A week-by-week roadmap: two strong posts, two engagement weeks, zero filler.</p></div>
     <div class="feat"><div class="ic"><svg class="ic-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Networking targets</h3><p>Exactly who to reach, with copy-paste connection and follow-up messages.</p></div>
   </div>
 </div></section>
@@ -249,11 +256,11 @@ export const HOME_HTML = `<nav><div class="wrap">
 
 <section class="final"><div class="wrap">
   <h2>Find out your score.</h2>
-  <p>Ten minutes. Completely free. No card, no fluff — just your number and the moves to raise it.</p>
-  <button class="btn btn-gold btn-lg">Get your score — free →</button>
+  <p>About five minutes. Completely free. No card, no fluff, just your number and the moves to raise it.</p>
+  <button class="btn btn-gold btn-lg">Get your score, free →</button>
 </div></section>
 
 <footer><div class="wrap">
-  <span>LinkedScore — LinkedIn growth, scored.</span>
-  <span>© 2026 LinkedScore</span>
+  <span>LinkedScore. LinkedIn growth, scored.</span>
+  <span class="foot-links"><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><span>© 2026 LinkedScore</span></span>
 </div></footer>`;
