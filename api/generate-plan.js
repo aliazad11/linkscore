@@ -2,11 +2,39 @@ export const config = { maxDuration: 300 };
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 
+const hits = new Map();
+function rateOk(ip) {
+  const now = Date.now();
+  const windowMs = 60000;
+  const max = 5;
+  const arr = (hits.get(ip) || []).filter((t) => now - t < windowMs);
+  arr.push(now);
+  hits.set(ip, arr);
+  return arr.length <= max;
+}
+
+const ALLOWED_CONTENT_TYPES = ["text", "document", "image"];
+function validMessages(messages) {
+  if (!Array.isArray(messages) || messages.length < 1 || messages.length > 2) return false;
+  for (const m of messages) {
+    if (!m || m.role !== "user" || !Array.isArray(m.content)) return false;
+    if (m.content.length < 1 || m.content.length > 8) return false;
+    for (const c of m.content) {
+      if (!c || ALLOWED_CONTENT_TYPES.indexOf(c.type) === -1) return false;
+    }
+  }
+  return true;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  const fwd = req.headers["x-forwarded-for"] || "";
+  const ip = (typeof fwd === "string" ? fwd.split(",")[0].trim() : "") || "unknown";
+  if (!rateOk(ip)) return res.status(429).json({ error: "Too many requests. Please wait a minute and try again." });
+
   const { messages } = req.body || {};
-  if (!messages) return res.status(400).json({ error: "Missing messages" });
+  if (!validMessages(messages)) return res.status(400).json({ error: "Missing messages" });
 
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: "Server not configured" });
@@ -36,7 +64,14 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      return res.status(400).json({ error: (err && err.error && err.error.message) || ("HTTP " + response.status) });
+      console.error("[anthropic] " + response.status + " " + ((err && err.error && err.error.message) || ""));
+      if (response.status === 429 || response.status === 529) {
+        return res.status(429).json({ error: "We're at capacity right now. Please try again in a minute." });
+      }
+      if (response.status >= 500) {
+        return res.status(502).json({ error: "The analysis service had a hiccup. Please try again." });
+      }
+      return res.status(502).json({ error: "Analysis failed. Please try again." });
     }
 
     const data = await response.json();
@@ -86,6 +121,7 @@ export default async function handler(req, res) {
   } catch (e) {
     clearTimeout(timeout);
     if (e.name === "AbortError") return res.status(504).json({ error: "Analysis timed out. Please try again." });
-    return res.status(500).json({ error: e.message });
+    console.error("[generate-plan] " + (e && e.message));
+    return res.status(500).json({ error: "Analysis failed. Please try again." });
   }
 }
