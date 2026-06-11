@@ -783,20 +783,6 @@ function CopyBtn({ text, label = "Copy" }) {
   );
 }
 
-function ShareRow({ planId }) {
-  const url = `https://www.linkedscore.app/plan/${planId}`;
-  const liShare = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-  return (
-    <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:16, marginBottom:20 }}>
-      <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Share your score</p>
-      <div style={{ display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
-        <a href={liShare} target="_blank" rel="noopener noreferrer" style={{ background:"#0a66c2", color:"#fff", fontWeight:600, fontSize:13, padding:"9px 16px", borderRadius:10, textDecoration:"none" }}>Share on LinkedIn</a>
-        <CopyBtn text={url} label="Copy plan link" />
-      </div>
-    </div>
-  );
-}
-
 function Badge({ children, color="#c8a96e" }) {
   return (
     <div style={{ display:"inline-flex", alignItems:"center", gap:6, background:`${color}12`, color, border:`1px solid ${color}30`, borderRadius:100, padding:"5px 14px", fontSize:11, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:20 }}>
@@ -1831,8 +1817,6 @@ export default function App() {
             <div className="gold-rule" />
             <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
           </div>
-
-          {!sharedView && planId && <ShareRow planId={planId} />}
 
           {/* Scores Row */}
           <div style={{ display:"flex", gap:12, marginBottom:20 }}>
