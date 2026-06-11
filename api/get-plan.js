@@ -40,7 +40,8 @@ export default async function handler(req, res) {
   const planId = body.planId;
   const email = body.email;
 
-  if (!planId) return res.status(400).json({ error: "Missing planId" });
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!planId || typeof planId !== "string" || !UUID_RE.test(planId)) return res.status(400).json({ error: "Missing planId" });
   if (!validEmail(email)) return res.status(400).json({ error: "A valid email is required" });
   const cleanEmail = email.trim().toLowerCase();
 
@@ -67,7 +68,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ email: cleanEmail, unlocked_at: new Date().toISOString() }),
     }).catch(() => {});
 
-    fetch(SUPABASE_URL + "/rest/v1/subscribers", {
+    await fetch(SUPABASE_URL + "/rest/v1/subscribers", {
       method: "POST",
       headers: {
         "apikey": SERVICE_KEY,
@@ -80,6 +81,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ plan: plan });
   } catch (e) {
-    return res.status(500).json({ error: e.message });
+    console.error("[get-plan] " + (e && e.message));
+    return res.status(500).json({ error: "Lookup failed" });
   }
 }

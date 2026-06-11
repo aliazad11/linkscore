@@ -6,7 +6,7 @@ export default function Blog() {
   const posts = getAllPosts();
   return (
     <main className="container">
-      <a className="back" href="/">Back</a>
+      <a className="back" href="https://www.linkedscore.app/">Back</a>
       <h1>Blog</h1>
       <ul className="post-list">
         {posts.map((p) => (

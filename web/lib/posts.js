@@ -58,7 +58,7 @@ const posts = [
 ];
 
 export function getAllPosts() {
-  return posts.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+  return posts.slice().sort(function (a, b) { return b.date.localeCompare(a.date); });
 }
 
 export function getPost(slug) {

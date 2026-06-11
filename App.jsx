@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { HOME_CSS, HOME_HTML } from "./home.js";
 import { iconFor } from "./icons.js";
+import logoAsset from "./logo.png";
 
-const LOGO_URL = "https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png";
+const LOGO_URL = logoAsset;
 
 const FOUNDER_RULES = ["Post no more than twice a month. Quality beats quantity.","Don't post during low-traffic hours.","Never edit a post after publishing.","Never reshare. If you want a post seen, or your own account seen more, comment and like instead.","Fill in your full work history with proper, relevant descriptions on your profile.","Have a profile photo and banner that fit your industry.","Tag anyone you mention in a post.","Use a mix of content formats: documents, polls, images, video.","Have a content plan and roadmap built around what you want to become.","People follow you to hear your story, not industry news. Put yourself in the story, and show your face so posts get more reach.","Find relevant people in your field through search and send connection requests, to grow your following in the first months.","The first 60 minutes after posting matter most. Reply to every comment.","Use only 3 to 5 targeted, relevant hashtags.","End every post with a clear CTA, a question or an opinion request.","The first three lines must hook hard enough to earn the 'see more' click."];
 
@@ -485,38 +486,6 @@ const ANALYSIS_STEPS = [
   { text: "Preparing your final report...", duration: 1600 },
 ];
 
-function buildEmailHTML(firstName, plan) {
-  const hooks = plan.post_hooks?.map((h,i) => `<li style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-left:3px solid #c8a96e;border-radius:4px;">${h}</li>`).join('') || '';
-  const rules = plan.critical_rules?.slice(0,3).map(r => `<li style="margin-bottom:8px;">${r}</li>`).join('') || '';
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#08080e;font-family:'Segoe UI',sans-serif;">
-  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <img src="https://raw.githubusercontent.com/aliazad11/linkscore/main/logo.png" alt="Linkedscore" style="height:36px;margin-bottom:32px;display:block;" />
-    <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${firstName}, you are <span style="color:#c8a96e;">${plan.archetype}</span></h1>
-    <p style="color:#6b7280;font-size:15px;line-height:1.6;margin-bottom:32px;">${plan.headline}</p>
-    <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:24px;">
-      <p style="color:#c8a96e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">YOUR LINKEDIN SCORE</p>
-      <p style="color:#f9fafb;font-size:48px;font-weight:800;margin:0 0 8px;">${plan.score}<span style="font-size:20px;color:#6b7280;">/100</span></p>
-      <p style="color:#ef4444;font-size:13px;">${plan.urgency}</p>
-    </div>
-    <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:24px;">
-      <p style="color:#c8a96e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">YOUR 3 POST HOOKS</p>
-      <ul style="list-style:none;padding:0;margin:0;">${hooks}</ul>
-    </div>
-    <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:32px;">
-      <p style="color:#c8a96e;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">3 CRITICAL RULES</p>
-      <ul style="color:#9ca3af;font-size:14px;line-height:1.6;padding-left:20px;">${rules}</ul>
-    </div>
-    <a href="https://linkedscore.app" style="display:block;text-align:center;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:24px;">View Your Full Plan →</a>
-    <p style="color:#374151;font-size:12px;text-align:center;">You received this because you used Linkedscore. <br/>© 2025 Linkedscore</p>
-  </div>
-</body>
-</html>`;
-}
-
 const REVENUE_COHORTS = ["Real Estate Professional", "Consultant or Coach", "Startup Founder"];
 const PINNED_CURRENCIES = ["USD","EUR","GBP","AED","SAR","CAD","AUD","CHF","INR","SGD"];
 function allCurrencyCodes() {
@@ -585,12 +554,15 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
     ? `\nPROFILE PDF:\n${profileText}\n`
     : "";
 
-  const sanitize = (s) => String(s || '').replace(/[\n\r]/g, ' ').replace(/"/g, "'").replace(/[\x00-\x1F\x7F]/g, '').slice(0, 200);
+  const sanitize = (s) => String(s || '').replace(/[\n\r]/g, ' ').replace(/"/g, "'").replace(/[\x00-\x1F\x7F]/g, '').slice(0, 600);
+  // Multi-select answers arrive joined with " | "; annotate any "Other:" part
   const answersText = Object.entries(answers).map(([k,v]) => {
-    if (v && v.startsWith('Other: ')) {
-      return `${k}: [user wrote: "${sanitize(v.replace('Other: ', '').trim())}"], treat as a prompt, analyze deeply`;
-    }
-    return `${k}: ${sanitize(v)}`;
+    const parts = String(v == null ? '' : v).split(' | ').map(part =>
+      part.startsWith('Other: ')
+        ? `[user wrote: "${sanitize(part.replace('Other: ', '').trim())}"], treat as a prompt, analyze deeply`
+        : sanitize(part)
+    );
+    return `${k}: ${parts.join(' | ')}`;
   }).join('\n');
 
   const ssiText = (userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships)
@@ -757,6 +729,8 @@ const GLOBAL_CSS = `
   .score-bar-fill { transition: width 1.2s cubic-bezier(0.16,1,0.3,1); }
   .pdf-drop { border:1.5px dashed #2a2a3e; border-radius:16px; padding:32px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:#0d0d18; }
   .pdf-drop:hover, .pdf-drop.dragover { border-color:#c8a96e; background:rgba(200,169,110,0.04); }
+  .tab-tooltip { display:none; }
+  .tab-tooltip-wrap:hover .tab-tooltip { display:block; }
   .week-card { background:#0d0d18; border:1px solid #1a1a2e; border-radius:14px; padding:18px; margin-bottom:10px; position:relative; overflow:hidden; }
   .week-card.post { border-left:3px solid #c8a96e; }
   .week-card.engagement { border-left:3px solid #3a6a4a; }
@@ -775,11 +749,37 @@ function Layout({ children }) {
   );
 }
 
-function Logo() {
+function Logo({ onHome }) {
   return (
-    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>      <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
-            <a href="/blog" style={{ fontSize:13, fontWeight:600, color:"#c8a96e", textDecoration:"none", opacity:0.85 }}>Blog →</a>a>
+    <div style={{ display:"flex", alignItems:"center", marginBottom:24 }}>
+      <a href="/" aria-label="Back to home" title="Back to home"
+        onClick={e=>{ if (onHome) { e.preventDefault(); onHome(); } }}
+        style={{ display:"inline-flex", cursor:"pointer" }}>
+        <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
+      </a>
     </div>
+  );
+}
+
+function CopyBtn({ text }) {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(()=>setCopied(false), 1600);
+    } catch (e) {}
+  };
+  return (
+    <button onClick={copy} style={{ background:"transparent", border:"1px solid #c8a96e44", color:copied?"#56c08a":"#c8a96e", borderRadius:8, padding:"3px 10px", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", flexShrink:0 }}>
+      {copied ? "Copied ✓" : "Copy"}
+    </button>
   );
 }
 
@@ -831,7 +831,8 @@ export default function App() {
   const [quizPhase, setQuizPhase] = useState("generic"); // "generic" | "cohort" | "note"
   const [pdfName, setPdfName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
-  const [industryOther, setIndustryOther] = useState("");
+  const [genError, setGenError] = useState("");
+  const [pdfError, setPdfError] = useState("");
   const [postScreenshots, setPostScreenshots] = useState([null, null, null]);
   const [noPostsYet, setNoPostsYet] = useState(false);
   const [revCurrency, setRevCurrency] = useState("");
@@ -852,18 +853,18 @@ export default function App() {
       const id = match[1];
       const loadPlan = async () => {
         try {
-          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/plans?id=eq.${id}&select=*`, {
-            headers: {
-              "apikey": import.meta.env.VITE_SUPABASE_KEY,
-              "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`
-            }
+          const res = await fetch("/api/load-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ planId: id })
           });
-          const data = await res.json();
-          console.log("Plan fetch result:", data);
-          if (data[0]?.plan_data) {
-            const p = data[0].plan_data;
-            // Ensure all required fields exist with fallbacks
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data.plan) {
+            const p = data.plan;
+            // Ensure all required fields exist with fallbacks; explicit nulls in
+            // stored plan_data must not defeat the defaults, so spread p first
             const safePlan = {
+              ...p,
               score: p.score || 50,
               archetype: p.archetype || "LinkedIn Professional",
               headline: p.headline || "",
@@ -878,40 +879,29 @@ export default function App() {
               growth_tactics: p.growth_tactics || [],
               networking: p.networking || { mode: "", headline: "", targets: [], connection_message: "", follow_up_message: "" },
               closing_message: p.closing_message || "",
-              thought_leader: p.thought_leader || { available: false, score: 0, hook_score: 0, engagement_score: 0, voice_score: 0, structure_score: 0, analysis: "", improvements: [] },
-              ...p
+              thought_leader: p.thought_leader || { available: false, score: 0, hook_score: 0, engagement_score: 0, voice_score: 0, structure_score: 0, analysis: "", improvements: [] }
             };
             setPlan(finalizePlan(safePlan));
-            setUserData(d => ({ ...d, firstName: data[0].first_name || "there" }));
+            setUserData(d => ({ ...d, firstName: data.first_name || "there" }));
             setPhase("result");
           } else {
-            console.log("No plan found for id:", id);
+            setPhase("plan_missing");
           }
-        } catch(e) { console.log("Plan load error:", e); }
+        } catch(e) { setPhase("plan_missing"); }
       };
       loadPlan();
     }
   }, []);
 
   useEffect(() => {
-    // Fetch real user count from Supabase
+    // Fetch real user count via the API (keeps the users table off the anon key)
     const fetchCount = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users?select=count`, {
-          headers: {
-            "apikey": import.meta.env.VITE_SUPABASE_KEY,
-            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`,
-            "Prefer": "count=exact",
-            "Range": "0-0"
-          }
-        });
-        const countHeader = res.headers.get("content-range");
-        if (countHeader) {
-          const total = parseInt(countHeader.split("/")[1]);
+        const res = await fetch("/api/stats");
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && typeof data.users === "number") {
           // Add a base number to make it feel more established
-          setUserCount(total >= 0 ? total + 47 : 47);
-        } else {
-          setUserCount(47);
+          setUserCount(data.users + 47);
         }
       } catch(e) { console.log("Count error:", e); }
     };
@@ -931,7 +921,9 @@ export default function App() {
 
     if (userCount !== null) {
       const uc = root.querySelector("[data-usercount]");
-      if (uc) uc.textContent = userCount.toLocaleString();
+      // Never lower the number below the static placeholder, a visible drop kills trust
+      const shown = uc ? parseInt(uc.textContent.replace(/\D/g, ""), 10) || 0 : 0;
+      if (uc && userCount > shown) uc.textContent = userCount.toLocaleString();
     }
 
     const start = () => setPhase(cohort ? "form" : "cohort");
@@ -974,15 +966,26 @@ export default function App() {
 
   useEffect(() => {
     if (phase !== "analyzing") return;
-    let step = 0, elapsed = 0;
+    let step = 0, elapsed = 0, cancelled = false;
+    const timeouts = [], intervals = [];
+    const later = (fn, ms) => { timeouts.push(setTimeout(fn, ms)); };
     const total = ANALYSIS_STEPS.reduce((s,a)=>s+a.duration,0);
     const run = () => {
+      if (cancelled) return;
+      // Generation failed: surface it with a retry path instead of the paywall
+      if (planRef.current && planRef.current._error) {
+        const msg = planRef.current._error;
+        planRef.current = null;
+        setGenError(msg);
+        setPhase("post_screenshots");
+        return;
+      }
       // If plan is ready, go to paywall immediately
-      if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); return; }
+      if (planRef.current) { later(()=>setPhase("paywall"), 500); return; }
       // If we've finished all steps but plan not ready yet, stay on last step and pulse
       if (step >= ANALYSIS_STEPS.length) {
         setAnalysisStep(ANALYSIS_STEPS.length - 1);
-        setTimeout(() => { if (planRef.current) { setTimeout(()=>setPhase("paywall"), 500); } else { run(); } }, 800);
+        later(run, 800);
         return;
       }
       setAnalysisStep(step);
@@ -990,9 +993,13 @@ export default function App() {
       elapsed += dur;
       const targetPct = Math.min(90, Math.round((elapsed/total)*100));
       const iv = setInterval(()=>setAnalysisProgress(p => Math.min(targetPct, p+1)),40);
-      setTimeout(()=>{ clearInterval(iv); step++; run(); }, dur);
+      intervals.push(iv);
+      later(()=>{ clearInterval(iv); step++; run(); }, dur);
     };
+    setAnalysisStep(0);
+    setAnalysisProgress(0);
     run();
+    return () => { cancelled = true; timeouts.forEach(clearTimeout); intervals.forEach(clearInterval); };
   }, [phase]);
 
   const validate = () => {
@@ -1009,10 +1016,28 @@ export default function App() {
   const QUESTIONS = getQuestionsForCohort(cohort);
   const q = QUESTIONS[currentQ];
 
+  // Multi-select answers are stored joined with " | " — labels contain commas,
+  // so a comma join can't be split back apart safely.
+  const SEP = " | ";
+  const restoreSelection = (qq, pv) => {
+    if (!qq) { setSelected(null); setMultiSelected([]); setOtherText(""); return; }
+    if (qq.multiSelect) {
+      const parts = pv ? pv.split(SEP) : [];
+      const other = parts.find(x => x.startsWith("Other: "));
+      setMultiSelected(parts.map(x => x.startsWith("Other: ") ? "Other / Something else" : x));
+      setOtherText(other ? other.slice(7) : "");
+      setSelected(null);
+    } else {
+      if (pv && pv.startsWith("Other: ")) { setSelected("Other / Something else"); setOtherText(pv.slice(7)); }
+      else { setSelected(pv || null); setOtherText(""); }
+      setMultiSelected([]);
+    }
+  };
+
   const handleNext = () => {
     if (q.multiSelect ? multiSelected.length === 0 : !selected) return;
     // Read otherText from DOM directly in case React state is stale
-    const otherInputEl = document.querySelector('input[placeholder*="Describe your specific"]');
+    const otherInputEl = document.querySelector('textarea[placeholder*="Describe your specific"]');
     const currentOtherText = otherInputEl?.value || otherText;
 
     let finalAnswer;
@@ -1020,37 +1045,23 @@ export default function App() {
       const hasOther = multiSelected.includes("Other / Something else");
       const others = multiSelected.filter(x => x !== "Other / Something else");
       finalAnswer = hasOther && currentOtherText.trim()
-        ? [...others, `Other: ${currentOtherText.trim()}`].join(", ")
-        : multiSelected.join(", ");
+        ? [...others, `Other: ${currentOtherText.trim()}`].join(SEP)
+        : multiSelected.join(SEP);
     } else {
       finalAnswer = selected === "Other / Something else" && currentOtherText.trim()
         ? `Other: ${currentOtherText.trim()}`
         : selected;
     }
-    const a = {...answers, [q.id]:finalAnswer};
-    setAnswers(a);
+    setAnswers({...answers, [q.id]:finalAnswer});
     setSelected(null); setOtherText(""); setMultiSelected([]);
-    // If industry is "Other", show custom input
-    if (q.id === "industry" && selected === "Other") {
-      setPhase("industry_other");
-      return;
-    }
-    // If PDF uploaded, skip industry and experience questions
-    const skipIds = pdfText ? ["industry", "experience"] : [];
-    let nextQ = currentQ + 1;
-    while (nextQ < QUESTIONS.length && skipIds.includes(QUESTIONS[nextQ].id)) {
-      // Pre-fill skipped answers with "From PDF"
-      a[QUESTIONS[nextQ].id] = "Extracted from LinkedIn PDF";
-      nextQ++;
-    }
-    setAnswers(a);
+    const nextQ = currentQ + 1;
     if (nextQ < QUESTIONS.length) setCurrentQ(nextQ);
     else setPhase("note");
   };
 
-  const handlePrev = () => { const skipIds = pdfText ? ["industry","experience"] : []; let p = currentQ - 1; while (p >= 0 && skipIds.includes(QUESTIONS[p].id)) p--; if (p < 0) { setPhase("pdf_upload"); setSelected(null); setMultiSelected([]); setOtherText(""); return; } const pq = QUESTIONS[p]; const pv = answers[pq.id]; if (pq.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(p); };
-  const goToQuestion = (i) => { if (i === currentQ) return; const q = QUESTIONS[i]; if (!q || answers[q.id] == null) return; const pv = answers[q.id]; if (q.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } setOtherText(""); setCurrentQ(i); };
-  const goToPhase = (target) => { setOtherText(""); if (target === "quiz") { const qq = QUESTIONS[currentQ]; const pv = qq ? answers[qq.id] : null; if (qq && qq.multiSelect) { setMultiSelected(pv ? pv.split(", ") : []); setSelected(null); } else { setSelected(pv || null); setMultiSelected([]); } } else { setSelected(null); setMultiSelected([]); } setPhase(target); };
+  const handlePrev = () => { const p = currentQ - 1; if (p < 0) { setPhase("pdf_upload"); setSelected(null); setMultiSelected([]); setOtherText(""); return; } restoreSelection(QUESTIONS[p], answers[QUESTIONS[p].id]); setCurrentQ(p); };
+  const goToQuestion = (i) => { if (i === currentQ) return; const qq = QUESTIONS[i]; if (!qq || answers[qq.id] == null) return; restoreSelection(qq, answers[qq.id]); setCurrentQ(i); };
+  const goToPhase = (target) => { if (target === "quiz") { const qq = QUESTIONS[currentQ]; restoreSelection(qq, qq ? answers[qq.id] : null); } else { setSelected(null); setMultiSelected([]); setOtherText(""); } setPhase(target); };
   const renderStepRail = (current) => { const STEPS = [["cohort","Category"],["form","About You"],["pdf_upload","Profile"],["quiz","Questions"],["post_screenshots","Posts"]]; const ci = STEPS.findIndex(function(s){ return s[0] === current; }); return (<div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16 }}>{STEPS.map(function(s, i){ var isCur = i === ci; var reached = i < ci; return (<button key={s[0]} onClick={function(){ if (reached) goToPhase(s[0]); }} disabled={!reached && !isCur} style={{ fontSize:11, fontWeight:600, padding:"5px 10px", borderRadius:8, border: isCur ? "1px solid #c8a96e" : (reached ? "1px solid #4a4a6a" : "1px solid #22223a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (reached ? "#c8a96e" : "#44445a"), cursor: reached ? "pointer" : "default", whiteSpace:"nowrap" }}>{s[1]}</button>); })}</div>); };
   // Compress image to reduce payload size, with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
@@ -1109,6 +1120,7 @@ export default function App() {
   };
 
   const handlePaywall = async () => {
+    if (loading) return;
     if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
     setEmailError(""); setLoading(true);
     try {
@@ -1216,15 +1228,18 @@ export default function App() {
     setLoading(false);
   };
 
-  const handlePDF = async (file) => {
-    if (!file || file.type !== "application/pdf") return;
+  const handlePDF = (file) => {
+    if (!file) return;
+    if (file.type !== "application/pdf") { setPdfError("That file isn't a PDF. Export yours from LinkedIn via Resources → Save to PDF."); return; }
+    // Truncating base64 corrupts the PDF, so reject oversized files instead
+    if (file.size > 3 * 1024 * 1024) { setPdfError("That PDF is over 3MB. LinkedIn profile exports are usually small, try re-exporting it."); setPdfName(""); setPdfText(""); return; }
+    setPdfError("");
     setPdfName(file.name);
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onerror = () => { setPdfError("Couldn't read that file. Please try again."); setPdfName(""); setPdfText(""); };
+    reader.onload = (e) => {
       const base64 = e.target.result.split(",")[1];
-      // Limit to 400KB base64 to avoid request size limits
-      const limited = base64.slice(0, 300000);
-      setPdfText(`PDF_BASE64:${limited}`);
+      setPdfText(`PDF_BASE64:${base64}`);
     };
     reader.readAsDataURL(file);
   };
@@ -1232,22 +1247,25 @@ export default function App() {
   const handlePostScreenshot = (index, file) => {
     if (!file || !file.type.startsWith("image/")) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
+      const raw = e.target.result.split(",")[1];
+      // Compress before storing so screenshots stay inside the API payload budget
+      const { base64, type } = await compressImage(raw, file.type);
       setPostScreenshots(prev => {
         const updated = [...prev];
-        updated[index] = { file, preview: e.target.result, base64: e.target.result.split(",")[1], type: file.type };
+        updated[index] = { file, preview: `data:${type};base64,${base64}`, base64, type };
         return updated;
       });
     };
     reader.readAsDataURL(file);
   };
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic");; setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); };
+  // Back to the landing page without wiping progress; answers survive a return trip
+  const goHome = () => setPhase("intro");
 
-  const skipIds = pdfText ? ["industry", "experience"] : [];
-  const effectiveTotal = QUESTIONS.length - skipIds.length;
-  const effectiveCurrent = QUESTIONS.slice(0, currentQ).filter(q => !skipIds.includes(q.id)).length;
-  const progress = (effectiveCurrent/effectiveTotal)*100;
+  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+
+  const progress = (currentQ/QUESTIONS.length)*100;
 
   const s = {
     h1: { color:"#F9FAFB", fontSize:32, fontWeight:800, lineHeight:1.2, marginBottom:12, letterSpacing:-0.5 },
@@ -1274,10 +1292,22 @@ export default function App() {
     "Thought Leader": "Your ideas deserve an audience. Let's build one.",
   };
 
+  if (phase==="plan_missing") return (
+    <Layout>
+      <div className="page-enter" style={{ textAlign:"center" }}>
+        <Logo onHome={goHome} />
+        <Badge color="#ef4444">Link Not Found</Badge>
+        <h2 style={{ ...s.h1, fontSize:24 }}>This plan link has expired or doesn't exist.</h2>
+        <p style={{ ...s.sub }}>Saved plans can expire. Run a fresh analysis to get an up-to-date plan, it takes about 3 minutes.</p>
+        <button className="primary-btn" onClick={()=>{ window.history.replaceState({}, "", "/"); reset(); }}>Get My Plan →</button>
+      </div>
+    </Layout>
+  );
+
   if (phase==="cohort") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         <h2 style={{ ...s.h1, fontSize:26, marginBottom:8 }}>Which best describes you?</h2>
         <p style={{ ...s.sub, marginBottom:28 }}>This shapes your entire plan, be honest.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
@@ -1318,7 +1348,7 @@ export default function App() {
   if (phase==="form") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("form")}
         <Badge>Step 1 of 3, About You</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Let's make this personal.</h2>
@@ -1389,7 +1419,7 @@ export default function App() {
   if (phase==="quiz") return (
     <Layout>
       <div className="page-enter" key={currentQ}>
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("quiz")}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
           <Badge color="#6a5a9a">Step 3 of 3, {q.phase}</Badge>
@@ -1460,36 +1490,11 @@ export default function App() {
     </Layout>
   );
 
-  // ── INDUSTRY OTHER ─────────────────────────────────────────────────────────
-  if (phase==="industry_other") return (
-    <Layout>
-      <div className="page-enter">
-        <Logo />
-        <Badge color="#6a5a9a">Your World</Badge>
-        <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>What industry are you in?</h2>
-        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>Tell us more so we can tailor your strategy.</p>
-        <input
-          className="field-input"
-          value={industryOther}
-          onChange={e=>setIndustryOther(e.target.value)}
-          placeholder="e.g. Architecture, Education, Logistics..."
-          style={{ marginBottom:20 }}
-        />
-        <button className="primary-btn" disabled={!industryOther.trim()} onClick={()=>{
-          setAnswers(a=>({...a, industry: industryOther.trim()}));
-          setPhase("quiz");
-          setCurrentQ(q=>q+1);
-        }}>Continue →</button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setPhase("quiz"); setSelected(null); setOtherText(""); setMultiSelected([]); }}>← Back</button>
-      </div>
-    </Layout>
-  );
-
   // ── PDF UPLOAD ─────────────────────────────────────────────────────────────
   if (phase==="pdf_upload") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("pdf_upload")}
         <Badge>Step 2 of 3, Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
@@ -1515,6 +1520,7 @@ export default function App() {
             </div>
           )}
         </div>
+        {pdfError && <p style={{ color:"#ef4444", fontSize:12, textAlign:"center", marginTop:10 }}>{pdfError}</p>}
         <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>We don't store your PDF. We process the text to build your plan and don't keep it.</p>
         <button className="primary-btn" onClick={()=>setPhase("quiz")}>
           {pdfName?"Continue to Questions →":"Skip & Continue →"}
@@ -1528,7 +1534,7 @@ export default function App() {
   if (phase==="note") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         <Badge>Almost There</Badge>
         <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>Anything specific we should know?</h2>
         <p style={{ ...s.sub, marginBottom:20 }}>A job interview in 30 days? A product launch coming up? A specific person you want to impress? Tell us, this makes your plan dramatically more accurate.</p>
@@ -1549,7 +1555,7 @@ export default function App() {
         <button className="primary-btn" onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "post_screenshots")}>
           {specialNote ? "Got it →" : "Skip & Continue →"}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setCurrentQ(QUESTIONS.length-1); setPhase("quiz"); }}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ const last = QUESTIONS.length-1; restoreSelection(QUESTIONS[last], answers[QUESTIONS[last].id]); setCurrentQ(last); setPhase("quiz"); }}>← Back</button>
       </div>
     </Layout>
   );
@@ -1572,7 +1578,7 @@ export default function App() {
     return (
       <Layout>
         <div className="page-enter">
-          <Logo />
+          <Logo onHome={goHome} />
           <Badge>Almost There</Badge>
           <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>What is being invisible costing you?</h2>
           <p style={{ ...s.sub, marginBottom:20 }}>Two quick numbers in your own currency. We use them only to estimate your Revenue at Risk. Nothing is stored or shared.</p>
@@ -1639,7 +1645,7 @@ export default function App() {
   if (phase==="post_screenshots") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("post_screenshots")}
         <Badge>Step 3 of 3, Your Posts</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
@@ -1693,16 +1699,24 @@ export default function App() {
           <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>I haven't posted on LinkedIn yet</p>
         </div>
 
+        {genError && (
+          <div style={{ background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.35)", borderRadius:12, padding:"12px 16px", marginBottom:16 }}>
+            <p style={{ color:"#ef4444", fontSize:13, lineHeight:1.5, margin:0 }}>{genError}</p>
+            <p style={{ color:"#8a8a9a", fontSize:12, lineHeight:1.5, margin:"4px 0 0" }}>Your answers are saved. Press the button below to retry.</p>
+          </div>
+        )}
         <button className="primary-btn" onClick={()=>{
+          setGenError("");
           setPhase("analyzing");
+          const ans = founderUnlock ? { ...answers, what_they_need_linkedin_to_unlock: founderUnlock } : answers;
           // Start API call immediately parallel to animation
-          callAPI(userData, answers, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
+          callAPI(userData, ans, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
             .then(id => { planRef.current = id; setPlanId(id); })
             .catch(err => { planRef.current = {_error: err.message}; });
         }}>
           {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "pdf_upload")}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "note")}>← Back</button>
       </div>
     </Layout>
   );
@@ -1711,7 +1725,7 @@ export default function App() {
   if (phase==="analyzing") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
           {`Analyzing, ${userData.firstName}...`}
         </h2>
@@ -1736,7 +1750,7 @@ export default function App() {
   if (phase==="paywall") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <Badge color="#10b981">Analysis Complete</Badge>
         <h2 style={{ ...s.h1, fontSize:28 }}>Your plan is ready,<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>
         <div className="gold-rule" />
@@ -1767,7 +1781,7 @@ export default function App() {
   if (phase==="generating") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>Almost there...</h2>
         <p style={{ color:"#3a3a5a", fontSize:13 }}>Generating your personalized plan.</p>
       </div>
@@ -1781,7 +1795,7 @@ export default function App() {
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
           <div style={{ textAlign:"center", marginBottom:24 }}>
-            <Logo />
+            <Logo onHome={goHome} />
             <Badge>Your LinkedIn Plan</Badge>
             <h1 style={{ ...s.h1, fontSize:28 }}>
               {userData.firstName}, you are<br />
@@ -1869,7 +1883,7 @@ export default function App() {
                     {locked && <span style={{ marginRight:4, fontSize:10 }}>🔒</span>}{t}
                   </button>
                   {locked && (
-                    <div style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#1a1a2e", border:"1px solid #2a2a4a", borderRadius:8, padding:"4px 10px", whiteSpace:"nowrap", fontSize:11, color:"#6a6a8a", pointerEvents:"none", zIndex:10 }}>
+                    <div className="tab-tooltip" style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#1a1a2e", border:"1px solid #2a2a4a", borderRadius:8, padding:"4px 10px", whiteSpace:"nowrap", fontSize:11, color:"#6a6a8a", pointerEvents:"none", zIndex:10 }}>
                       {lockMsg}
                     </div>
                   )}
@@ -1900,12 +1914,15 @@ export default function App() {
               <div>
                 {plan.headline_rewrite && (
                   <div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}>
-                    <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Your New Headline (copy and paste)</p>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}>
+                      <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>Your New Headline (copy and paste)</p>
+                      <CopyBtn text={plan.headline_rewrite} />
+                    </div>
                     <p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.6, fontWeight:600 }}>{plan.headline_rewrite}</p>
                   </div>
                 )}
-                {plan.about_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Your New About Section (copy and paste)</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.about_rewrite}</p></div>)}
-                {plan.experience_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Your New Experience (copy and paste)</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.experience_rewrite}</p></div>)}
+                {plan.about_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>Your New About Section (copy and paste)</p><CopyBtn text={plan.about_rewrite} /></div><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.about_rewrite}</p></div>)}
+                {plan.experience_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>Your New Experience (copy and paste)</p><CopyBtn text={plan.experience_rewrite} /></div><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.experience_rewrite}</p></div>)}
                 {plan.profile_fixes?.map((fix,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                     <div style={{ width:24, height:24, borderRadius:"50%", background:"rgba(200,169,110,0.1)", border:"1px solid #c8a96e33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#c8a96e", fontSize:11, fontWeight:700 }}>{i+1}</div>
@@ -1993,7 +2010,7 @@ export default function App() {
               </div>
             )}
 
-            {activeSection===3 && plan.networking && (plan.networking.headline || plan.networking.targets?.length > 0 || plan.networking.connection_message) && (<div className="card-block" style={{ marginTop:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Networking</p>{plan.networking.headline && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{plan.networking.headline}</p>)}{plan.networking.targets?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? "Accounts to engage" : "People to reach out to"}</p>{plan.networking.targets.map((tg,ti)=>(<div key={ti} style={{ marginBottom:10, paddingBottom:10, borderBottom: ti < plan.networking.targets.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><p style={{ color:"#e8e8f0", fontSize:14, fontWeight:700, marginBottom:2 }}>{tg.who}</p><p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{tg.action}</p></div>))}</div>)}{plan.networking.connection_message && (<div style={{ marginBottom:12 }}><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? "Comment opener (copy and paste)" : "Connection request (copy and paste)"}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.connection_message}</p></div>)}{plan.networking.follow_up_message && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Follow-up message (copy and paste)</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.follow_up_message}</p></div>)}</div>)}
+            {(activeSection===3 || (activeSection===0 && !plan.ssi_plan?.available)) && plan.networking && (plan.networking.headline || plan.networking.targets?.length > 0 || plan.networking.connection_message) && (<div className="card-block" style={{ marginTop:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Networking</p>{plan.networking.headline && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{plan.networking.headline}</p>)}{plan.networking.targets?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? "Accounts to engage" : "People to reach out to"}</p>{plan.networking.targets.map((tg,ti)=>(<div key={ti} style={{ marginBottom:10, paddingBottom:10, borderBottom: ti < plan.networking.targets.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><p style={{ color:"#e8e8f0", fontSize:14, fontWeight:700, marginBottom:2 }}>{tg.who}</p><p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{tg.action}</p></div>))}</div>)}{plan.networking.connection_message && (<div style={{ marginBottom:12 }}><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? "Comment opener (copy and paste)" : "Connection request (copy and paste)"}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.connection_message}</p></div>)}{plan.networking.follow_up_message && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Follow-up message (copy and paste)</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.follow_up_message}</p></div>)}</div>)}
 
             {/* Content Strategy */}
             {activeSection===4 && (
@@ -2031,6 +2048,7 @@ export default function App() {
                       {w.type==="POST"&&<span style={{ background:"rgba(200,169,110,0.1)", color:"#c8a96e", fontSize:10, padding:"2px 8px", borderRadius:100 }}>Publish Day</span>}
                     </div>
                     <p style={{ color:"#e8e8f0", fontSize:14, fontWeight:600, marginBottom:6 }}>{w.topic}</p>
+                    {w.hook && <p style={{ color:"#8a8a9a", fontSize:13, fontStyle:"italic", lineHeight:1.5, marginBottom:6 }}>"{w.hook}"</p>}
                     <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.5 }}>{w.action}</p>
                   </div>
                 ))}

@@ -5,10 +5,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   return {
     plugins: [react()],
+    server: { port: Number(process.env.PORT) || 5173 },
     define: {
       'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.VITE_SUPABASE_URL),
       'import.meta.env.VITE_SUPABASE_KEY': JSON.stringify(env.VITE_SUPABASE_KEY),
-      'import.meta.env.VITE_RESEND_KEY': JSON.stringify(env.VITE_RESEND_KEY),
     }
   }
 })

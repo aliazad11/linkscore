@@ -35,3 +35,5 @@ footer .container { padding:32px 24px; }
 .share-label { color: var(--muted); font-size: 13px; font-weight: 600; }
 .share button { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
 .share button:hover { border-color: var(--gold); color: var(--gold); }
+.header-nav { display:flex; align-items:center; gap:18px; }
+.cta-sm { margin-top:0; padding:8px 14px; font-size:13px; border-radius:8px; }
