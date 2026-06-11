@@ -67,7 +67,7 @@ export default async function handler(req) {
     }
 
     const name = esc(String(firstName || 'there').slice(0, 60));
-    const planUrl = `https://linkedscore.app/plan/${planId}`;
+    const planUrl = `https://www.linkedscore.app/plan/${planId}`;
     const score = clampScore(plan.score);
 
     const hooks = (Array.isArray(plan.post_hooks) ? plan.post_hooks.slice(0, 3) : []).map((h) =>
@@ -103,7 +103,7 @@ export default async function handler(req) {
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#08080e;font-family:'Segoe UI',sans-serif;">
   <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
-    <img src="https://linkedscore.app/logo.png" alt="Linkedscore" style="height:36px;margin-bottom:36px;display:block;" />
+    <img src="https://www.linkedscore.app/logo.png" alt="Linkedscore" style="height:36px;margin-bottom:36px;display:block;" />
     <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${name}, you are</h1>
     <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(plan.archetype || '').slice(0, 80))}</h2>
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
