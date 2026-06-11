@@ -749,10 +749,14 @@ function Layout({ children }) {
   );
 }
 
-function Logo() {
+function Logo({ onHome }) {
   return (
     <div style={{ display:"flex", alignItems:"center", marginBottom:24 }}>
-      <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
+      <a href="/" aria-label="Back to home" title="Back to home"
+        onClick={e=>{ if (onHome) { e.preventDefault(); onHome(); } }}
+        style={{ display:"inline-flex", cursor:"pointer" }}>
+        <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
+      </a>
     </div>
   );
 }
@@ -1256,6 +1260,9 @@ export default function App() {
     reader.readAsDataURL(file);
   };
 
+  // Back to the landing page without wiping progress; answers survive a return trip
+  const goHome = () => setPhase("intro");
+
   const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   const progress = (currentQ/QUESTIONS.length)*100;
@@ -1288,7 +1295,7 @@ export default function App() {
   if (phase==="plan_missing") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <Badge color="#ef4444">Link Not Found</Badge>
         <h2 style={{ ...s.h1, fontSize:24 }}>This plan link has expired or doesn't exist.</h2>
         <p style={{ ...s.sub }}>Saved plans can expire. Run a fresh analysis to get an up-to-date plan, it takes about 3 minutes.</p>
@@ -1300,7 +1307,7 @@ export default function App() {
   if (phase==="cohort") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         <h2 style={{ ...s.h1, fontSize:26, marginBottom:8 }}>Which best describes you?</h2>
         <p style={{ ...s.sub, marginBottom:28 }}>This shapes your entire plan, be honest.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
@@ -1341,7 +1348,7 @@ export default function App() {
   if (phase==="form") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("form")}
         <Badge>Step 1 of 3, About You</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Let's make this personal.</h2>
@@ -1412,7 +1419,7 @@ export default function App() {
   if (phase==="quiz") return (
     <Layout>
       <div className="page-enter" key={currentQ}>
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("quiz")}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
           <Badge color="#6a5a9a">Step 3 of 3, {q.phase}</Badge>
@@ -1487,7 +1494,7 @@ export default function App() {
   if (phase==="pdf_upload") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("pdf_upload")}
         <Badge>Step 2 of 3, Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
@@ -1527,7 +1534,7 @@ export default function App() {
   if (phase==="note") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         <Badge>Almost There</Badge>
         <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>Anything specific we should know?</h2>
         <p style={{ ...s.sub, marginBottom:20 }}>A job interview in 30 days? A product launch coming up? A specific person you want to impress? Tell us, this makes your plan dramatically more accurate.</p>
@@ -1571,7 +1578,7 @@ export default function App() {
     return (
       <Layout>
         <div className="page-enter">
-          <Logo />
+          <Logo onHome={goHome} />
           <Badge>Almost There</Badge>
           <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>What is being invisible costing you?</h2>
           <p style={{ ...s.sub, marginBottom:20 }}>Two quick numbers in your own currency. We use them only to estimate your Revenue at Risk. Nothing is stored or shared.</p>
@@ -1638,7 +1645,7 @@ export default function App() {
   if (phase==="post_screenshots") return (
     <Layout>
       <div className="page-enter">
-        <Logo />
+        <Logo onHome={goHome} />
         {renderStepRail("post_screenshots")}
         <Badge>Step 3 of 3, Your Posts</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
@@ -1718,7 +1725,7 @@ export default function App() {
   if (phase==="analyzing") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
           {`Analyzing, ${userData.firstName}...`}
         </h2>
@@ -1743,7 +1750,7 @@ export default function App() {
   if (phase==="paywall") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <Badge color="#10b981">Analysis Complete</Badge>
         <h2 style={{ ...s.h1, fontSize:28 }}>Your plan is ready,<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>
         <div className="gold-rule" />
@@ -1774,7 +1781,7 @@ export default function App() {
   if (phase==="generating") return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
-        <Logo />
+        <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>Almost there...</h2>
         <p style={{ color:"#3a3a5a", fontSize:13 }}>Generating your personalized plan.</p>
       </div>
@@ -1788,7 +1795,7 @@ export default function App() {
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
           <div style={{ textAlign:"center", marginBottom:24 }}>
-            <Logo />
+            <Logo onHome={goHome} />
             <Badge>Your LinkedIn Plan</Badge>
             <h1 style={{ ...s.h1, fontSize:28 }}>
               {userData.firstName}, you are<br />
