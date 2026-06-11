@@ -2073,8 +2073,8 @@ export default function App() {
               <div>
                 <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules, Don't Break These</p>
                 {plan.critical_rules?.map((rule,i)=>(
-                  <div key={i} className="card-block" style={{ display:"flex", gap:12 }}>
-                    <span style={{ fontSize:14, flexShrink:0 }}>⚠</span>
+                  <div key={i} className="card-block" style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                    <span style={{ fontSize:18, color:"#c8a96e", lineHeight:0, display:"flex", flexShrink:0, marginTop:1 }} dangerouslySetInnerHTML={{ __html: iconFor("⚠") }} />
                     <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{rule}</p>
                   </div>
                 ))}
