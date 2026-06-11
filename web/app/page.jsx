@@ -6,7 +6,7 @@ export default function Home() {
     <main className="container">
       <p className="kicker">Linkedscore</p>
       <h1>LinkedIn growth, minus the fluff.</h1>
-      <p>Practical guides to your profile, content, and personal brand.</p>
+      <p>Practical guides to your profile, content and personal brand.</p>
       <ul className="post-list">
         {posts.map((p) => (
           <li key={p.slug}>

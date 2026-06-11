@@ -17,8 +17,8 @@
       "destination": "https://linkscore-web.vercel.app/:slug.png"
     },
     {
-      "source": "/plan/:path*",
-      "destination": "/index.html"
+      "source": "/plan/:id",
+      "destination": "/api/plan?id=:id"
     },
     {
       "source": "/((?!api/).*)",

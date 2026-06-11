@@ -475,7 +475,7 @@ function getQuestionsForCohort(cohortId) {
 
 const ANALYSIS_STEPS = [
   { text: "Scanning your profile data...", duration: 1600 },
-  { text: "Analyzing your industry benchmarks...", duration: 1900 },
+  { text: "Reading your profile and answers...", duration: 1900 },
   { text: "Mapping your goal to proven strategies...", duration: 1800 },
   { text: "Identifying your content archetype...", duration: 1700 },
   { text: "Generating your post hooks...", duration: 2000 },
@@ -709,9 +709,9 @@ const GLOBAL_CSS = `
   .primary-btn { width:100%; padding:15px 24px; border:none; border-radius:14px; background:linear-gradient(135deg,#c8a96e,#a07840); color:#08080e; font-family:'DM Sans',sans-serif; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.2s; }
   .primary-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 40px rgba(200,169,110,0.25); }
   .primary-btn:disabled { background:#1a1a2e; color:#3a3a5a; cursor:not-allowed; }
-  .ghost-btn { width:100%; padding:13px 24px; border:1px solid #1a1a2e; border-radius:14px; background:transparent; color:#4a4a6a; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; }
-  .ghost-btn:hover { border-color:#2a2a3e; color:#6a6a8a; }
-  .tab-pill { padding:7px 16px; border-radius:100px; border:1px solid #1a1a2e; background:transparent; color:#4a4a6a; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; letter-spacing:0.5px; text-transform:uppercase; }
+  .ghost-btn { width:100%; padding:13px 24px; border:1px solid #1a1a2e; border-radius:14px; background:transparent; color:#9696b4; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; }
+  .ghost-btn:hover { border-color:#2a2a3e; color:#c8c8dc; }
+  .tab-pill { padding:7px 16px; border-radius:100px; border:1px solid #1a1a2e; background:transparent; color:#8a8aa6; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; letter-spacing:0.5px; text-transform:uppercase; }
   .tab-pill:hover { border-color:#c8a96e44; color:#8a8a9a; }
   .tab-pill.active { border-color:#c8a96e; background:rgba(200,169,110,0.1); color:#c8a96e; }
   .card-block { background:#0d0d18; border:1px solid #1a1a2e; border-radius:16px; padding:20px; margin-bottom:12px; transition:border-color 0.2s; }
@@ -720,7 +720,7 @@ const GLOBAL_CSS = `
   .field-input:focus { border-color:#c8a96e88; }
   .field-input.error { border-color:#ef444488; }
   .field-input::placeholder { color:#2a2a4a; }
-  .progress-bar { height:1px; background:#1a1a2e; border-radius:4px; overflow:hidden; }
+  .progress-bar { height:4px; background:#1a1a2e; border-radius:4px; overflow:hidden; }
   .progress-fill { height:100%; background:linear-gradient(90deg,#c8a96e,#e8c98e); border-radius:4px; transition:width 0.5s ease; }
   .analysis-dot { animation:dotPulse 1.4s infinite; }
   @keyframes dotPulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
@@ -761,7 +761,7 @@ function Logo({ onHome }) {
   );
 }
 
-function CopyBtn({ text }) {
+function CopyBtn({ text, label = "Copy" }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -778,7 +778,7 @@ function CopyBtn({ text }) {
   };
   return (
     <button onClick={copy} style={{ background:"transparent", border:"1px solid #c8a96e44", color:copied?"#56c08a":"#c8a96e", borderRadius:8, padding:"3px 10px", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", flexShrink:0 }}>
-      {copied ? "Copied ✓" : "Copy"}
+      {copied ? "Copied ✓" : label}
     </button>
   );
 }
@@ -821,8 +821,8 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [pdfText, setPdfText] = useState("");
-  const [userCount, setUserCount] = useState(null);
   const [planId, setPlanId] = useState(null);
+  const [sharedView, setSharedView] = useState(false);
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
   const [specialNote, setSpecialNote] = useState("");
@@ -883,6 +883,8 @@ export default function App() {
             };
             setPlan(finalizePlan(safePlan));
             setUserData(d => ({ ...d, firstName: data.first_name || "there" }));
+            setSharedView(true);
+            setPlanId(id);
             setPhase("result");
           } else {
             setPhase("plan_missing");
@@ -891,21 +893,6 @@ export default function App() {
       };
       loadPlan();
     }
-  }, []);
-
-  useEffect(() => {
-    // Fetch real user count via the API (keeps the users table off the anon key)
-    const fetchCount = async () => {
-      try {
-        const res = await fetch("/api/stats");
-        const data = await res.json().catch(() => ({}));
-        if (res.ok && typeof data.users === "number") {
-          // Add a base number to make it feel more established
-          setUserCount(data.users + 47);
-        }
-      } catch(e) { console.log("Count error:", e); }
-    };
-    fetchCount();
   }, []);
 
   // ── LANDING PAGE: animations + CTA wiring (intro phase only) ──
@@ -918,13 +905,6 @@ export default function App() {
     const prevSB = document.documentElement.style.scrollBehavior;
     document.documentElement.style.scrollBehavior = "smooth";
     document.body.style.background = "#08080e";
-
-    if (userCount !== null) {
-      const uc = root.querySelector("[data-usercount]");
-      // Never lower the number below the static placeholder, a visible drop kills trust
-      const shown = uc ? parseInt(uc.textContent.replace(/\D/g, ""), 10) || 0 : 0;
-      if (uc && userCount > shown) uc.textContent = userCount.toLocaleString();
-    }
 
     const start = () => setPhase(cohort ? "form" : "cohort");
     const ctas = Array.from(root.querySelectorAll(".btn-gold"));
@@ -962,7 +942,55 @@ export default function App() {
       observers.forEach(o => o.disconnect());
       document.documentElement.style.scrollBehavior = prevSB;
     };
-  }, [phase, cohort, userCount]);
+  }, [phase, cohort]);
+
+  // ── Session persistence: survive an accidental refresh / back-swipe ──
+  // PDF/screenshots are intentionally not persisted (too large for localStorage).
+  useEffect(() => {
+    if (/^\/plan\//.test(window.location.pathname)) return; // shared link wins
+    let snap;
+    try { snap = JSON.parse(localStorage.getItem("ls_funnel_v1") || "null"); } catch (e) { snap = null; }
+    if (!snap || !snap.phase) return;
+    if (Date.now() - (snap.ts || 0) > 6 * 60 * 60 * 1000) { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} return; }
+    let target = snap.phase;
+    if (target === "analyzing" || target === "generating") target = snap.planId ? "paywall" : "post_screenshots";
+    const RESTORABLE = ["cohort", "form", "pdf_upload", "quiz", "note", "revenue", "post_screenshots", "paywall"];
+    if (!RESTORABLE.includes(target)) return;
+    if (snap.userData) setUserData(snap.userData);
+    if (snap.cohort) setCohort(snap.cohort);
+    if (snap.answers) setAnswers(snap.answers);
+    if (typeof snap.currentQ === "number") setCurrentQ(snap.currentQ);
+    if (snap.specialNote) setSpecialNote(snap.specialNote);
+    if (snap.revCurrency) setRevCurrency(snap.revCurrency);
+    if (snap.revValue) setRevValue(snap.revValue);
+    if (snap.revPeriod) setRevPeriod(snap.revPeriod);
+    if (snap.revTarget) setRevTarget(snap.revTarget);
+    if (snap.founderHasRevenue) setFounderHasRevenue(snap.founderHasRevenue);
+    if (snap.founderUnlock) setFounderUnlock(snap.founderUnlock);
+    if (snap.revChannelShare) setRevChannelShare(snap.revChannelShare);
+    if (snap.noPostsYet) setNoPostsYet(snap.noPostsYet);
+    if (snap.planId) { setPlanId(snap.planId); planRef.current = snap.planId; }
+    if (target === "quiz") {
+      const qs = getQuestionsForCohort(snap.cohort);
+      const qq = qs[snap.currentQ];
+      restoreSelection(qq, qq ? (snap.answers || {})[qq.id] : null);
+    }
+    setPhase(target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (phase === "intro" || phase === "result" || phase === "plan_missing") {
+      if (phase === "result") { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} }
+      return;
+    }
+    try {
+      localStorage.setItem("ls_funnel_v1", JSON.stringify({
+        ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
+        revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
+      }));
+    } catch (e) {}
+  }, [phase, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId]);
 
   useEffect(() => {
     if (phase !== "analyzing") return;
@@ -1150,55 +1178,34 @@ export default function App() {
       const finalized = finalizePlan(result, revInputs);
       setPlan(finalized);
 
-      // Save user to Supabase (counter)
+      // Persist user + plan via the server (service key), so the browser never
+      // touches the users/plans tables directly.
       let savedPlanId = null;
       try {
-        const userRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/users`, {
+        const saveRes = await fetch("/api/save-plan", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": import.meta.env.VITE_SUPABASE_KEY,
-            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`,
-            "Prefer": "return=minimal"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email,
             first_name: userData.firstName,
             job_title: userData.jobTitle,
-            linkedin_url: userData.linkedinUrl
-          })
-        });
-      } catch(e) { console.log("Supabase user error:", e); }
-
-      // Save plan to Supabase and get unique ID
-      try {
-        const planRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/plans`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": import.meta.env.VITE_SUPABASE_KEY,
-            "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_KEY}`,
-            "Prefer": "return=representation"
-          },
-          body: JSON.stringify({
-            email,
-            first_name: userData.firstName,
+            linkedin_url: userData.linkedinUrl,
             plan_data: finalized,
-            cohort: cohort||null,
+            cohort: cohort || null,
             quiz_answers: answers,
-            special_note: specialNote||null,
+            special_note: specialNote || null,
             ssi_scores: {
-              establish_brand: userData.establish_brand||null,
-              find_people: userData.find_people||null,
-              engage_insights: userData.engage_insights||null,
-              build_relationships: userData.build_relationships||null
+              establish_brand: userData.establish_brand || null,
+              find_people: userData.find_people || null,
+              engage_insights: userData.engage_insights || null,
+              build_relationships: userData.build_relationships || null
             }
           })
         });
-        const planData = await planRes.json();
-        savedPlanId = planData[0]?.id;
+        const saveData = await saveRes.json().catch(() => ({}));
+        savedPlanId = saveData.planId || null;
         if (savedPlanId) setPlanId(savedPlanId);
-      } catch(e) { console.log("Supabase plan error:", e); }
+      } catch(e) { console.log("Save plan error:", e); }
 
       // Send email via serverless function
       console.log("Sending email with planId:", savedPlanId);
@@ -1263,14 +1270,14 @@ export default function App() {
   // Back to the landing page without wiping progress; answers survive a return trip
   const goHome = () => setPhase("intro");
 
-  const reset = () => { setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   const progress = (currentQ/QUESTIONS.length)*100;
 
   const s = {
     h1: { color:"#F9FAFB", fontSize:32, fontWeight:800, lineHeight:1.2, marginBottom:12, letterSpacing:-0.5 },
-    sub: { color:"#6B7280", fontSize:14, lineHeight:1.7, marginBottom:28 },
-    label: { color:"#3a3a5a", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", display:"block", marginBottom:6 },
+    sub: { color:"#9696b4", fontSize:14, lineHeight:1.7, marginBottom:28 },
+    label: { color:"#7a7a96", fontSize:11, fontWeight:600, letterSpacing:1, textTransform:"uppercase", display:"block", marginBottom:6 },
     err: { color:"#ef4444", fontSize:11, marginTop:4 },
   };
 
@@ -1325,7 +1332,7 @@ export default function App() {
               <span style={{ fontSize:24, color: cohort===c.id?"#c8a96e":"#8a8aa8", lineHeight:0, display:"flex", flexShrink:0 }} dangerouslySetInnerHTML={{ __html: iconFor(c.emoji) }} />
               <div>
                 <p style={{ color:"#F9FAFB", fontSize:15, fontWeight:700, marginBottom:2 }}>{c.label}</p>
-                <p style={{ color:"#3a3a5a", fontSize:12 }}>{c.sub}</p>
+                <p style={{ color:"#8a8aa6", fontSize:12 }}>{c.sub}</p>
               </div>
             </button>
           ))}
@@ -1351,7 +1358,7 @@ export default function App() {
         <Logo onHome={goHome} />
         {renderStepRail("form")}
         <Badge>Step 1 of 3, About You</Badge>
-        <h2 style={{ ...s.h1, fontSize:26 }}>Let's make this personal.</h2>
+        <h2 style={{ ...s.h1, fontSize:26 }}>{COHORT_HEADLINES[cohort] || "Let's make this personal."}</h2>
         <p style={{ ...s.sub }}>We need a few details to tailor your plan.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
@@ -1383,9 +1390,9 @@ export default function App() {
           <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:16 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
               <span style={{ fontSize:16 }}>📊</span>
-              <label style={{ ...s.label, margin:0 }}>LinkedIn SSI Score <span style={{ color:"#3a3a5a", fontWeight:400 }}>(optional)</span></label>
+              <label style={{ ...s.label, margin:0 }}>LinkedIn SSI Score <span style={{ color:"#8a8aa6", fontWeight:400 }}>(optional)</span></label>
             </div>
-            <p style={{ color:"#2a2a3a", fontSize:11, marginBottom:12 }}>Find your scores at <a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</a>, each pillar is scored 0–25</p>
+            <p style={{ color:"#7a7a96", fontSize:11, marginBottom:12 }}>Find your scores at <a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</a>, each pillar is scored 0–25</p>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {[
                 ["establish_brand", "Establish Your Brand"],
@@ -1394,7 +1401,7 @@ export default function App() {
                 ["build_relationships", "Build Relationships"],
               ].map(([key, label]) => (
                 <div key={key}>
-                  <p style={{ color:"#4a4a6a", fontSize:11, marginBottom:4 }}>{label}</p>
+                  <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>{label}</p>
                   <input
                     className="field-input"
                     type="number" min="0" max="25"
@@ -1423,16 +1430,16 @@ export default function App() {
         {renderStepRail("quiz")}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
           <Badge color="#6a5a9a">Step 3 of 3, {q.phase}</Badge>
-          <span style={{ color:"#2a2a4a", fontSize:12 }}>{Math.min(currentQ + 1, QUESTIONS.length)} / {QUESTIONS.length}</span>
+          <span style={{ color:"#7a7a96", fontSize:12 }}>{Math.min(currentQ + 1, QUESTIONS.length)} / {QUESTIONS.length}</span>
         </div>
         <div className="progress-bar" style={{ marginBottom:24 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
         </div>
         <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>{QUESTIONS.map(function(qq, i){ var answered = answers[qq.id] != null; var isCur = i === currentQ; var ok = isCur || answered; return (<button key={qq.id} onClick={function(){ if (ok) goToQuestion(i); }} disabled={!ok} style={{ width:30, height:30, borderRadius:"50%", border: isCur ? "2px solid #c8a96e" : (answered ? "1px solid #6a5a9a" : "1px solid #2a2a3a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (answered ? "#c8a96e" : "#3a3a5a"), fontSize:12, fontWeight:700, cursor: ok ? "pointer" : "default", padding:0 }}>{i + 1}</button>); })}</div>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8, lineHeight:1.3 }}>{q.question}</h2>
-        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
+        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
-          {q.multiSelect && <p style={{ color:"#3a3a5a", fontSize:11, marginBottom:4 }}>Select all that apply</p>}
+          {q.multiSelect && <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>Select all that apply</p>}
           {q.options.map(opt=>{
             const isMultiActive = q.multiSelect && multiSelected.includes(opt.label);
             const isSingleActive = !q.multiSelect && selected===opt.label;
@@ -1475,7 +1482,7 @@ export default function App() {
               maxLength={500}
               style={{ width:"100%", minHeight:90, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:12, padding:"12px 14px", color:"#F9FAFB", fontSize:14, lineHeight:1.6, resize:"vertical", fontFamily:"inherit", outline:"none", boxSizing:"border-box" }}
             />
-            <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"right", marginTop:4 }}>{otherText.length}/500</p>
+            <p style={{ color:"#7a7a96", fontSize:11, textAlign:"right", marginTop:4 }}>{otherText.length}/500</p>
           </div>
         )}
         <button className="primary-btn" disabled={
@@ -1498,7 +1505,7 @@ export default function App() {
         {renderStepRail("pdf_upload")}
         <Badge>Step 2 of 3, Your Profile</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
-        <p style={{ ...s.sub }}>This makes your plan 3x more accurate. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</p>
+        <p style={{ ...s.sub }}>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
           onClick={()=>fileInputRef.current?.click()}
@@ -1510,7 +1517,7 @@ export default function App() {
           {pdfName ? (
             <div>
               <p style={{ color:"#c8a96e", fontSize:14, fontWeight:700, marginBottom:4 }}>✓ {pdfName}</p>
-              <p style={{ color:"#4a4a6a", fontSize:12 }}>{pdfText ? "Profile analyzed successfully" : "Reading profile..."}</p>
+              <p style={{ color:"#8a8aa6", fontSize:12 }}>{pdfText ? "Profile analyzed successfully" : "Reading profile..."}</p>
             </div>
           ) : (
             <div>
@@ -1521,7 +1528,7 @@ export default function App() {
           )}
         </div>
         {pdfError && <p style={{ color:"#ef4444", fontSize:12, textAlign:"center", marginTop:10 }}>{pdfError}</p>}
-        <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>We don't store your PDF. We process the text to build your plan and don't keep it.</p>
+        <p style={{ color:"#7a7a96", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>We don't store your PDF. We process the text to build your plan and don't keep it.</p>
         <button className="primary-btn" onClick={()=>setPhase("quiz")}>
           {pdfName?"Continue to Questions →":"Skip & Continue →"}
         </button>
@@ -1551,7 +1558,7 @@ export default function App() {
           }}
           maxLength={500}
         />
-        <p style={{ color:"#2a2a3a", fontSize:11, textAlign:"right", marginBottom:20 }}>{specialNote.length}/500</p>
+        <p style={{ color:"#7a7a96", fontSize:11, textAlign:"right", marginBottom:20 }}>{specialNote.length}/500</p>
         <button className="primary-btn" onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "post_screenshots")}>
           {specialNote ? "Got it →" : "Skip & Continue →"}
         </button>
@@ -1581,7 +1588,7 @@ export default function App() {
           <Logo onHome={goHome} />
           <Badge>Almost There</Badge>
           <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>What is being invisible costing you?</h2>
-          <p style={{ ...s.sub, marginBottom:20 }}>Two quick numbers in your own currency. We use them only to estimate your Revenue at Risk. Nothing is stored or shared.</p>
+          <p style={{ ...s.sub, marginBottom:20 }}>Two quick numbers in your own currency, used only to estimate your Revenue at Risk. They are saved only inside your private plan, never shared.</p>
           {showGate && (
             <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
               <button className="opt-row" onClick={()=>setFounderHasRevenue("yes")}>
@@ -1649,7 +1656,7 @@ export default function App() {
         {renderStepRail("post_screenshots")}
         <Badge>Step 3 of 3, Your Posts</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
-        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:24 }}>This unlocks your Thought Leader Score and makes your hooks much more specific to what already works for you.</p>
+        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:24 }}>This unlocks your Thought Leader Score and makes your hooks much more specific to what already works for you.</p>
         
         {!noPostsYet && (
           <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
@@ -1671,15 +1678,15 @@ export default function App() {
                       <img src={postScreenshots[i].preview} alt={`Post ${i+1}`} style={{ width:72, height:56, objectFit:"cover", borderRadius:10, flexShrink:0 }} />
                       <div>
                         <p style={{ color:"#c8a96e", fontSize:13, fontWeight:700 }}>✓ Post {i+1} uploaded</p>
-                        <p style={{ color:"#3a3a5a", fontSize:11 }}>Click to replace</p>
+                        <p style={{ color:"#8a8aa6", fontSize:11 }}>Click to replace</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <span style={{ fontSize:20 }}>📸</span>
                       <div>
-                        <p style={{ color:"#4a4a6a", fontSize:13, fontWeight:600 }}>Post {i+1}</p>
-                        <p style={{ color:"#2a2a3a", fontSize:11 }}>Click to upload screenshot</p>
+                        <p style={{ color:"#8a8aa6", fontSize:13, fontWeight:600 }}>Post {i+1}</p>
+                        <p style={{ color:"#7a7a96", fontSize:11 }}>Click to upload screenshot</p>
                       </div>
                     </>
                   )}
@@ -1729,11 +1736,11 @@ export default function App() {
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
           {`Analyzing, ${userData.firstName}...`}
         </h2>
-        <p style={{ color:"#3a3a5a", fontSize:13, marginBottom:32 }}>Building your plan, this takes 30 to 60 seconds.</p>
+        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:32 }}>Building your plan, this takes 30 to 60 seconds.</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${analysisProgress}%`, background:"linear-gradient(90deg,#c8a96e,#e8c98e)", borderRadius:100, transition:"width 0.3s ease" }} />
         </div>
-        <p style={{ color:"#3a3a5a", fontSize:12, marginBottom:28 }}>{analysisProgress}% complete</p>
+        <p style={{ color:"#8a8aa6", fontSize:12, marginBottom:28 }}>{analysisProgress}% complete</p>
         <div style={{ textAlign:"left", display:"flex", flexDirection:"column", gap:10 }}>
           {ANALYSIS_STEPS.map((step,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
@@ -1756,11 +1763,11 @@ export default function App() {
         <div className="gold-rule" />
         <p style={{ ...s.sub, marginBottom:24 }}>Enter your email to unlock your full personalized LinkedIn strategy.</p>
         <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:24, textAlign:"left" }}>
-          <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>Your plan includes</p>
+          <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>Your plan includes</p>
           {[...((REVENUE_COHORTS.indexOf(cohort) !== -1 && revValue && revTarget && !(cohort === "Startup Founder" && founderHasRevenue !== "yes")) ? ["Your Revenue at Risk estimate"] : []),"LinkedIn Score & personal archetype","Profile scoring: headline, about, experience","3 custom post hooks written for your voice","30-day content calendar with exact topics","Critical algorithm rules you're probably breaking","Full growth tactics for your specific goal"].map((item,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
               <span style={{ color:"#c8a96e", fontSize:10 }}>◆</span>
-              <span style={{ color:"#4a4a6a", fontSize:13 }}>{item}</span>
+              <span style={{ color:"#8a8aa6", fontSize:13 }}>{item}</span>
             </div>
           ))}
         </div>
@@ -1772,7 +1779,7 @@ export default function App() {
         <button className="primary-btn" disabled={loading} onClick={handlePaywall}>
           {loading?"Generating your plan...":"Unlock My LinkedIn Plan →"}
         </button>
-        <p style={{ color:"#1a1a2a", fontSize:10, marginTop:10, letterSpacing:0.8 }}>NO SPAM · NO CREDIT CARD · JUST YOUR PLAN</p>
+        <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>No credit card. We email your plan and occasional LinkedIn tips, unsubscribe anytime. <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
       </div>
     </Layout>
   );
@@ -1783,7 +1790,7 @@ export default function App() {
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>Almost there...</h2>
-        <p style={{ color:"#3a3a5a", fontSize:13 }}>Generating your personalized plan.</p>
+        <p style={{ color:"#8a8aa6", fontSize:13 }}>Generating your personalized plan.</p>
       </div>
     </Layout>
   );
@@ -1794,6 +1801,12 @@ export default function App() {
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
+          {sharedView && (
+            <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.14),rgba(200,169,110,0.04))", border:"1px solid #c8a96e55", borderRadius:14, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
+              <span style={{ color:"#e8e8f0", fontSize:13, fontWeight:600 }}>This is {userData.firstName}'s plan.</span>
+              <a href="/" onClick={e=>{ e.preventDefault(); window.history.replaceState({}, "", "/"); reset(); }} style={{ background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", fontWeight:700, fontSize:13, padding:"9px 16px", borderRadius:10, textDecoration:"none", whiteSpace:"nowrap" }}>Get your own free score →</a>
+            </div>
+          )}
           <div style={{ textAlign:"center", marginBottom:24 }}>
             <Logo onHome={goHome} />
             <Badge>Your LinkedIn Plan</Badge>
@@ -1802,7 +1815,7 @@ export default function App() {
               <span style={{ color:"#c8a96e", fontWeight:800 }}>{plan.archetype}</span>
             </h1>
             <div className="gold-rule" />
-            <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
+            <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
           </div>
 
           {/* Scores Row */}
@@ -1811,7 +1824,7 @@ export default function App() {
             <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
               <ScoreRing score={plan.score} />
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>LinkedIn Score</p>
+                <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>LinkedIn Score</p>
                 <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.score<40?"Needs work":plan.score<70?"Good foundation":"Strong profile"}</p>
                 <p style={{ color:"#ef4444", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.urgency}</p>
               </div>
@@ -1821,7 +1834,7 @@ export default function App() {
               <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
                 <ScoreRing score={plan.thought_leader.score} color="#a78bfa" />
                 <div>
-                  <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
                   <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?"Early stage":plan.thought_leader.score<70?"Growing voice":"Strong presence"}</p>
                   <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.thought_leader.analysis?.slice(0,120)}{plan.thought_leader.analysis?.length>120?"…":""}</p>
                 </div>
@@ -1830,9 +1843,9 @@ export default function App() {
               <div style={{ flex:1, display:"flex", alignItems:"center", gap:12, background:"#0d0d18", border:"1px dashed #1a1a2e", borderRadius:16, padding:"16px", cursor:"pointer" }} onClick={()=>setPhase("post_screenshots")}>
                 <div style={{ width:52, height:52, borderRadius:"50%", border:"2px dashed #2a2a4a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20 }}>📸</div>
                 <div>
-                  <p style={{ color:"#2a2a4a", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
-                  <p style={{ color:"#4a4a6a", fontSize:12, fontWeight:600, marginBottom:3 }}>Not calculated</p>
-                  <p style={{ color:"#3a3a5a", fontSize:11 }}>Upload posts to unlock</p>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
+                  <p style={{ color:"#8a8aa6", fontSize:12, fontWeight:600, marginBottom:3 }}>Not calculated</p>
+                  <p style={{ color:"#8a8aa6", fontSize:11 }}>Upload posts to unlock</p>
                 </div>
               </div>
             )}
@@ -1851,7 +1864,7 @@ export default function App() {
           {/* Profile section scores */}
           {plan.profile_scores && (
             <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:20 }}>
-              <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Profile Section Scores</p>
+              <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Profile Section Scores</p>
               {[["Headline", plan.profile_scores.headline],["About Section", plan.profile_scores.about],["Experience", plan.profile_scores.experience]].map(([label,score])=>(
                 <div key={label} style={{ marginBottom:12 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
@@ -1897,7 +1910,7 @@ export default function App() {
             {activeSection===0 && (
               <div>
                 <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.06),rgba(200,169,110,0.02))", border:"1px solid #c8a96e22", borderRadius:16, padding:20, marginBottom:12 }}>
-                  <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Personal Message</p>
+                  <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Personal Message</p>
                   <p style={{ color:"#8a8a9a", fontSize:14, lineHeight:1.8 }}>"{plan.closing_message}"</p>
                 </div>
                 {plan.growth_tactics?.map((t,i)=>(
@@ -1939,7 +1952,7 @@ export default function App() {
               <div>
                 {plan.thought_leader?.available ? (
                   <>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Analysis</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Analysis</p>
                     {[["Hook Quality",plan.thought_leader.hook_score],["Engagement",plan.thought_leader.engagement_score],["Voice Consistency",plan.thought_leader.voice_score],["Post Structure",plan.thought_leader.structure_score]].map(([label,score])=>(
                       <div key={label} style={{ marginBottom:12 }}>
                         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
@@ -1951,8 +1964,8 @@ export default function App() {
                         </div>
                       </div>
                     ))}
-                    <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e", marginBottom:20 }}>{plan.thought_leader.analysis}</p>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>How To Improve</p>
+                    <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e", marginBottom:20 }}>{plan.thought_leader.analysis}</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>How To Improve</p>
                     {plan.thought_leader.improvements?.map((tip,i)=>(
                       <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                         <div style={{ width:26, height:26, borderRadius:"50%", background:"rgba(167,139,250,0.1)", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#a78bfa", fontSize:12, fontWeight:700 }}>{i+1}</div>
@@ -1963,8 +1976,8 @@ export default function App() {
                 ) : (
                   <div style={{ textAlign:"center", padding:"40px 20px" }}>
                     <p style={{ fontSize:32, marginBottom:12 }}>📸</p>
-                    <p style={{ color:"#4a4a6a", fontSize:15, fontWeight:600, marginBottom:8 }}>No post screenshots uploaded</p>
-                    <p style={{ color:"#2a2a3a", fontSize:13, lineHeight:1.6 }}>Retake the quiz and upload your last 3 posts to unlock your Thought Leader analysis.</p>
+                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>No post screenshots uploaded</p>
+                    <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>Retake the quiz and upload your last 3 posts to unlock your Thought Leader analysis.</p>
                   </div>
                 )}
               </div>
@@ -1975,14 +1988,14 @@ export default function App() {
               <div>
                 {plan.ssi_plan?.available ? (
                   <>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>SSI Overview</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>SSI Overview</p>
                     <div className="card-block" style={{ marginBottom:20 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:14 }}>
                         <div style={{ width:52, height:52, borderRadius:"50%", border:"3px solid #38bdf8", display:"flex", alignItems:"center", justifyContent:"center", color:"#38bdf8", fontSize:18, fontWeight:800, flexShrink:0 }}>{plan.ssi_plan.total}</div>
                         <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{plan.ssi_plan.overview}</p>
                       </div>
                     </div>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Pillar Analysis</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Pillar Analysis</p>
                     {plan.ssi_plan.pillars?.map((pillar,i)=>{
                       const pct=(pillar.score/25)*100;
                       const color=pillar.status==="WEAK"?"#ef4444":pillar.status==="AVERAGE"?"#f59e0b":"#10b981";
@@ -2003,8 +2016,8 @@ export default function App() {
                 ) : (
                   <div style={{ textAlign:"center", padding:"40px 20px" }}>
                     <p style={{ fontSize:32, marginBottom:12 }}>📊</p>
-                    <p style={{ color:"#4a4a6a", fontSize:15, fontWeight:600, marginBottom:8 }}>No SSI scores provided</p>
-                    <p style={{ color:"#2a2a3a", fontSize:13, lineHeight:1.6 }}>Add your 4 SSI pillar scores in the form to unlock your personalized SSI analysis.</p>
+                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>No SSI scores provided</p>
+                    <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>Add your 4 SSI pillar scores in the form to unlock your personalized SSI analysis.</p>
                   </div>
                 )}
               </div>
@@ -2027,10 +2040,10 @@ export default function App() {
             {/* Post Hooks */}
             {activeSection===5 && (
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>3 Custom Post Hooks, Written For Your Voice</p>
+                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>3 Custom Post Hooks, Written For Your Voice</p>
                 {plan.post_hooks?.map((hook,i)=>(
                   <div key={i} style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:20, marginBottom:10, borderLeft:"3px solid #c8a96e" }}>
-                    <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1, marginBottom:8 }}>HOOK {i+1}</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1, marginBottom:8 }}>HOOK {i+1}</p>
                     <p style={{ color:"#e8e8f0", fontSize:15, lineHeight:1.6, fontWeight:500 }}>{hook}</p>
                   </div>
                 ))}
@@ -2040,7 +2053,7 @@ export default function App() {
             {/* Calendar */}
             {activeSection===6 && (
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Your 30-Day Roadmap</p>
+                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Your 30-Day Roadmap</p>
                 {plan.content_calendar?.map((w,i)=>(
                   <div key={i} className={`week-card ${w.type?.toLowerCase()}`}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
@@ -2049,7 +2062,7 @@ export default function App() {
                     </div>
                     <p style={{ color:"#e8e8f0", fontSize:14, fontWeight:600, marginBottom:6 }}>{w.topic}</p>
                     {w.hook && <p style={{ color:"#8a8a9a", fontSize:13, fontStyle:"italic", lineHeight:1.5, marginBottom:6 }}>"{w.hook}"</p>}
-                    <p style={{ color:"#4a4a6a", fontSize:13, lineHeight:1.5 }}>{w.action}</p>
+                    <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.5 }}>{w.action}</p>
                   </div>
                 ))}
               </div>
@@ -2058,10 +2071,10 @@ export default function App() {
             {/* Rules */}
             {activeSection===7 && (
               <div>
-                <p style={{ color:"#2a2a4a", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules, Don't Break These</p>
+                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules, Don't Break These</p>
                 {plan.critical_rules?.map((rule,i)=>(
-                  <div key={i} className="card-block" style={{ display:"flex", gap:12 }}>
-                    <span style={{ fontSize:14, flexShrink:0 }}>⚠</span>
+                  <div key={i} className="card-block" style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
+                    <span style={{ fontSize:18, color:"#c8a96e", lineHeight:0, display:"flex", flexShrink:0, marginTop:1 }} dangerouslySetInnerHTML={{ __html: iconFor("⚠") }} />
                     <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{rule}</p>
                   </div>
                 ))}

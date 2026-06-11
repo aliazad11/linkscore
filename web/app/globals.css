@@ -23,9 +23,18 @@ article ul { color:#c9c9d8; margin:0 0 18px 22px; }
 article li { margin-bottom:8px; }
 article strong { color:var(--text); }
 .back { color:var(--gold); font-size:14px; font-weight:600; }
-.cta { display:inline-block; margin-top:28px; background:var(--gold); color:#0a0a0f; font-weight:700; padding:12px 20px; border-radius:10px; }
+.cta { display:inline-block; margin-top:28px; background:var(--gold); color:#0a0a0f; font-weight:700; padding:12px 20px; border-radius:10px; text-decoration:none; }
+.cta-box { margin-top:40px; padding:28px; background:var(--card); border:1px solid var(--border); border-radius:16px; text-align:center; }
+.cta-box h3 { font-size:20px; font-weight:800; margin-bottom:8px; }
+.cta-box p { color:var(--muted); margin-bottom:6px; }
+.cta-box .cta { margin-top:18px; }
+.cta-secondary { display:block; margin-top:14px; color:var(--gold); font-size:14px; font-weight:600; text-decoration:none; }
+.cta-secondary:hover { text-decoration:underline; }
 footer { border-top:1px solid rgba(255,255,255,0.06); color:var(--muted); font-size:13px; }
-footer .container { padding:32px 24px; }
+footer .container { padding:32px 24px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+footer .foot-links { display:flex; gap:16px; }
+footer .foot-links a { color:var(--muted); text-decoration:none; }
+footer .foot-links a:hover { color:var(--gold); }
 
 .hero { margin: 24px 0 16px; }
 .hero .kicker { margin-bottom: 6px; }

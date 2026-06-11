@@ -62,6 +62,9 @@ const G = {
   palette: '<path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.9 1.8-1.8 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.8-1.6 1.7-1.6H16a5 5 0 0 0 5-5c0-3.9-4-7.2-9-7.2Z"/><circle cx="8" cy="11" r="1.05" fill="currentColor" stroke="none"/><circle cx="12" cy="8" r="1.05" fill="currentColor" stroke="none"/><circle cx="16" cy="10" r="1.05" fill="currentColor" stroke="none"/>',
   gradCap: '<path d="M3 9l9-4 9 4-9 4z"/><path d="M7 11v4c0 1.1 2.2 2 5 2s5-.9 5-2v-4"/><path d="M21 9v5"/>',
   handshake: '<path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.9-3.9a3 3 0 0 0-4.2 0l-.9.9a1 1 0 1 1-3-3l2.8-2.8a5.8 5.8 0 0 1 7.1-.9l.5.3a2 2 0 0 0 1.4.2L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/>',
+  shield: '<path d="M12 3 5 6v5c0 4.2 2.9 7.4 7 8.6 4.1-1.2 7-4.4 7-8.6V6z"/><path d="m9.2 11.7 1.9 1.9 3.6-3.7"/>',
+  alert: '<path d="M12 4 2.7 20h18.6z"/><path d="M12 10v4"/><circle cx="12" cy="17.2" r=".9" fill="currentColor" stroke="none"/>',
+  lock: '<rect x="5.5" y="10.5" width="13" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15" r="1.1" fill="currentColor" stroke="none"/>',
 };
 
 // Emoji codepoint -> icon. Keyed without variation selectors / ZWJ; lookup strips them.
@@ -110,6 +113,8 @@ const MAP = {
   "\u{1F4AC}": G.chat,
   "\u{1F3A8}": G.palette,
   "\u{1F393}": G.gradCap,
+  "\u{26A0}": G.shield,
+  "\u{1F512}": G.lock, "\u{1F513}": G.lock,
 };
 
 export function iconFor(emoji) {

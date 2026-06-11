@@ -44,7 +44,12 @@ export default function Article({ params }) {
         <div dangerouslySetInnerHTML={{ __html: post.html }} />
       </article>
       <ShareBar title={post.title} />
-      <a className="cta" href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Work with me</a>
+      <div className="cta-box">
+        <h3>Curious how your own profile scores?</h3>
+        <p>Get your free LinkedIn Score and a personalized growth plan in about five minutes.</p>
+        <a className="cta" href="https://www.linkedscore.app/">Get your free score →</a>
+        <a className="cta-secondary" href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Or work 1:1 with Ali</a>
+      </div>
     </main>
   );
 }
