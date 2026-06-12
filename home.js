@@ -86,7 +86,7 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home .final::before{content:"";position:absolute;left:50%;top:30%;transform:translateX(-50%);width:560px;height:360px;background:radial-gradient(circle,rgba(200,169,110,.14),transparent 65%);pointer-events:none}
 .ls-home .final h2{font-size:clamp(30px,4.4vw,52px);position:relative}
 .ls-home .final p{color:var(--sub);font-size:18px;margin:18px auto 32px;max-width:440px;position:relative}
-.ls-home footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0;color:var(--mute);font-size:13px}
+.ls-home footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0;color:var(--sub);font-size:13px}
 .ls-home footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
 @media (max-width:880px){
 .ls-home .hero-grid{grid-template-columns:1fr;gap:40px}
