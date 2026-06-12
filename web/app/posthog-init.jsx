@@ -12,17 +12,23 @@ export default function PostHogInit() {
     // is one journey). Env var overrides if you rotate. Region: EU Cloud.
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || "phc_spF8qvv4nf2kqeURp9rUCccDZjRCReamUeHZMytVDk4y";
     if (!key || typeof window === "undefined" || window.__ph_init) return;
-    import("posthog-js")
-      .then(({ default: posthog }) => {
-        posthog.init(key, {
-          api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
-          capture_pageview: true,
-          autocapture: true,
-          person_profiles: "identified_only",
-        });
-        window.__ph_init = true;
-      })
-      .catch(() => {});
+    const boot = () =>
+      import("posthog-js")
+        .then(({ default: posthog }) => {
+          if (window.__ph_init) return;
+          posthog.init(key, {
+            api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
+            capture_pageview: true,
+            autocapture: true,
+            disable_surveys: true,
+            person_profiles: "identified_only",
+          });
+          window.__ph_init = true;
+        })
+        .catch(() => {});
+    // Defer off the critical path on mobile.
+    if ("requestIdleCallback" in window) requestIdleCallback(boot, { timeout: 4000 });
+    else setTimeout(boot, 2500);
   }, []);
   return null;
 }
