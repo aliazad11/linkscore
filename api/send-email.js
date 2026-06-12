@@ -151,6 +151,7 @@ export default async function handler(req) {
       },
       body: JSON.stringify({
         from: 'Linkedscore <noreply@linkedscore.app>',
+        reply_to: 'a.azad@linkedscore.app',
         to: [cleanEmail],
         subject: `${String(firstName || 'Hi').slice(0, 60)}, ${L.subj_ready} — ${L.subj_score}: ${score}`,
         html
