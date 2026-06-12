@@ -1258,7 +1258,8 @@ export default function App() {
             email,
             firstName: userData.firstName,
             plan: finalized,
-            planId: savedPlanId
+            planId: savedPlanId,
+            locale
           })
         });
         const emailData = await emailRes.json();
