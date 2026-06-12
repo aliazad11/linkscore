@@ -1909,7 +1909,7 @@ export default function App() {
               </p>
               <p style={{ color:"#8a8a9a", fontSize:13, lineHeight:1.6 }}>{locale==="en"
                 ? `A rough estimate, not a guarantee. It assumes about ${plan.revenue_at_risk.sharePct}% of your new ${(plan.revenue_at_risk.noun || "client")}s could come through LinkedIn, and that your current profile is leaving a meaningful share of them on the table. Based on ${fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency)} per ${plan.revenue_at_risk.noun || "client"} and a target of ${plan.revenue_at_risk.target} this year.`
-                : t("rev_disclaimer", { pct: plan.revenue_at_risk.sharePct, noun: plan.revenue_at_risk.noun || "client", value: fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency), target: plan.revenue_at_risk.target })}</p>
+                : t("rev_disclaimer", { pct: plan.revenue_at_risk.sharePct, noun: t("noun_" + (plan.revenue_at_risk.noun || "client")), value: fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency), target: plan.revenue_at_risk.target })}</p>
             </div>
           )}
           {/* Profile section scores */}

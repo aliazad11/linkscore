@@ -21,13 +21,13 @@ export const PROMPT_LANG = {
 // A few short keys the bulk translation pass didn't cover (dynamic-phase chrome).
 // Merged over the generated catalog so they participate in the same fallback chain.
 const EXTRA = {
-  en: { badge_step3: "Step 3 of 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} uploaded", gen_title: "Almost there...", gen_sub: "Generating your personalized plan.", link_not_found: "Link Not Found" },
-  de: { badge_step3: "Schritt 3 von 3", ss_post: "Beitrag {n}", ss_post_uploaded: "Beitrag {n} hochgeladen", gen_title: "Fast geschafft...", gen_sub: "Ihr personalisierter Plan wird erstellt.", link_not_found: "Link nicht gefunden" },
-  fr: { badge_step3: "Étape 3 sur 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} importé", gen_title: "Presque terminé...", gen_sub: "Génération de votre plan personnalisé.", link_not_found: "Lien introuvable" },
-  es: { badge_step3: "Paso 3 de 3", ss_post: "Publicación {n}", ss_post_uploaded: "Publicación {n} subida", gen_title: "Casi listo...", gen_sub: "Generando tu plan personalizado.", link_not_found: "Enlace no encontrado" },
-  pt: { badge_step3: "Etapa 3 de 3", ss_post: "Publicação {n}", ss_post_uploaded: "Publicação {n} enviada", gen_title: "Quase lá...", gen_sub: "Gerando o seu plano personalizado.", link_not_found: "Link não encontrado" },
-  nl: { badge_step3: "Stap 3 van 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} geüpload", gen_title: "Bijna klaar...", gen_sub: "Je gepersonaliseerde plan wordt gegenereerd.", link_not_found: "Link niet gevonden" },
-  it: { badge_step3: "Passaggio 3 di 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} caricato", gen_title: "Ci siamo quasi...", gen_sub: "Generazione del tuo piano personalizzato.", link_not_found: "Link non trovato" },
+  en: { badge_step3: "Step 3 of 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} uploaded", gen_title: "Almost there...", gen_sub: "Generating your personalized plan.", link_not_found: "Link Not Found", noun_deal: "deal", noun_customer: "customer", noun_project: "project", noun_client: "client" },
+  de: { badge_step3: "Schritt 3 von 3", ss_post: "Beitrag {n}", ss_post_uploaded: "Beitrag {n} hochgeladen", gen_title: "Fast geschafft...", gen_sub: "Ihr personalisierter Plan wird erstellt.", link_not_found: "Link nicht gefunden", noun_deal: "Abschluss", noun_customer: "Kunde", noun_project: "Projekt", noun_client: "Kunde" },
+  fr: { badge_step3: "Étape 3 sur 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} importé", gen_title: "Presque terminé...", gen_sub: "Génération de votre plan personnalisé.", link_not_found: "Lien introuvable", noun_deal: "contrat", noun_customer: "client", noun_project: "projet", noun_client: "client" },
+  es: { badge_step3: "Paso 3 de 3", ss_post: "Publicación {n}", ss_post_uploaded: "Publicación {n} subida", gen_title: "Casi listo...", gen_sub: "Generando tu plan personalizado.", link_not_found: "Enlace no encontrado", noun_deal: "operación", noun_customer: "cliente", noun_project: "proyecto", noun_client: "cliente" },
+  pt: { badge_step3: "Etapa 3 de 3", ss_post: "Publicação {n}", ss_post_uploaded: "Publicação {n} enviada", gen_title: "Quase lá...", gen_sub: "Gerando o seu plano personalizado.", link_not_found: "Link não encontrado", noun_deal: "negócio", noun_customer: "cliente", noun_project: "projeto", noun_client: "cliente" },
+  nl: { badge_step3: "Stap 3 van 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} geüpload", gen_title: "Bijna klaar...", gen_sub: "Je gepersonaliseerde plan wordt gegenereerd.", link_not_found: "Link niet gevonden", noun_deal: "deal", noun_customer: "klant", noun_project: "project", noun_client: "klant" },
+  it: { badge_step3: "Passaggio 3 di 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} caricato", gen_title: "Ci siamo quasi...", gen_sub: "Generazione del tuo piano personalizzato.", link_not_found: "Link non trovato", noun_deal: "affare", noun_customer: "cliente", noun_project: "progetto", noun_client: "cliente" },
 };
 const DICT = {};
 for (const code of Object.keys(STRINGS)) DICT[code] = { ...STRINGS[code], ...(EXTRA[code] || {}) };
