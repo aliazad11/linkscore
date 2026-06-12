@@ -3,7 +3,7 @@ import { HOME_CSS, HOME_HTML } from "./home.js";
 import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
 import { track, identify } from "./analytics.js";
-import { useLocale, LOCALES, PROMPT_LANG } from "./i18n.jsx";
+import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 
 const LOGO_URL = logoAsset;
 
@@ -487,6 +487,8 @@ const ANALYSIS_STEPS = [
   { text: "Fine-tuning your content strategy...", duration: 1800 },
   { text: "Preparing your final report...", duration: 1600 },
 ];
+// Per-step i18n keys, index-aligned with ANALYSIS_STEPS (used for non-English locales).
+const ANALYSIS_STEP_KEYS = ["step_scan","step_bench","step_map","step_arch","step_hooks","step_roadmap","step_score","step_personal","step_finetune","step_report"];
 
 const REVENUE_COHORTS = ["Real Estate Professional", "Consultant or Coach", "Startup Founder"];
 const PINNED_CURRENCIES = ["USD","EUR","GBP","AED","SAR","CAD","AUD","CHF","INR","SGD"];
@@ -795,7 +797,8 @@ function Logo({ onHome }) {
   );
 }
 
-function CopyBtn({ text, label = "Copy" }) {
+function CopyBtn({ text, label }) {
+  const { t } = useLocale();
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -812,7 +815,7 @@ function CopyBtn({ text, label = "Copy" }) {
   };
   return (
     <button onClick={copy} style={{ background:"transparent", border:"1px solid #c8a96e44", color:copied?"#56c08a":"#c8a96e", borderRadius:8, padding:"3px 10px", fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", flexShrink:0 }}>
-      {copied ? "Copied ✓" : label}
+      {copied ? t("copied") : (label || t("copy"))}
     </button>
   );
 }
@@ -1079,7 +1082,7 @@ export default function App() {
     return Object.keys(e).length===0;
   };
 
-  const QUESTIONS = getQuestionsForCohort(cohort);
+  const QUESTIONS = localizeQuestions(getQuestionsForCohort(cohort), locale, cohort);
   const q = QUESTIONS[currentQ];
 
   // Multi-select answers are stored joined with " | " — labels contain commas,
@@ -1103,7 +1106,7 @@ export default function App() {
   const handleNext = () => {
     if (q.multiSelect ? multiSelected.length === 0 : !selected) return;
     // Read otherText from DOM directly in case React state is stale
-    const otherInputEl = document.querySelector('textarea[placeholder*="Describe your specific"]');
+    const otherInputEl = document.querySelector('textarea[data-other-input]');
     const currentOtherText = otherInputEl?.value || otherText;
 
     let finalAnswer;
@@ -1128,7 +1131,7 @@ export default function App() {
   const handlePrev = () => { const p = currentQ - 1; if (p < 0) { setPhase("pdf_upload"); setSelected(null); setMultiSelected([]); setOtherText(""); return; } restoreSelection(QUESTIONS[p], answers[QUESTIONS[p].id]); setCurrentQ(p); };
   const goToQuestion = (i) => { if (i === currentQ) return; const qq = QUESTIONS[i]; if (!qq || answers[qq.id] == null) return; restoreSelection(qq, answers[qq.id]); setCurrentQ(i); };
   const goToPhase = (target) => { if (target === "quiz") { const qq = QUESTIONS[currentQ]; restoreSelection(qq, qq ? answers[qq.id] : null); } else { setSelected(null); setMultiSelected([]); setOtherText(""); } setPhase(target); };
-  const renderStepRail = (current) => { const STEPS = [["cohort","Category"],["form","About You"],["pdf_upload","Profile"],["quiz","Questions"],["post_screenshots","Posts"]]; const ci = STEPS.findIndex(function(s){ return s[0] === current; }); return (<div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16 }}>{STEPS.map(function(s, i){ var isCur = i === ci; var reached = i < ci; return (<button key={s[0]} onClick={function(){ if (reached) goToPhase(s[0]); }} disabled={!reached && !isCur} style={{ fontSize:11, fontWeight:600, padding:"5px 10px", borderRadius:8, border: isCur ? "1px solid #c8a96e" : (reached ? "1px solid #4a4a6a" : "1px solid #22223a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (reached ? "#c8a96e" : "#44445a"), cursor: reached ? "pointer" : "default", whiteSpace:"nowrap" }}>{s[1]}</button>); })}</div>); };
+  const renderStepRail = (current) => { const STEPS = [["cohort",t("rail_category")],["form",t("rail_about")],["pdf_upload",t("rail_profile")],["quiz",t("rail_questions")],["post_screenshots",t("rail_posts")]]; const ci = STEPS.findIndex(function(s){ return s[0] === current; }); return (<div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16 }}>{STEPS.map(function(s, i){ var isCur = i === ci; var reached = i < ci; return (<button key={s[0]} onClick={function(){ if (reached) goToPhase(s[0]); }} disabled={!reached && !isCur} style={{ fontSize:11, fontWeight:600, padding:"5px 10px", borderRadius:8, border: isCur ? "1px solid #c8a96e" : (reached ? "1px solid #4a4a6a" : "1px solid #22223a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (reached ? "#c8a96e" : "#44445a"), cursor: reached ? "pointer" : "default", whiteSpace:"nowrap" }}>{s[1]}</button>); })}</div>); };
   // Compress image to reduce payload size, with fallback to original
   const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
     try {
@@ -1344,10 +1347,10 @@ export default function App() {
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
-        <Badge color="#ef4444">Link Not Found</Badge>
-        <h2 style={{ ...s.h1, fontSize:24 }}>This plan link has expired or doesn't exist.</h2>
-        <p style={{ ...s.sub }}>Saved plans can expire. Run a fresh analysis to get an up-to-date plan, it takes about 3 minutes.</p>
-        <button className="primary-btn" onClick={()=>{ window.history.replaceState({}, "", "/"); reset(); }}>Get My Plan →</button>
+        <Badge color="#ef4444">{t("link_not_found")}</Badge>
+        <h2 style={{ ...s.h1, fontSize:24 }}>{t("link_expired_title")}</h2>
+        <p style={{ ...s.sub }}>{t("link_expired_sub")}</p>
+        <button className="primary-btn" onClick={()=>{ window.history.replaceState({}, "", "/"); reset(); }}>{t("btn_get_plan")}</button>
       </div>
     </Layout>
   );
@@ -1372,8 +1375,8 @@ export default function App() {
             >
               <span style={{ fontSize:24, color: cohort===c.id?"#c8a96e":"#8a8aa8", lineHeight:0, display:"flex", flexShrink:0 }} dangerouslySetInnerHTML={{ __html: iconFor(c.emoji) }} />
               <div>
-                <p style={{ color:"#F9FAFB", fontSize:15, fontWeight:700, marginBottom:2 }}>{c.label}</p>
-                <p style={{ color:"#8a8aa6", fontSize:12 }}>{c.sub}</p>
+                <p style={{ color:"#F9FAFB", fontSize:15, fontWeight:700, marginBottom:2 }}>{cohortText(locale, c.id, "label", c.label)}</p>
+                <p style={{ color:"#8a8aa6", fontSize:12 }}>{cohortText(locale, c.id, "sub", c.sub)}</p>
               </div>
             </button>
           ))}
@@ -1399,12 +1402,12 @@ export default function App() {
       <div className="page-enter">
         <Logo onHome={goHome} />
         {renderStepRail("form")}
-        <Badge>Step 1 of 3, About You</Badge>
-        <h2 style={{ ...s.h1, fontSize:26 }}>{COHORT_HEADLINES[cohort] || t("form_title")}</h2>
+        <Badge>{t("badge_step1")}</Badge>
+        <h2 style={{ ...s.h1, fontSize:26 }}>{cohortText(locale, cohort, "headline", COHORT_HEADLINES[cohort]) || t("form_title")}</h2>
         <p style={{ ...s.sub }}>{t("form_sub")}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-            {[["firstName","First Name","John"],["lastName","Last Name","Smith"]].map(([k,l,p])=>(
+            {[["firstName",t("lbl_first"),"John"],["lastName",t("lbl_last"),"Smith"]].map(([k,l,p])=>(
               <div key={k}>
                 <label style={s.label}>{l}</label>
                 <input className={`field-input${formErrors[k]?" error":""}`} value={userData[k]} onChange={e=>setUserData({...userData,[k]:e.target.value})} placeholder={p} />
@@ -1414,33 +1417,33 @@ export default function App() {
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"80px 1fr", gap:12 }}>
             <div>
-              <label style={s.label}>Age</label>
+              <label style={s.label}>{t("lbl_age")}</label>
               <input className={`field-input${formErrors.age?" error":""}`} type="number" value={userData.age} onChange={e=>setUserData({...userData,age:e.target.value})} placeholder="28" />
               {formErrors.age&&<p style={s.err}>{formErrors.age}</p>}
             </div>
             <div>
-              <label style={s.label}>Current Title</label>
+              <label style={s.label}>{t("lbl_title")}</label>
               <input className={`field-input${formErrors.jobTitle?" error":""}`} value={userData.jobTitle} onChange={e=>setUserData({...userData,jobTitle:e.target.value})} placeholder="Marketing Manager" />
               {formErrors.jobTitle&&<p style={s.err}>{formErrors.jobTitle}</p>}
             </div>
           </div>
           <div>
-            <label style={s.label}>LinkedIn Profile URL</label>
+            <label style={s.label}>{t("lbl_linkedin")}</label>
             <input className={`field-input${formErrors.linkedinUrl?" error":""}`} value={userData.linkedinUrl} onChange={e=>setUserData({...userData,linkedinUrl:e.target.value})} placeholder="linkedin.com/in/yourname" />
             {formErrors.linkedinUrl&&<p style={s.err}>{formErrors.linkedinUrl}</p>}
           </div>
           <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:16 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
               <span style={{ fontSize:16 }}>📊</span>
-              <label style={{ ...s.label, margin:0 }}>LinkedIn SSI Score <span style={{ color:"#8a8aa6", fontWeight:400 }}>(optional)</span></label>
+              <label style={{ ...s.label, margin:0 }}>{t("ssi_label")} <span style={{ color:"#8a8aa6", fontWeight:400 }}>{t("ssi_optional")}</span></label>
             </div>
-            <p style={{ color:"#7a7a96", fontSize:11, marginBottom:12 }}>Find your scores at <a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>linkedin.com/sales/ssi</a>, each pillar is scored 0–25</p>
+            <p style={{ color:"#7a7a96", fontSize:11, marginBottom:12 }}>{(()=>{ const help=t("ssi_help"), url="linkedin.com/sales/ssi", i=help.indexOf(url); if(i===-1) return help; return (<>{help.slice(0,i)}<a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>{url}</a>{help.slice(i+url.length)}</>); })()}</p>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
               {[
-                ["establish_brand", "Establish Your Brand"],
-                ["find_people", "Find the Right People"],
-                ["engage_insights", "Engage with Insights"],
-                ["build_relationships", "Build Relationships"],
+                ["establish_brand", t("ssi_brand")],
+                ["find_people", t("ssi_people")],
+                ["engage_insights", t("ssi_insights")],
+                ["build_relationships", t("ssi_relations")],
               ].map(([key, label]) => (
                 <div key={key}>
                   <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>{label}</p>
@@ -1458,7 +1461,7 @@ export default function App() {
           </div>
         </div>
         <div style={{ marginTop:24 }}>
-          <button className="primary-btn" onClick={()=>{ if(validate()) setPhase("pdf_upload"); }}>Continue →</button>
+          <button className="primary-btn" onClick={()=>{ if(validate()) setPhase("pdf_upload"); }}>{t("btn_continue")}</button>
         </div>
       </div>
     </Layout>
@@ -1471,7 +1474,7 @@ export default function App() {
         <Logo onHome={goHome} />
         {renderStepRail("quiz")}
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <Badge color="#6a5a9a">Step 3 of 3, {q.phase}</Badge>
+          <Badge color="#6a5a9a">{t("badge_step3")}{locale==="en" ? `, ${q.phase}` : ""}</Badge>
           <span style={{ color:"#7a7a96", fontSize:12 }}>{Math.min(currentQ + 1, QUESTIONS.length)} / {QUESTIONS.length}</span>
         </div>
         <div className="progress-bar" style={{ marginBottom:24 }}>
@@ -1481,7 +1484,7 @@ export default function App() {
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8, lineHeight:1.3 }}>{q.question}</h2>
         <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
-          {q.multiSelect && <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>Select all that apply</p>}
+          {q.multiSelect && <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>{t("select_all")}</p>}
           {q.options.map(opt=>{
             const isMultiActive = q.multiSelect && multiSelected.includes(opt.label);
             const isSingleActive = !q.multiSelect && selected===opt.label;
@@ -1503,7 +1506,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize:20, color: isActive?"#c8a96e":"#55556f", lineHeight:0, display:"flex", flexShrink:0 }} dangerouslySetInnerHTML={{ __html: iconFor(opt.emoji) }} />
-                <span style={{ color:isActive?"#c8a96e":"#6a6a8a", fontSize:14, fontWeight:isActive?600:400, flex:1 }}>{opt.label}</span>
+                <span style={{ color:isActive?"#c8a96e":"#6a6a8a", fontSize:14, fontWeight:isActive?600:400, flex:1 }}>{opt.display || opt.label}</span>
                 {q.multiSelect
                   ? <span style={{ width:18, height:18, borderRadius:4, border:`2px solid ${isActive?"#c8a96e":"#2a2a4a"}`, background:isActive?"#c8a96e":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                       {isActive && <span style={{ color:"#0d0d18", fontSize:12, fontWeight:900 }}>✓</span>}
@@ -1518,7 +1521,8 @@ export default function App() {
           <div style={{ marginBottom:16 }}>
             <textarea
               autoFocus
-              placeholder="Describe your specific situation in detail, the more you write, the more accurate your plan will be..."
+              data-other-input
+              placeholder={t("other_placeholder")}
               value={otherText}
               onChange={e=>setOtherText(e.target.value)}
               maxLength={500}
@@ -1532,9 +1536,9 @@ export default function App() {
             ? multiSelected.length === 0
             : !selected
         } onClick={handleNext}>
-          {currentQ+1===QUESTIONS.length?"Almost Done →":"Continue →"}
+          {currentQ+1===QUESTIONS.length?t("btn_almost_done"):t("btn_continue")}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={handlePrev}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={handlePrev}>{t("btn_back")}</button>
       </div>
     </Layout>
   );
@@ -1545,9 +1549,11 @@ export default function App() {
       <div className="page-enter">
         <Logo onHome={goHome} />
         {renderStepRail("pdf_upload")}
-        <Badge>Step 2 of 3, Your Profile</Badge>
-        <h2 style={{ ...s.h1, fontSize:26 }}>Upload your LinkedIn PDF.</h2>
-        <p style={{ ...s.sub }}>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</p>
+        <Badge>{t("badge_step2")}</Badge>
+        <h2 style={{ ...s.h1, fontSize:26 }}>{t("pdf_title")}</h2>
+        <p style={{ ...s.sub }}>{locale==="en"
+          ? (<>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</>)
+          : t("pdf_sub")}</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
           onClick={()=>fileInputRef.current?.click()}
@@ -1559,22 +1565,22 @@ export default function App() {
           {pdfName ? (
             <div>
               <p style={{ color:"#c8a96e", fontSize:14, fontWeight:700, marginBottom:4 }}>✓ {pdfName}</p>
-              <p style={{ color:"#8a8aa6", fontSize:12 }}>{pdfText ? "Profile analyzed successfully" : "Reading profile..."}</p>
+              <p style={{ color:"#8a8aa6", fontSize:12 }}>{pdfText ? t("pdf_analyzed") : t("pdf_reading")}</p>
             </div>
           ) : (
             <div>
               <p style={{ fontSize:28, marginBottom:12 }}>📄</p>
-              <p style={{ color:"#6a6a8a", fontSize:14, fontWeight:600, marginBottom:4 }}>Drop your LinkedIn PDF here</p>
-              <p style={{ color:"#3a3a4a", fontSize:12 }}>or click to browse</p>
+              <p style={{ color:"#6a6a8a", fontSize:14, fontWeight:600, marginBottom:4 }}>{t("pdf_drop")}</p>
+              <p style={{ color:"#3a3a4a", fontSize:12 }}>{t("pdf_browse")}</p>
             </div>
           )}
         </div>
         {pdfError && <p style={{ color:"#ef4444", fontSize:12, textAlign:"center", marginTop:10 }}>{pdfError}</p>}
-        <p style={{ color:"#7a7a96", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>We don't store your PDF. We process the text to build your plan and don't keep it.</p>
+        <p style={{ color:"#7a7a96", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>{t("pdf_privacy")}</p>
         <button className="primary-btn" onClick={()=>setPhase("quiz")}>
-          {pdfName?"Continue to Questions →":"Skip & Continue →"}
+          {pdfName?t("btn_continue_questions"):t("btn_skip_continue")}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>{t("btn_back")}</button>
       </div>
     </Layout>
   );
@@ -1584,13 +1590,13 @@ export default function App() {
     <Layout>
       <div className="page-enter">
         <Logo onHome={goHome} />
-        <Badge>Almost There</Badge>
-        <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>Anything specific we should know?</h2>
-        <p style={{ ...s.sub, marginBottom:20 }}>A job interview in 30 days? A product launch coming up? A specific person you want to impress? Tell us, this makes your plan dramatically more accurate.</p>
+        <Badge>{t("badge_almost_there")}</Badge>
+        <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>{t("note_title")}</h2>
+        <p style={{ ...s.sub, marginBottom:20 }}>{t("note_sub")}</p>
         <textarea
           value={specialNote}
           onChange={e=>setSpecialNote(e.target.value)}
-          placeholder="e.g. I have a final round interview at Google in 3 weeks and need to build credibility fast..."
+          placeholder={t("note_placeholder")}
           style={{
             width:"100%", minHeight:120, background:"#0d0d18",
             border:"1px solid #1a1a2e", borderRadius:12,
@@ -1602,9 +1608,9 @@ export default function App() {
         />
         <p style={{ color:"#7a7a96", fontSize:11, textAlign:"right", marginBottom:20 }}>{specialNote.length}/500</p>
         <button className="primary-btn" onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "post_screenshots")}>
-          {specialNote ? "Got it →" : "Skip & Continue →"}
+          {specialNote ? t("btn_got_it") : t("btn_skip_continue")}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ const last = QUESTIONS.length-1; restoreSelection(QUESTIONS[last], answers[QUESTIONS[last].id]); setCurrentQ(last); setPhase("quiz"); }}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ const last = QUESTIONS.length-1; restoreSelection(QUESTIONS[last], answers[QUESTIONS[last].id]); setCurrentQ(last); setPhase("quiz"); }}>{t("btn_back")}</button>
       </div>
     </Layout>
   );
@@ -1613,9 +1619,9 @@ export default function App() {
   if (phase==="revenue") {
     const isFounder = cohort === "Startup Founder";
     const labels = {
-      "Consultant or Coach": { amt: "What does one client typically pay you?", tgt: "How many new clients are you aiming to win this year?" },
-      "Real Estate Professional": { amt: "What is your average commission per deal?", tgt: "How many deals are you targeting this year?" },
-      "Startup Founder": { amt: "What is one customer worth to you per year?", tgt: "How many new customers are you targeting this year?" }
+      "Consultant or Coach": { amt: t("rev_amt_consultant"), tgt: t("rev_tgt_consultant") },
+      "Real Estate Professional": { amt: t("rev_amt_realestate"), tgt: t("rev_tgt_realestate") },
+      "Startup Founder": { amt: t("rev_amt_founder"), tgt: t("rev_tgt_founder") }
     };
     const L = labels[cohort] || labels["Consultant or Coach"];
     const showGate = isFounder && founderHasRevenue === null;
@@ -1628,18 +1634,18 @@ export default function App() {
       <Layout>
         <div className="page-enter">
           <Logo onHome={goHome} />
-          <Badge>Almost There</Badge>
-          <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>What is being invisible costing you?</h2>
-          <p style={{ ...s.sub, marginBottom:20 }}>Two quick numbers in your own currency, used only to estimate your Revenue at Risk. They are saved only inside your private plan, never shared.</p>
+          <Badge>{t("badge_almost_there")}</Badge>
+          <h2 style={{ ...s.h1, fontSize:24, marginBottom:8 }}>{t("rev_title")}</h2>
+          <p style={{ ...s.sub, marginBottom:20 }}>{t("rev_sub")}</p>
           {showGate && (
             <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
               <button className="opt-row" onClick={()=>setFounderHasRevenue("yes")}>
                 <span style={{ fontSize:20 }}>💰</span>
-                <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>Yes, we have paying customers</span>
+                <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>{t("rev_yes")}</span>
               </button>
               <button className="opt-row" onClick={()=>setFounderHasRevenue("no")}>
                 <span style={{ fontSize:20 }}>🌱</span>
-                <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>Not yet, pre-revenue</span>
+                <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>{t("rev_no")}</span>
               </button>
             </div>
           )}
@@ -1654,37 +1660,37 @@ export default function App() {
               </div>
               {isConsultant && (
                 <div style={{ display:"flex", gap:8, marginBottom:18 }}>
-                  {[["per_year","Per year"],["per_project","Per project"]].map(pp=>(
+                  {[["per_year",t("rev_per_year")],["per_project",t("rev_per_project")]].map(pp=>(
                     <button key={pp[0]} className="tab-pill" onClick={()=>setRevPeriod(pp[0])} style={{ flex:1, borderColor: revPeriod===pp[0]?"#c8a96e":"#1a1a2e", color: revPeriod===pp[0]?"#c8a96e":"#4a4a6a", background: revPeriod===pp[0]?"rgba(200,169,110,0.1)":"transparent" }}>{pp[1]}</button>
                   ))}
                 </div>
               )}
               <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{L.tgt}</label>
               <input type="number" inputMode="numeric" value={revTarget} onChange={e=>setRevTarget(e.target.value)} placeholder="e.g. 10" className="field-input" style={{ marginBottom:18 }} />
-              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>How much of your new business could come from LinkedIn?</label>
+              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{t("rev_share_q")}</label>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:24 }}>
-                {[["0.15","A little"],["0.3","Some"],["0.5","A lot"],["0.7","Most of it"]].map(cs=>(
+                {[["0.15",t("rev_share_little")],["0.3",t("rev_share_some")],["0.5",t("rev_share_lot")],["0.7",t("rev_share_most")]].map(cs=>(
                   <button key={cs[0]} className="tab-pill" onClick={()=>setRevChannelShare(cs[0])} style={{ flexBasis:"47%", flexGrow:1, borderColor: revChannelShare===cs[0]?"#c8a96e":"#1a1a2e", color: revChannelShare===cs[0]?"#c8a96e":"#4a4a6a", background: revChannelShare===cs[0]?"rgba(200,169,110,0.1)":"transparent" }}>{cs[1]}</button>
                 ))}
               </div>
-              <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>Continue →</button>
-              <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setRevValue(""); setRevTarget(""); setPhase("post_screenshots"); }}>Skip this step</button>
+              <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>{t("btn_continue")}</button>
+              <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ setRevValue(""); setRevTarget(""); setPhase("post_screenshots"); }}>{t("btn_skip_step")}</button>
             </>
           )}
           {preRevenue && (
             <>
-              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:10 }}>What do you most need LinkedIn to unlock?</label>
+              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:10 }}>{t("rev_unlock_q")}</label>
               <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
-                {["Investors","Customers","Hires","Partnerships"].map(o=>(
-                  <button key={o} className="opt-row" onClick={()=>setFounderUnlock(o)} style={{ borderColor: founderUnlock===o?"#c8a96e":"#1a1a2e" }}>
-                    <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>{o}</span>
+                {[["Investors",t("rev_unlock_investors")],["Customers",t("rev_unlock_customers")],["Hires",t("rev_unlock_hires")],["Partnerships",t("rev_unlock_partnerships")]].map(([val,disp])=>(
+                  <button key={val} className="opt-row" onClick={()=>setFounderUnlock(val)} style={{ borderColor: founderUnlock===val?"#c8a96e":"#1a1a2e" }}>
+                    <span style={{ color:"#F9FAFB", fontSize:15, fontWeight:600 }}>{disp}</span>
                   </button>
                 ))}
               </div>
-              <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>Continue →</button>
+              <button className="primary-btn" onClick={()=>setPhase("post_screenshots")}>{t("btn_continue")}</button>
             </>
           )}
-          <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ if (isFounder && founderHasRevenue !== null) { setFounderHasRevenue(null); } else { setPhase("note"); } }}>← Back</button>
+          <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ if (isFounder && founderHasRevenue !== null) { setFounderHasRevenue(null); } else { setPhase("note"); } }}>{t("btn_back")}</button>
         </div>
       </Layout>
     );
@@ -1696,9 +1702,9 @@ export default function App() {
       <div className="page-enter">
         <Logo onHome={goHome} />
         {renderStepRail("post_screenshots")}
-        <Badge>Step 3 of 3, Your Posts</Badge>
-        <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>Upload screenshots of your last 3 posts.</h2>
-        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:24 }}>This unlocks your Thought Leader Score and makes your hooks much more specific to what already works for you.</p>
+        <Badge>{t("badge_step3_posts")}</Badge>
+        <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>{t("ss_title")}</h2>
+        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:24 }}>{t("ss_sub")}</p>
         
         {!noPostsYet && (
           <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
@@ -1719,16 +1725,16 @@ export default function App() {
                     <>
                       <img src={postScreenshots[i].preview} alt={`Post ${i+1}`} style={{ width:72, height:56, objectFit:"cover", borderRadius:10, flexShrink:0 }} />
                       <div>
-                        <p style={{ color:"#c8a96e", fontSize:13, fontWeight:700 }}>✓ Post {i+1} uploaded</p>
-                        <p style={{ color:"#8a8aa6", fontSize:11 }}>Click to replace</p>
+                        <p style={{ color:"#c8a96e", fontSize:13, fontWeight:700 }}>✓ {t("ss_post_uploaded", {n: i+1})}</p>
+                        <p style={{ color:"#8a8aa6", fontSize:11 }}>{t("ss_replace")}</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <span style={{ fontSize:20 }}>📸</span>
                       <div>
-                        <p style={{ color:"#8a8aa6", fontSize:13, fontWeight:600 }}>Post {i+1}</p>
-                        <p style={{ color:"#7a7a96", fontSize:11 }}>Click to upload screenshot</p>
+                        <p style={{ color:"#8a8aa6", fontSize:13, fontWeight:600 }}>{t("ss_post", {n: i+1})}</p>
+                        <p style={{ color:"#7a7a96", fontSize:11 }}>{t("ss_upload")}</p>
                       </div>
                     </>
                   )}
@@ -1745,13 +1751,13 @@ export default function App() {
           <div style={{ width:18, height:18, borderRadius:4, border:`1.5px solid ${noPostsYet?"#c8a96e":"#2a2a3e"}`, background:noPostsYet?"#c8a96e":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}>
             {noPostsYet && <span style={{ color:"#08080e", fontSize:11, fontWeight:900 }}>✓</span>}
           </div>
-          <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>I haven't posted on LinkedIn yet</p>
+          <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>{t("ss_no_posts")}</p>
         </div>
 
         {genError && (
           <div style={{ background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.35)", borderRadius:12, padding:"12px 16px", marginBottom:16 }}>
             <p style={{ color:"#ef4444", fontSize:13, lineHeight:1.5, margin:0 }}>{genError}</p>
-            <p style={{ color:"#8a8a9a", fontSize:12, lineHeight:1.5, margin:"4px 0 0" }}>Your answers are saved. Press the button below to retry.</p>
+            <p style={{ color:"#8a8a9a", fontSize:12, lineHeight:1.5, margin:"4px 0 0" }}>{t("gen_error_retry")}</p>
           </div>
         )}
         <button className="primary-btn" onClick={()=>{
@@ -1764,9 +1770,9 @@ export default function App() {
             .then(id => { planRef.current = id; setPlanId(id); track("plan_generated"); })
             .catch(err => { planRef.current = {_error: err.message}; track("plan_failed", { error: String(err.message).slice(0,120) }); });
         }}>
-          {postScreenshots.some(s=>s!==null)||noPostsYet ? "Analyze Everything →" : "Skip & Continue →"}
+          {postScreenshots.some(s=>s!==null)||noPostsYet ? t("btn_analyze") : t("btn_skip_continue")}
         </button>
-        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "note")}>← Back</button>
+        <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "note")}>{t("btn_back")}</button>
       </div>
     </Layout>
   );
@@ -1777,18 +1783,18 @@ export default function App() {
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
-          {`Analyzing, ${userData.firstName}...`}
+          {t("analyzing_title", {name: userData.firstName})}
         </h2>
-        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:32 }}>Building your plan, this takes 30 to 60 seconds.</p>
+        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:32 }}>{t("analyzing_sub")}</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${analysisProgress}%`, background:"linear-gradient(90deg,#c8a96e,#e8c98e)", borderRadius:100, transition:"width 0.3s ease" }} />
         </div>
-        <p style={{ color:"#8a8aa6", fontSize:12, marginBottom:28 }}>{analysisProgress}% complete</p>
+        <p style={{ color:"#8a8aa6", fontSize:12, marginBottom:28 }}>{t("analyzing_complete", {n: analysisProgress})}</p>
         <div style={{ textAlign:"left", display:"flex", flexDirection:"column", gap:10 }}>
           {ANALYSIS_STEPS.map((step,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
               <div style={{ width:6, height:6, borderRadius:"50%", background:i<=analysisStep?"#c8a96e":"#1a1a2e", flexShrink:0, transition:"background 0.3s" }} className={i===analysisStep?"analysis-dot":""} />
-              <span style={{ color:i<=analysisStep?"#6a6a8a":"#2a2a3a", fontSize:13 }}>{step.text}</span>
+              <span style={{ color:i<=analysisStep?"#6a6a8a":"#2a2a3a", fontSize:13 }}>{locale==="en" ? step.text : t(ANALYSIS_STEP_KEYS[i])}</span>
             </div>
           ))}
         </div>
@@ -1802,12 +1808,12 @@ export default function App() {
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
         <Badge color="#10b981">{t("paywall_badge")}</Badge>
-        <h2 style={{ ...s.h1, fontSize:28 }}>Your plan is ready,<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>
+        <h2 style={{ ...s.h1, fontSize:28 }}>{t("paywall_ready")}<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>
         <div className="gold-rule" />
-        <p style={{ ...s.sub, marginBottom:24 }}>Enter your email to unlock your full personalized LinkedIn strategy.</p>
+        <p style={{ ...s.sub, marginBottom:24 }}>{t("paywall_sub")}</p>
         <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:24, textAlign:"left" }}>
-          <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>Your plan includes</p>
-          {[...((REVENUE_COHORTS.indexOf(cohort) !== -1 && revValue && revTarget && !(cohort === "Startup Founder" && founderHasRevenue !== "yes")) ? ["Your Revenue at Risk estimate"] : []),"LinkedIn Score & personal archetype","Profile scoring: headline, about, experience","3 custom post hooks written for your voice","30-day content calendar with exact topics","Critical algorithm rules you're probably breaking","Full growth tactics for your specific goal"].map((item,i)=>(
+          <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>{t("paywall_includes")}</p>
+          {[...((REVENUE_COHORTS.indexOf(cohort) !== -1 && revValue && revTarget && !(cohort === "Startup Founder" && founderHasRevenue !== "yes")) ? [t("inc_revenue")] : []),t("inc_score"),t("inc_profile"),t("inc_hooks"),t("inc_calendar"),t("inc_rules"),t("inc_tactics")].map((item,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
               <span style={{ color:"#c8a96e", fontSize:10 }}>◆</span>
               <span style={{ color:"#8a8aa6", fontSize:13 }}>{item}</span>
@@ -1815,14 +1821,14 @@ export default function App() {
           ))}
         </div>
         <div style={{ marginBottom:14, textAlign:"left" }}>
-          <label style={s.label}>Email Address</label>
+          <label style={s.label}>{t("email_label")}</label>
           <input className={`field-input${emailError?" error":""}`} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==="Enter"&&handlePaywall()} />
           {emailError&&<p style={s.err}>{emailError}</p>}
         </div>
         <button className="primary-btn" disabled={loading} onClick={handlePaywall}>
           {loading?t("btn_generating"):t("btn_unlock")}
         </button>
-        <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>No credit card. We email your plan and occasional LinkedIn tips, unsubscribe anytime. <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
+        <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>{t("paywall_consent")} <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
       </div>
     </Layout>
   );
@@ -1832,29 +1838,29 @@ export default function App() {
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
-        <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>Almost there...</h2>
-        <p style={{ color:"#8a8aa6", fontSize:13 }}>Generating your personalized plan.</p>
+        <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>{t("gen_title")}</h2>
+        <p style={{ color:"#8a8aa6", fontSize:13 }}>{t("gen_sub")}</p>
       </div>
     </Layout>
   );
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
   if (phase==="result"&&plan) {
-    const TABS = ["Overview","Profile","Thought Leader","SSI Analysis","Content","Hooks","Calendar","Rules"];
+    const TAB_KEYS = ["tab_overview","tab_profile","tab_tl","tab_ssi","tab_content","tab_hooks","tab_calendar","tab_rules"];
     return (
       <Layout>
         <div className="page-enter" style={{ paddingBottom:40 }}>
           {sharedView && (
             <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.14),rgba(200,169,110,0.04))", border:"1px solid #c8a96e55", borderRadius:14, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
-              <span style={{ color:"#e8e8f0", fontSize:13, fontWeight:600 }}>This is {userData.firstName}'s plan.</span>
-              <a href="/" onClick={e=>{ e.preventDefault(); window.history.replaceState({}, "", "/"); reset(); }} style={{ background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", fontWeight:700, fontSize:13, padding:"9px 16px", borderRadius:10, textDecoration:"none", whiteSpace:"nowrap" }}>Get your own free score →</a>
+              <span style={{ color:"#e8e8f0", fontSize:13, fontWeight:600 }}>{t("shared_banner", {name: userData.firstName})}</span>
+              <a href="/" onClick={e=>{ e.preventDefault(); window.history.replaceState({}, "", "/"); reset(); }} style={{ background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", fontWeight:700, fontSize:13, padding:"9px 16px", borderRadius:10, textDecoration:"none", whiteSpace:"nowrap" }}>{t("shared_cta")}</a>
             </div>
           )}
           <div style={{ textAlign:"center", marginBottom:24 }}>
             <Logo onHome={goHome} />
             <Badge>{t("result_badge")}</Badge>
             <h1 style={{ ...s.h1, fontSize:28 }}>
-              {userData.firstName}, you are<br />
+              {userData.firstName}, {t("result_you_are")}<br />
               <span style={{ color:"#c8a96e", fontWeight:800 }}>{plan.archetype}</span>
             </h1>
             <div className="gold-rule" />
@@ -1867,8 +1873,8 @@ export default function App() {
             <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
               <ScoreRing score={plan.score} />
               <div>
-                <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>LinkedIn Score</p>
-                <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.score<40?"Needs work":plan.score<70?"Good foundation":"Strong profile"}</p>
+                <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("sec_linkedin_score")}</p>
+                <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.score<40?t("needs_work"):plan.score<70?t("good_foundation"):t("strong_profile")}</p>
                 <p style={{ color:"#ef4444", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.urgency}</p>
               </div>
             </div>
@@ -1877,8 +1883,8 @@ export default function App() {
               <div style={{ flex:1, display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:"16px" }}>
                 <ScoreRing score={plan.thought_leader.score} color="#a78bfa" />
                 <div>
-                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
-                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?"Early stage":plan.thought_leader.score<70?"Growing voice":"Strong presence"}</p>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
+                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?t("tl_early"):plan.thought_leader.score<70?t("tl_growing"):t("tl_strong")}</p>
                   <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.thought_leader.analysis?.slice(0,120)}{plan.thought_leader.analysis?.length>120?"…":""}</p>
                 </div>
               </div>
@@ -1886,9 +1892,9 @@ export default function App() {
               <div style={{ flex:1, display:"flex", alignItems:"center", gap:12, background:"#0d0d18", border:"1px dashed #1a1a2e", borderRadius:16, padding:"16px", cursor:"pointer" }} onClick={()=>setPhase("post_screenshots")}>
                 <div style={{ width:52, height:52, borderRadius:"50%", border:"2px dashed #2a2a4a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20 }}>📸</div>
                 <div>
-                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>Thought Leader</p>
-                  <p style={{ color:"#8a8aa6", fontSize:12, fontWeight:600, marginBottom:3 }}>Not calculated</p>
-                  <p style={{ color:"#8a8aa6", fontSize:11 }}>Upload posts to unlock</p>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
+                  <p style={{ color:"#8a8aa6", fontSize:12, fontWeight:600, marginBottom:3 }}>{t("tl_not_calc")}</p>
+                  <p style={{ color:"#8a8aa6", fontSize:11 }}>{t("tl_upload_unlock")}</p>
                 </div>
               </div>
             )}
@@ -1896,19 +1902,21 @@ export default function App() {
 
           {plan.revenue_at_risk && plan.revenue_at_risk.available && (
             <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.14),rgba(200,169,110,0.04))", border:"1px solid #c8a96e55", borderRadius:16, padding:20, marginBottom:20 }}>
-              <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Revenue at Risk</p>
+              <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>{t("sec_revenue_risk")}</p>
               <p style={{ color:"#F9FAFB", fontSize:26, fontWeight:800, marginBottom:6 }}>
                 {fmtMoney(plan.revenue_at_risk.low, plan.revenue_at_risk.currency)}{plan.revenue_at_risk.high > plan.revenue_at_risk.low ? (" – " + fmtMoney(plan.revenue_at_risk.high, plan.revenue_at_risk.currency)) : ""}
-                <span style={{ fontSize:13, fontWeight:600, color:"#8a8a9a" }}> / year</span>
+                <span style={{ fontSize:13, fontWeight:600, color:"#8a8a9a" }}> {t("per_year_label")}</span>
               </p>
-              <p style={{ color:"#8a8a9a", fontSize:13, lineHeight:1.6 }}>A rough estimate, not a guarantee. It assumes about {plan.revenue_at_risk.sharePct}% of your new {(plan.revenue_at_risk.noun || "client")}s could come through LinkedIn, and that your current profile is leaving a meaningful share of them on the table. Based on {fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency)} per {plan.revenue_at_risk.noun || "client"} and a target of {plan.revenue_at_risk.target} this year.</p>
+              <p style={{ color:"#8a8a9a", fontSize:13, lineHeight:1.6 }}>{locale==="en"
+                ? `A rough estimate, not a guarantee. It assumes about ${plan.revenue_at_risk.sharePct}% of your new ${(plan.revenue_at_risk.noun || "client")}s could come through LinkedIn, and that your current profile is leaving a meaningful share of them on the table. Based on ${fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency)} per ${plan.revenue_at_risk.noun || "client"} and a target of ${plan.revenue_at_risk.target} this year.`
+                : t("rev_disclaimer", { pct: plan.revenue_at_risk.sharePct, noun: plan.revenue_at_risk.noun || "client", value: fmtMoney(plan.revenue_at_risk.value, plan.revenue_at_risk.currency), target: plan.revenue_at_risk.target })}</p>
             </div>
           )}
           {/* Profile section scores */}
           {plan.profile_scores && (
             <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:20 }}>
-              <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Profile Section Scores</p>
-              {[["Headline", plan.profile_scores.headline],["About Section", plan.profile_scores.about],["Experience", plan.profile_scores.experience]].map(([label,score])=>(
+              <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("sec_profile_scores")}</p>
+              {[[t("ps_headline"), plan.profile_scores.headline],[t("ps_about"), plan.profile_scores.about],[t("ps_experience"), plan.profile_scores.experience]].map(([label,score])=>(
                 <div key={label} style={{ marginBottom:12 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
                     <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
@@ -1924,11 +1932,11 @@ export default function App() {
 
           {/* Tabs */}
           <div style={{ display:"flex", gap:6, marginBottom:20, flexWrap:"wrap" }}>
-            {TABS.map((t,i)=>{
-              const isThoughtLocked = t==="Thought Leader" && !plan.thought_leader?.available;
-              const isSSILocked = t==="SSI Analysis" && !plan.ssi_plan?.available;
+            {TAB_KEYS.map((tabKey,i)=>{
+              const isThoughtLocked = i===2 && !plan.thought_leader?.available;
+              const isSSILocked = i===3 && !plan.ssi_plan?.available;
               const locked = isThoughtLocked || isSSILocked;
-              const lockMsg = isThoughtLocked ? "Upload posts to unlock" : "Add SSI scores to unlock";
+              const lockMsg = isThoughtLocked ? t("tl_upload_unlock") : t("ssi_add_unlock");
               return (
                 <div key={i} style={{ position:"relative" }} className="tab-tooltip-wrap">
                   <button
@@ -1936,7 +1944,7 @@ export default function App() {
                     style={{ opacity: locked ? 0.45 : 1, cursor: locked ? "not-allowed" : "pointer" }}
                     onClick={()=>{ if(!locked) setActiveSection(i); }}
                   >
-                    {locked && <span style={{ marginRight:4, fontSize:10 }}>🔒</span>}{t}
+                    {locked && <span style={{ marginRight:4, fontSize:10 }}>🔒</span>}{t(tabKey)}
                   </button>
                   {locked && (
                     <div className="tab-tooltip" style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#1a1a2e", border:"1px solid #2a2a4a", borderRadius:8, padding:"4px 10px", whiteSpace:"nowrap", fontSize:11, color:"#6a6a8a", pointerEvents:"none", zIndex:10 }}>
@@ -1953,13 +1961,13 @@ export default function App() {
             {activeSection===0 && (
               <div>
                 <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.06),rgba(200,169,110,0.02))", border:"1px solid #c8a96e22", borderRadius:16, padding:20, marginBottom:12 }}>
-                  <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Personal Message</p>
+                  <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("sec_personal_msg")}</p>
                   <p style={{ color:"#8a8a9a", fontSize:14, lineHeight:1.8 }}>"{plan.closing_message}"</p>
                 </div>
-                {plan.growth_tactics?.map((t,i)=>(
+                {plan.growth_tactics?.map((tactic,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:12 }}>
                     <span style={{ color:"#c8a96e", fontSize:12, flexShrink:0, marginTop:2 }}>→</span>
-                    <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{t}</p>
+                    <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tactic}</p>
                   </div>
                 ))}
               </div>
@@ -1971,14 +1979,14 @@ export default function App() {
                 {plan.headline_rewrite && (
                   <div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}>
-                      <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>Your New Headline (copy and paste)</p>
+                      <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>{t("card_new_headline")}</p>
                       <CopyBtn text={plan.headline_rewrite} />
                     </div>
                     <p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.6, fontWeight:600 }}>{plan.headline_rewrite}</p>
                   </div>
                 )}
-                {plan.about_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>Your New About Section (copy and paste)</p><CopyBtn text={plan.about_rewrite} /></div><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.about_rewrite}</p></div>)}
-                {plan.experience_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>Your New Experience (copy and paste)</p><CopyBtn text={plan.experience_rewrite} /></div><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.experience_rewrite}</p></div>)}
+                {plan.about_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>{t("card_new_about")}</p><CopyBtn text={plan.about_rewrite} /></div><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.about_rewrite}</p></div>)}
+                {plan.experience_rewrite && (<div className="card-block" style={{ marginBottom:16, borderColor:"#c8a96e33" }}><div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", gap:10, marginBottom:8 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", margin:0 }}>{t("card_new_exp")}</p><CopyBtn text={plan.experience_rewrite} /></div><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.experience_rewrite}</p></div>)}
                 {plan.profile_fixes?.map((fix,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                     <div style={{ width:24, height:24, borderRadius:"50%", background:"rgba(200,169,110,0.1)", border:"1px solid #c8a96e33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#c8a96e", fontSize:11, fontWeight:700 }}>{i+1}</div>
@@ -1988,15 +1996,15 @@ export default function App() {
               </div>
             )}
 
-            {activeSection===1 && plan.keyword_analysis && (plan.keyword_analysis.target || plan.keyword_analysis.missing?.length > 0 || plan.keyword_analysis.present?.length > 0) && (<div className="card-block" style={{ marginBottom:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Keyword Analysis</p>{plan.keyword_analysis.target && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>Optimizing to get found by: <span style={{ color:"#e8e8f0", fontWeight:600 }}>{plan.keyword_analysis.target}</span></p>)}{plan.keyword_analysis.present?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Already in your profile</p><div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{plan.keyword_analysis.present.map((kw,ki)=>(<span key={ki} style={{ background:"rgba(120,200,140,0.12)", border:"1px solid rgba(120,200,140,0.35)", color:"#7fc99a", borderRadius:6, padding:"5px 10px", fontSize:13, fontWeight:600 }}>{kw}</span>))}</div></div>)}{plan.keyword_analysis.missing?.length > 0 && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>Add these to get found</p>{plan.keyword_analysis.missing.map((m,mi)=>(<div key={mi} style={{ marginBottom:12, paddingBottom:12, borderBottom: mi < plan.keyword_analysis.missing.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}><span style={{ color:"#e8e8f0", fontSize:14, fontWeight:700 }}>{m.keyword}</span>{m.where && (<span style={{ background:"rgba(200,169,110,0.12)", border:"1px solid #c8a96e33", color:"#c8a96e", borderRadius:5, padding:"2px 8px", fontSize:11, fontWeight:600 }}>{m.where}</span>)}</div>{m.example && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{m.example}</p>)}</div>))}</div>)}</div>)}
+            {activeSection===1 && plan.keyword_analysis && (plan.keyword_analysis.target || plan.keyword_analysis.missing?.length > 0 || plan.keyword_analysis.present?.length > 0) && (<div className="card-block" style={{ marginBottom:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("kw_analysis")}</p>{plan.keyword_analysis.target && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{t("kw_optimizing")} <span style={{ color:"#e8e8f0", fontWeight:600 }}>{plan.keyword_analysis.target}</span></p>)}{plan.keyword_analysis.present?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{t("kw_present")}</p><div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{plan.keyword_analysis.present.map((kw,ki)=>(<span key={ki} style={{ background:"rgba(120,200,140,0.12)", border:"1px solid rgba(120,200,140,0.35)", color:"#7fc99a", borderRadius:6, padding:"5px 10px", fontSize:13, fontWeight:600 }}>{kw}</span>))}</div></div>)}{plan.keyword_analysis.missing?.length > 0 && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>{t("kw_missing")}</p>{plan.keyword_analysis.missing.map((m,mi)=>(<div key={mi} style={{ marginBottom:12, paddingBottom:12, borderBottom: mi < plan.keyword_analysis.missing.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}><span style={{ color:"#e8e8f0", fontSize:14, fontWeight:700 }}>{m.keyword}</span>{m.where && (<span style={{ background:"rgba(200,169,110,0.12)", border:"1px solid #c8a96e33", color:"#c8a96e", borderRadius:5, padding:"2px 8px", fontSize:11, fontWeight:600 }}>{m.where}</span>)}</div>{m.example && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{m.example}</p>)}</div>))}</div>)}</div>)}
 
             {/* Thought Leader */}
             {activeSection===2 && (
               <div>
                 {plan.thought_leader?.available ? (
                   <>
-                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Thought Leader Analysis</p>
-                    {[["Hook Quality",plan.thought_leader.hook_score],["Engagement",plan.thought_leader.engagement_score],["Voice Consistency",plan.thought_leader.voice_score],["Post Structure",plan.thought_leader.structure_score]].map(([label,score])=>(
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("tl_analysis")}</p>
+                    {[[t("tl_hook_quality"),plan.thought_leader.hook_score],[t("tl_engagement"),plan.thought_leader.engagement_score],[t("tl_voice"),plan.thought_leader.voice_score],[t("tl_structure"),plan.thought_leader.structure_score]].map(([label,score])=>(
                       <div key={label} style={{ marginBottom:12 }}>
                         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
                           <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
@@ -2008,7 +2016,7 @@ export default function App() {
                       </div>
                     ))}
                     <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e", marginBottom:20 }}>{plan.thought_leader.analysis}</p>
-                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>How To Improve</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("tl_improve")}</p>
                     {plan.thought_leader.improvements?.map((tip,i)=>(
                       <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                         <div style={{ width:26, height:26, borderRadius:"50%", background:"rgba(167,139,250,0.1)", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#a78bfa", fontSize:12, fontWeight:700 }}>{i+1}</div>
@@ -2019,8 +2027,8 @@ export default function App() {
                 ) : (
                   <div style={{ textAlign:"center", padding:"40px 20px" }}>
                     <p style={{ fontSize:32, marginBottom:12 }}>📸</p>
-                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>No post screenshots uploaded</p>
-                    <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>Retake the quiz and upload your last 3 posts to unlock your Thought Leader analysis.</p>
+                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>{t("tl_empty_title")}</p>
+                    <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>{t("tl_empty_sub")}</p>
                   </div>
                 )}
               </div>
@@ -2031,14 +2039,14 @@ export default function App() {
               <div>
                 {plan.ssi_plan?.available ? (
                   <>
-                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>SSI Overview</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>{t("ssi_overview")}</p>
                     <div className="card-block" style={{ marginBottom:20 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:14 }}>
                         <div style={{ width:52, height:52, borderRadius:"50%", border:"3px solid #38bdf8", display:"flex", alignItems:"center", justifyContent:"center", color:"#38bdf8", fontSize:18, fontWeight:800, flexShrink:0 }}>{plan.ssi_plan.total}</div>
                         <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{plan.ssi_plan.overview}</p>
                       </div>
                     </div>
-                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Pillar Analysis</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("ssi_pillars")}</p>
                     {plan.ssi_plan.pillars?.map((pillar,i)=>{
                       const pct=(pillar.score/25)*100;
                       const color=pillar.status==="WEAK"?"#ef4444":pillar.status==="AVERAGE"?"#f59e0b":"#10b981";
@@ -2059,19 +2067,19 @@ export default function App() {
                 ) : (
                   <div style={{ textAlign:"center", padding:"40px 20px" }}>
                     <p style={{ fontSize:32, marginBottom:12 }}>📊</p>
-                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>No SSI scores provided</p>
-                    <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>Add your 4 SSI pillar scores in the form to unlock your personalized SSI analysis.</p>
+                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>{t("ssi_empty_title")}</p>
+                    <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>{t("ssi_empty_sub")}</p>
                   </div>
                 )}
               </div>
             )}
 
-            {(activeSection===3 || (activeSection===0 && !plan.ssi_plan?.available)) && plan.networking && (plan.networking.headline || plan.networking.targets?.length > 0 || plan.networking.connection_message) && (<div className="card-block" style={{ marginTop:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>Networking</p>{plan.networking.headline && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{plan.networking.headline}</p>)}{plan.networking.targets?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? "Accounts to engage" : "People to reach out to"}</p>{plan.networking.targets.map((tg,ti)=>(<div key={ti} style={{ marginBottom:10, paddingBottom:10, borderBottom: ti < plan.networking.targets.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><p style={{ color:"#e8e8f0", fontSize:14, fontWeight:700, marginBottom:2 }}>{tg.who}</p><p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{tg.action}</p></div>))}</div>)}{plan.networking.connection_message && (<div style={{ marginBottom:12 }}><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? "Comment opener (copy and paste)" : "Connection request (copy and paste)"}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.connection_message}</p></div>)}{plan.networking.follow_up_message && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Follow-up message (copy and paste)</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.follow_up_message}</p></div>)}</div>)}
+            {(activeSection===3 || (activeSection===0 && !plan.ssi_plan?.available)) && plan.networking && (plan.networking.headline || plan.networking.targets?.length > 0 || plan.networking.connection_message) && (<div className="card-block" style={{ marginTop:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("net_title")}</p>{plan.networking.headline && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{plan.networking.headline}</p>)}{plan.networking.targets?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? t("net_accounts") : t("net_people")}</p>{plan.networking.targets.map((tg,ti)=>(<div key={ti} style={{ marginBottom:10, paddingBottom:10, borderBottom: ti < plan.networking.targets.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><p style={{ color:"#e8e8f0", fontSize:14, fontWeight:700, marginBottom:2 }}>{tg.who}</p><p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{tg.action}</p></div>))}</div>)}{plan.networking.connection_message && (<div style={{ marginBottom:12 }}><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? t("net_comment_opener") : t("net_connection_req")}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.connection_message}</p></div>)}{plan.networking.follow_up_message && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{t("net_followup")}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.follow_up_message}</p></div>)}</div>)}
 
             {/* Content Strategy */}
             {activeSection===4 && (
               <div>
-                {[["Post Frequency",plan.content_strategy?.post_frequency],["Best Posting Times",plan.content_strategy?.best_posting_times],["Content Mix",plan.content_strategy?.content_mix],["Hook Formula",plan.content_strategy?.hook_formula],["Formats to Use",plan.content_strategy?.content_types]].map(([label,val],i)=>(
+                {[[t("cs_frequency"),plan.content_strategy?.post_frequency],[t("cs_times"),plan.content_strategy?.best_posting_times],[t("cs_mix"),plan.content_strategy?.content_mix],[t("cs_hook_formula"),plan.content_strategy?.hook_formula],[t("cs_formats"),plan.content_strategy?.content_types]].map(([label,val],i)=>(
                   <div key={i} className="card-block">
                     <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>{label}</p>
                     <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{val}</p>
@@ -2083,10 +2091,10 @@ export default function App() {
             {/* Post Hooks */}
             {activeSection===5 && (
               <div>
-                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>3 Custom Post Hooks, Written For Your Voice</p>
+                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("hooks_title")}</p>
                 {plan.post_hooks?.map((hook,i)=>(
                   <div key={i} style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:20, marginBottom:10, borderLeft:"3px solid #c8a96e" }}>
-                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1, marginBottom:8 }}>HOOK {i+1}</p>
+                    <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1, marginBottom:8 }}>{t("hook_label")} {i+1}</p>
                     <p style={{ color:"#e8e8f0", fontSize:15, lineHeight:1.6, fontWeight:500 }}>{hook}</p>
                   </div>
                 ))}
@@ -2096,12 +2104,12 @@ export default function App() {
             {/* Calendar */}
             {activeSection===6 && (
               <div>
-                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Your 30-Day Roadmap</p>
+                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("roadmap_title")}</p>
                 {plan.content_calendar?.map((w,i)=>(
                   <div key={i} className={`week-card ${w.type?.toLowerCase()}`}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                       <p style={{ color:w.type==="POST"?"#c8a96e":"#4a9a6a", fontSize:10, fontWeight:700, letterSpacing:1.5 }}>{w.week} · {w.type}</p>
-                      {w.type==="POST"&&<span style={{ background:"rgba(200,169,110,0.1)", color:"#c8a96e", fontSize:10, padding:"2px 8px", borderRadius:100 }}>Publish Day</span>}
+                      {w.type==="POST"&&<span style={{ background:"rgba(200,169,110,0.1)", color:"#c8a96e", fontSize:10, padding:"2px 8px", borderRadius:100 }}>{t("publish_day")}</span>}
                     </div>
                     <p style={{ color:"#e8e8f0", fontSize:14, fontWeight:600, marginBottom:6 }}>{w.topic}</p>
                     {w.hook && <p style={{ color:"#8a8a9a", fontSize:13, fontStyle:"italic", lineHeight:1.5, marginBottom:6 }}>"{w.hook}"</p>}
@@ -2114,7 +2122,7 @@ export default function App() {
             {/* Rules */}
             {activeSection===7 && (
               <div>
-                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>Critical Rules, Don't Break These</p>
+                <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("rules_title")}</p>
                 {plan.critical_rules?.map((rule,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
                     <span style={{ fontSize:18, color:"#c8a96e", lineHeight:0, display:"flex", flexShrink:0, marginTop:1 }} dangerouslySetInnerHTML={{ __html: iconFor("⚠") }} />
@@ -2130,7 +2138,7 @@ export default function App() {
 
 
 
-          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><img src="data:image/jpeg;base64,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" alt="Ali Azad" style={{ width:72, height:72, borderRadius:"50%", objectFit:"cover", display:"block", marginBottom:14 }} /><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>Work on this directly with Ali</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>Ali Azad has spent 10+ years building brands on social, from award-winning work at Huawei to leading corporate social media at QIAGEN, where he built the executive LinkedIn thought-leadership program that reached 3.5M+ impressions. He has grown his own 10k+ following and tests every tactic on his own profile first.</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>Book a 1:1 session whenever you want a human read on your profile, your posts and the exact moves to make next, tailored to your situation.</p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener noreferrer" onClick={()=>track("calendly_clicked", { placement:"result" })} style={{ display:"inline-block", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none" }}>Book a session with Ali</a><a href="https://www.linkedin.com/in/aliazad11/" target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", marginLeft:10, background:"#ffffff", color:"#0a66c2", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none", border:"1px solid #0a66c2" }}>View LinkedIn profile</a></div><button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>{t("btn_start_over")}</button>
+          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><img src="data:image/jpeg;base64,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" alt="Ali Azad" style={{ width:72, height:72, borderRadius:"50%", objectFit:"cover", display:"block", marginBottom:14 }} /><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>{t("founder_title")}</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>{t("founder_bio1")}</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>{t("founder_bio2")}</p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener noreferrer" onClick={()=>track("calendly_clicked", { placement:"result" })} style={{ display:"inline-block", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none" }}>{t("founder_cta_book")}</a><a href="https://www.linkedin.com/in/aliazad11/" target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", marginLeft:10, background:"#ffffff", color:"#0a66c2", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none", border:"1px solid #0a66c2" }}>{t("founder_cta_linkedin")}</a></div><button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>{t("btn_start_over")}</button>
         </div>
       </Layout>
     );

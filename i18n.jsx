@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useMemo, useCallback } from "react";
+import { STRINGS, COHORT_T, QUIZ_T } from "./i18n.data.js";
 
 // Launch set (left-to-right). Arabic (RTL) is phase 2.
 export const LOCALES = [
@@ -16,6 +17,20 @@ export const PROMPT_LANG = {
   en: "English", de: "German", fr: "French", es: "Spanish",
   pt: "Portuguese", nl: "Dutch", it: "Italian", ar: "Arabic",
 };
+
+// A few short keys the bulk translation pass didn't cover (dynamic-phase chrome).
+// Merged over the generated catalog so they participate in the same fallback chain.
+const EXTRA = {
+  en: { badge_step3: "Step 3 of 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} uploaded", gen_title: "Almost there...", gen_sub: "Generating your personalized plan.", link_not_found: "Link Not Found" },
+  de: { badge_step3: "Schritt 3 von 3", ss_post: "Beitrag {n}", ss_post_uploaded: "Beitrag {n} hochgeladen", gen_title: "Fast geschafft...", gen_sub: "Ihr personalisierter Plan wird erstellt.", link_not_found: "Link nicht gefunden" },
+  fr: { badge_step3: "Étape 3 sur 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} importé", gen_title: "Presque terminé...", gen_sub: "Génération de votre plan personnalisé.", link_not_found: "Lien introuvable" },
+  es: { badge_step3: "Paso 3 de 3", ss_post: "Publicación {n}", ss_post_uploaded: "Publicación {n} subida", gen_title: "Casi listo...", gen_sub: "Generando tu plan personalizado.", link_not_found: "Enlace no encontrado" },
+  pt: { badge_step3: "Etapa 3 de 3", ss_post: "Publicação {n}", ss_post_uploaded: "Publicação {n} enviada", gen_title: "Quase lá...", gen_sub: "Gerando o seu plano personalizado.", link_not_found: "Link não encontrado" },
+  nl: { badge_step3: "Stap 3 van 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} geüpload", gen_title: "Bijna klaar...", gen_sub: "Je gepersonaliseerde plan wordt gegenereerd.", link_not_found: "Link niet gevonden" },
+  it: { badge_step3: "Passaggio 3 di 3", ss_post: "Post {n}", ss_post_uploaded: "Post {n} caricato", gen_title: "Ci siamo quasi...", gen_sub: "Generazione del tuo piano personalizzato.", link_not_found: "Link non trovato" },
+};
+const DICT = {};
+for (const code of Object.keys(STRINGS)) DICT[code] = { ...STRINGS[code], ...(EXTRA[code] || {}) };
 
 const SUPPORTED = LOCALES.map((l) => l.code);
 
@@ -39,74 +54,42 @@ function saveLocale(code) {
 }
 
 // `en` is the source of truth. Any missing key in another locale falls back to en,
-// so the UI is never broken while translations are filled in.
-const STRINGS = {
-  en: {
-    cohort_q: "Which best describes you?",
-    cohort_sub: "This shapes your entire plan, be honest.",
-    form_title: "Let's make this personal.",
-    form_sub: "We need a few details to tailor your plan.",
-    lbl_first: "First Name", lbl_last: "Last Name", lbl_age: "Age",
-    lbl_title: "Current Title", lbl_linkedin: "LinkedIn Profile URL",
-    btn_continue: "Continue →", btn_back: "← Back", btn_skip_continue: "Skip & Continue →",
-    pdf_title: "Upload your LinkedIn PDF.",
-    analyzing_title: "Analyzing, {name}...",
-    analyzing_sub: "Building your plan, this takes 30 to 60 seconds.",
-    paywall_badge: "Analysis Complete",
-    paywall_ready: "Your plan is ready,",
-    email_label: "Email Address",
-    btn_unlock: "Unlock My LinkedIn Plan →",
-    btn_generating: "Generating your plan...",
-    result_badge: "Your LinkedIn Plan",
-    btn_start_over: "Start Over",
-  },
-  de: {
-    cohort_q: "Was beschreibt Sie am besten?",
-    cohort_sub: "Das prägt Ihren gesamten Plan, seien Sie ehrlich.",
-    form_title: "Machen wir es persönlich.",
-    form_sub: "Wir brauchen ein paar Angaben, um Ihren Plan anzupassen.",
-    lbl_first: "Vorname", lbl_last: "Nachname", lbl_age: "Alter",
-    lbl_title: "Aktuelle Position", lbl_linkedin: "LinkedIn-Profil-URL",
-    btn_continue: "Weiter →", btn_back: "← Zurück", btn_skip_continue: "Überspringen →",
-    pdf_title: "Laden Sie Ihr LinkedIn-PDF hoch.",
-    analyzing_title: "Analyse läuft, {name}...",
-    analyzing_sub: "Ihr Plan wird erstellt, das dauert 30 bis 60 Sekunden.",
-    paywall_badge: "Analyse abgeschlossen",
-    paywall_ready: "Ihr Plan ist fertig,",
-    email_label: "E-Mail-Adresse",
-    btn_unlock: "Meinen LinkedIn-Plan freischalten →",
-    btn_generating: "Ihr Plan wird erstellt...",
-    result_badge: "Ihr LinkedIn-Plan",
-    btn_start_over: "Neu starten",
-  },
-  fr: {
-    cohort_q: "Qu'est-ce qui vous décrit le mieux ?",
-    cohort_sub: "Cela façonne tout votre plan, soyez honnête.",
-    form_title: "Personnalisons cela.",
-    form_sub: "Quelques détails pour adapter votre plan.",
-    lbl_first: "Prénom", lbl_last: "Nom", lbl_age: "Âge",
-    lbl_title: "Poste actuel", lbl_linkedin: "URL du profil LinkedIn",
-    btn_continue: "Continuer →", btn_back: "← Retour", btn_skip_continue: "Passer →",
-    pdf_title: "Importez votre PDF LinkedIn.",
-    analyzing_title: "Analyse en cours, {name}...",
-    analyzing_sub: "Création de votre plan, cela prend 30 à 60 secondes.",
-    paywall_badge: "Analyse terminée",
-    paywall_ready: "Votre plan est prêt,",
-    email_label: "Adresse e-mail",
-    btn_unlock: "Débloquer mon plan LinkedIn →",
-    btn_generating: "Création de votre plan...",
-    result_badge: "Votre plan LinkedIn",
-    btn_start_over: "Recommencer",
-  },
-  // es / pt / nl / it: report is already in-language via the prompt; UI strings
-  // fall back to English until the translation pass fills them in.
-};
-
+// so the UI is never broken if a translation is absent.
 function translate(locale, key, vars) {
-  const dict = STRINGS[locale] || {};
-  let s = dict[key] != null ? dict[key] : (STRINGS.en[key] != null ? STRINGS.en[key] : key);
+  const dict = DICT[locale] || DICT.en;
+  let s = dict[key] != null ? dict[key] : (DICT.en[key] != null ? DICT.en[key] : key);
   if (vars) for (const k in vars) s = s.split("{" + k + "}").join(vars[k]);
   return s;
+}
+
+// Cohort card / headline text. English is left untouched (returns the fallback the
+// caller already hardcoded); other locales pull from the translation catalog and
+// gracefully fall back to English if a field is missing.
+export function cohortText(locale, cohortId, field, fallback) {
+  if (locale === "en") return fallback;
+  const t = COHORT_T[locale] && COHORT_T[locale][cohortId];
+  return (t && t[field]) || fallback;
+}
+
+// Overlay translations onto a quiz question array WITHOUT touching option `label`,
+// which doubles as the stable logic value across the funnel. We only add a `display`
+// field (the translated label) and translate the question/subtitle. English passes
+// through unchanged, so the English funnel is byte-for-byte identical.
+export function localizeQuestions(questions, locale, cohortId) {
+  if (locale === "en" || !QUIZ_T[locale]) return questions;
+  const G = QUIZ_T[locale].generic || {};
+  const C = (QUIZ_T[locale].cohort && QUIZ_T[locale].cohort[cohortId]) || {};
+  return questions.map((q) => {
+    const tq = G[q.id] || C[q.id];
+    if (!tq) return q;
+    const opts = tq.options || {};
+    return {
+      ...q,
+      question: tq.question || q.question,
+      subtitle: tq.subtitle || q.subtitle,
+      options: q.options.map((o) => ({ ...o, display: opts[o.label] || o.label })),
+    };
+  });
 }
 
 const LocaleCtx = createContext(null);
