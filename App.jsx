@@ -915,10 +915,13 @@ export default function App() {
     if (!reduce) {
       const targets = root.querySelectorAll(".sec-head, .step, .feat, .founder, .final .wrap > *");
       targets.forEach(el => el.classList.add("reveal"));
+      // Mark the above-the-fold hero visible, THEN enable animations, so the
+      // prerendered content never flashes hidden when .anim turns on.
+      fireHero();
+      root.classList.add("anim");
       const rio = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); rio.unobserve(e.target); } }), { threshold: 0.15, rootMargin: "0px 0px -8% 0px" });
       targets.forEach(el => rio.observe(el));
       observers.push(rio);
-      requestAnimationFrame(() => requestAnimationFrame(fireHero));
     } else { fireHero(); }
 
     const arc = root.querySelector("#arc"), num = root.querySelector("#score"), gaugeEl = root.querySelector(".gauge");
@@ -1345,11 +1348,12 @@ export default function App() {
   );
 
   if (phase==="intro") {
-    const animOK = typeof window !== "undefined" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Render without `anim` so it matches the prerendered (build-time) landing and
+    // stays visible immediately; the effect adds `anim` after the hero is shown.
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
-        <div className={"ls-home" + (animOK ? " anim" : "")} dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
+        <div className="ls-home" dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
       </>
     );
   }
