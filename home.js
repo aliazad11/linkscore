@@ -158,7 +158,7 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home a.btn{display:inline-block;text-decoration:none}`;
 
 export const HOME_HTML = `<nav><div class="wrap">
-  <img src="/logo.png" alt="LinkedScore" width="535" height="100" />
+  <img src="/logo.png" alt="LinkedScore" />
   <div class="nav-r">
     <a href="#how">How it works</a>
     <a href="#get">What you get</a>

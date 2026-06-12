@@ -19,9 +19,6 @@ export function initAnalytics() {
         capture_pageview: true,
         autocapture: true,
         disable_surveys: true,
-        disable_session_recording: true,
-        capture_dead_clicks: false,
-        capture_performance: false,
         person_profiles: "identified_only",
       });
       _ph = posthog;
