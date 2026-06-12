@@ -27,6 +27,8 @@ export default async function handler(req, res) {
     const r = await fetch(origin + "/index.html");
     html = await r.text();
   } catch (e) { /* fall through */ }
+  // Shared plan pages are personal and per-user; keep them out of search indexes.
+  res.setHeader("X-Robots-Tag", "noindex");
   if (!html) {
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     return res.status(200).send('<!doctype html><html><body><div id="root"></div><script type="module" src="/main.jsx"></script></body></html>');

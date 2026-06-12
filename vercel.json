@@ -21,6 +21,10 @@
       "destination": "/api/plan?id=:id"
     },
     {
+      "source": "/(de|fr|es|pt|nl|it)",
+      "destination": "/$1/index.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

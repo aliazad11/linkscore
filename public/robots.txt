@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /plan/
+
+Sitemap: https://www.linkedscore.app/sitemap.xml

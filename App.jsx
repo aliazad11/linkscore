@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { HOME_CSS, HOME_HTML } from "./home.js";
+import { HOME_CSS, homeHtml } from "./home.js";
 import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
 import { track, identify } from "./analytics.js";
@@ -1314,6 +1314,9 @@ export default function App() {
 
   // Back to the landing page without wiping progress; answers survive a return trip
   const goHome = () => setPhase("intro");
+  // Root URL for the current locale (English at "/", others under their prefix), so
+  // resets and "start over" keep the user on their localized route.
+  const localeHome = locale === "en" ? "/" : "/" + locale + "/";
 
   const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
@@ -1351,7 +1354,7 @@ export default function App() {
         <Badge color="#ef4444">{t("link_not_found")}</Badge>
         <h2 style={{ ...s.h1, fontSize:24 }}>{t("link_expired_title")}</h2>
         <p style={{ ...s.sub }}>{t("link_expired_sub")}</p>
-        <button className="primary-btn" onClick={()=>{ window.history.replaceState({}, "", "/"); reset(); }}>{t("btn_get_plan")}</button>
+        <button className="primary-btn" onClick={()=>{ window.history.replaceState({}, "", localeHome); reset(); }}>{t("btn_get_plan")}</button>
       </div>
     </Layout>
   );
@@ -1392,7 +1395,7 @@ export default function App() {
     return (
       <>
         <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
-        <div className="ls-home" dangerouslySetInnerHTML={{ __html: HOME_HTML }} />
+        <div className="ls-home" dangerouslySetInnerHTML={{ __html: homeHtml(locale) }} />
       </>
     );
   }
@@ -1854,7 +1857,7 @@ export default function App() {
           {sharedView && (
             <div style={{ background:"linear-gradient(135deg,rgba(200,169,110,0.14),rgba(200,169,110,0.04))", border:"1px solid #c8a96e55", borderRadius:14, padding:"12px 16px", marginBottom:20, display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
               <span style={{ color:"#e8e8f0", fontSize:13, fontWeight:600 }}>{t("shared_banner", {name: userData.firstName})}</span>
-              <a href="/" onClick={e=>{ e.preventDefault(); window.history.replaceState({}, "", "/"); reset(); }} style={{ background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", fontWeight:700, fontSize:13, padding:"9px 16px", borderRadius:10, textDecoration:"none", whiteSpace:"nowrap" }}>{t("shared_cta")}</a>
+              <a href={localeHome} onClick={e=>{ e.preventDefault(); window.history.replaceState({}, "", localeHome); reset(); }} style={{ background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", fontWeight:700, fontSize:13, padding:"9px 16px", borderRadius:10, textDecoration:"none", whiteSpace:"nowrap" }}>{t("shared_cta")}</a>
             </div>
           )}
           <div style={{ textAlign:"center", marginBottom:24 }}>

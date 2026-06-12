@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useMemo, useCallback } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, useEffect } from "react";
 import { STRINGS, COHORT_T, QUIZ_T } from "./i18n.data.js";
 
 // Launch set (left-to-right). Arabic (RTL) is phase 2.
@@ -35,6 +35,13 @@ for (const code of Object.keys(STRINGS)) DICT[code] = { ...STRINGS[code], ...(EX
 const SUPPORTED = LOCALES.map((l) => l.code);
 
 export function detectLocale() {
+  // 1. URL path prefix (the localized landing routes, e.g. /de/). This is the
+  //    strongest signal: the prerendered page the user is on is already in that
+  //    language, so it wins over a saved preference.
+  try {
+    const seg = (location.pathname.split("/")[1] || "").toLowerCase();
+    if (seg !== "en" && SUPPORTED.indexOf(seg) !== -1) return seg;
+  } catch (e) {}
   try {
     const saved = localStorage.getItem("ls_locale");
     if (saved && SUPPORTED.indexOf(saved) !== -1) return saved;
@@ -101,6 +108,9 @@ export function LocaleProvider({ children }) {
     setLocaleState(c);
     try { document.documentElement.lang = c; } catch (e) {}
   }, []);
+  // Keep <html lang> in sync with the active locale (the prerendered page sets it
+  // server-side; this covers initial hydration and client-side language switches).
+  useEffect(() => { try { document.documentElement.lang = locale; } catch (e) {} }, [locale]);
   const t = useCallback((key, vars) => translate(locale, key, vars), [locale]);
   const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
   return <LocaleCtx.Provider value={value}>{children}</LocaleCtx.Provider>;
