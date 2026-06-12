@@ -46,7 +46,7 @@ html: `<p>Let me start by conceding the thing most posts like this pretend is no
 slug: "linkedin-golden-hour",
 title: "The LinkedIn Golden Hour That Gets Your Posts Seen",
 date: "2026-06-08",
-image: "/golden-hour.png",
+image: "/golden-hour.jpg",
 excerpt: "Most dead LinkedIn posts are not bad. They are badly timed. Here's how the golden hour works and how to find the window that fits your audience, not an average.",
 html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no comments, the post just sits there while you refresh the page and pretend you are not.</p>
 <p>Most people blame the content. Usually that is not the problem. The problem is the hour you hit publish.</p>
@@ -94,7 +94,7 @@ html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no 
 slug: "linkedin-headline-formula",
 title: "The LinkedIn Headline Formula That Gets You Found",
 date: "2026-06-01",
-image: "/headline-formula.png",
+image: "/headline-formula.jpg",
 excerpt: "Your headline is the most-read line on your profile. Here is a simple formula that makes it searchable and clear.",
 html: "<h2>Why your headline matters</h2><p>Your headline travels everywhere on LinkedIn: search results, the feed, comments and every connection request. It is the single most-read line you write, and a vague one wastes that reach.</p><h2>The formula</h2><p>Use this shape: who you help, the outcome you create, and one proof point or specialty. Keep it readable, not stuffed with buzzwords.</p><ul><li><strong>Who you help</strong>: name the audience in plain words.</li><li><strong>The outcome</strong>: the result they actually care about.</li><li><strong>Proof or niche</strong>: a number, a focus area or a signature method.</li></ul><h2>Three quick examples</h2><p>Helping B2B founders turn LinkedIn into pipeline. Building demand for life-science brands. Coaching managers to lead with clarity.</p><h2>Common mistakes</h2><p>Listing only a job title. Packing in five keywords. Writing for recruiters when the real audience is buyers. Pick one audience and speak to it.</p><p>Rewrite your headline today, read it out loud and ask one question: would the person you want to reach understand it in three seconds?</p>"
 }
