@@ -1,4 +1,11 @@
 {
+  "redirects": [
+    {
+      "source": "/(de|fr|es|pt|nl|it)",
+      "destination": "/$1/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/blog",
@@ -19,10 +26,6 @@
     {
       "source": "/plan/:id",
       "destination": "/api/plan?id=:id"
-    },
-    {
-      "source": "/(de|fr|es|pt|nl|it)",
-      "destination": "/$1/index.html"
     },
     {
       "source": "/((?!api/).*)",

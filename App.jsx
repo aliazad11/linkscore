@@ -772,7 +772,7 @@ function LangSwitcher() {
           <div onClick={()=>setOpen(false)} style={{ position:"fixed", inset:0, zIndex:40 }} />
           <div role="listbox" style={{ position:"absolute", right:0, top:"calc(100% + 6px)", width:200, background:"#0d0d18", border:"1px solid #20202f", borderRadius:12, padding:6, boxShadow:"0 16px 40px rgba(0,0,0,0.5)", zIndex:50 }}>
             {LOCALES.map(l => (
-              <button key={l.code} role="option" aria-selected={l.code===locale} onClick={()=>{ setLocale(l.code); setOpen(false); }}
+              <button key={l.code} role="option" aria-selected={l.code===locale} onClick={()=>{ setLocale(l.code); setOpen(false); try { if (!/^\/plan\//.test(window.location.pathname)) window.history.replaceState({}, "", l.code === "en" ? "/" : "/" + l.code + "/"); } catch (e) {} }}
                 style={{ display:"flex", width:"100%", alignItems:"center", justifyContent:"space-between", padding:"9px 12px", borderRadius:8, border:"none", background: l.code===locale ? "rgba(200,169,110,0.1)" : "transparent", color: l.code===locale ? "#c8a96e" : "#9696b4", fontSize:14, fontWeight: l.code===locale?600:400, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", textAlign:"left" }}>
                 {l.name}{l.code===locale && <span style={{ color:"#c8a96e" }}>✓</span>}
               </button>
@@ -844,8 +844,13 @@ function ScoreRing({ score, color="#c8a96e" }) {
 }
 
 export default function App() {
-  const { t, locale } = useLocale();
-  const [phase, setPhase] = useState("intro");
+  const { t, locale, setLocale } = useLocale();
+  // On a shared /plan/<uuid> link, start in a neutral loading state so the
+  // prerendered landing never flashes before the plan resolves.
+  const [phase, setPhase] = useState(() => {
+    try { return /^\/plan\/[a-f0-9-]{36}$/.test(window.location.pathname) ? "loading" : "intro"; }
+    catch (e) { return "intro"; }
+  });
   const [userData, setUserData] = useState({ firstName:"", lastName:"", age:"", jobTitle:"", linkedinUrl:"" });
   const [formErrors, setFormErrors] = useState({});
   const [currentQ, setCurrentQ] = useState(0);
@@ -919,6 +924,9 @@ export default function App() {
               closing_message: p.closing_message || "",
               thought_leader: p.thought_leader || { available: false, score: 0, hook_score: 0, engagement_score: 0, voice_score: 0, structure_score: 0, analysis: "", improvements: [] }
             };
+            // Match the result chrome to the language the plan was generated in,
+            // so a shared plan never shows (e.g.) German tabs around English text.
+            if (p && typeof p._locale === "string" && p._locale) { try { setLocale(p._locale); } catch (e) {} }
             setPlan(finalizePlan(safePlan));
             setUserData(d => ({ ...d, firstName: data.first_name || "there" }));
             setSharedView(true);
@@ -1231,7 +1239,7 @@ export default function App() {
             first_name: userData.firstName,
             job_title: userData.jobTitle,
             linkedin_url: userData.linkedinUrl,
-            plan_data: finalized,
+            plan_data: { ...finalized, _locale: locale },
             cohort: cohort || null,
             quiz_answers: answers,
             special_note: specialNote || null,
@@ -1346,6 +1354,15 @@ export default function App() {
     "Consultant or Coach": "Your best clients find you before you find them.",
     "Thought Leader": "Your ideas deserve an audience. Let's build one.",
   };
+
+  if (phase==="loading") return (
+    <Layout>
+      <div style={{ minHeight:"40vh", display:"flex", alignItems:"center", justifyContent:"center" }}>
+        <style>{`@keyframes lsspin{to{transform:rotate(360deg)}}`}</style>
+        <div role="status" aria-label="Loading" style={{ width:36, height:36, border:"3px solid #1a1a2e", borderTopColor:"#c8a96e", borderRadius:"50%", animation:"lsspin 0.8s linear infinite" }} />
+      </div>
+    </Layout>
+  );
 
   if (phase==="plan_missing") return (
     <Layout>

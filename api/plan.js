@@ -62,6 +62,11 @@ export default async function handler(req, res) {
     } catch (e) { /* leave generic tags */ }
   }
 
+  // The shell now prerenders the marketing landing into #root for LCP. A shared
+  // plan link must NOT flash that landing, so blank out #root; the SPA fills it
+  // with the plan once /api/load-plan resolves.
+  html = html.replace(/<div id="root">[\s\S]*<\/div>(?=\s*<\/body>)/, '<div id="root"></div>');
+
   res.setHeader("Content-Type", "text/html; charset=utf-8");
   res.setHeader("Cache-Control", "public, max-age=0, s-maxage=600, stale-while-revalidate=86400");
   return res.status(200).send(html);
