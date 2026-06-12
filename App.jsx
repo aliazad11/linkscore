@@ -1423,7 +1423,6 @@ export default function App() {
       <div className="page-enter">
         <Logo onHome={goHome} />
         {renderStepRail("form")}
-        <Badge>{t("badge_step1")}</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>{cohortText(locale, cohort, "headline", COHORT_HEADLINES[cohort]) || t("form_title")}</h2>
         <p style={{ ...s.sub }}>{t("form_sub")}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -1494,9 +1493,8 @@ export default function App() {
       <div className="page-enter" key={currentQ}>
         <Logo onHome={goHome} />
         {renderStepRail("quiz")}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
-          <Badge color="#6a5a9a">{t("badge_step3")}{locale==="en" ? `, ${q.phase}` : ""}</Badge>
-          <span style={{ color:"#7a7a96", fontSize:12 }}>{Math.min(currentQ + 1, QUESTIONS.length)} / {QUESTIONS.length}</span>
+        <div style={{ marginBottom:16 }}>
+          <Badge color="#6a5a9a">{t("q_counter", { n: Math.min(currentQ + 1, QUESTIONS.length), m: QUESTIONS.length })}</Badge>
         </div>
         <div className="progress-bar" style={{ marginBottom:24 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
@@ -1570,7 +1568,6 @@ export default function App() {
       <div className="page-enter">
         <Logo onHome={goHome} />
         {renderStepRail("pdf_upload")}
-        <Badge>{t("badge_step2")}</Badge>
         <h2 style={{ ...s.h1, fontSize:26 }}>{t("pdf_title")}</h2>
         <p style={{ ...s.sub }}>{locale==="en"
           ? (<>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</>)
@@ -1723,7 +1720,6 @@ export default function App() {
       <div className="page-enter">
         <Logo onHome={goHome} />
         {renderStepRail("post_screenshots")}
-        <Badge>{t("badge_step3_posts")}</Badge>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>{t("ss_title")}</h2>
         <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:24 }}>{t("ss_sub")}</p>
         
