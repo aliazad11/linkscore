@@ -8,7 +8,9 @@ import { useEffect } from "react";
 // into one session automatically via autocapture.
 export default function PostHogInit() {
   useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+    // Public-safe write-only project token (same key as the analyzer so blog -> funnel
+    // is one journey). Env var overrides if you rotate. Region: EU Cloud.
+    const key = process.env.NEXT_PUBLIC_POSTHOG_KEY || "phc_spF8qvv4nf2kqeURp9rUCccDZjRCReamUeHZMytVDk4y";
     if (!key || typeof window === "undefined" || window.__ph_init) return;
     import("posthog-js")
       .then(({ default: posthog }) => {

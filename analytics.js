@@ -5,13 +5,17 @@
 let _ph = null;
 const _queue = [];
 
+// PostHog project token — write-only, public-safe key (fine to ship in client code).
+// Env var overrides it if you ever rotate. Region: EU Cloud.
+const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY || "phc_spF8qvv4nf2kqeURp9rUCccDZjRCReamUeHZMytVDk4y";
+const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com";
+
 export function initAnalytics() {
-  const key = import.meta.env.VITE_POSTHOG_KEY;
-  if (!key || typeof window === "undefined") return;
+  if (!POSTHOG_KEY || typeof window === "undefined") return;
   import("posthog-js")
     .then(({ default: posthog }) => {
-      posthog.init(key, {
-        api_host: import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com",
+      posthog.init(POSTHOG_KEY, {
+        api_host: POSTHOG_HOST,
         capture_pageview: true,
         autocapture: true,
         person_profiles: "identified_only",
