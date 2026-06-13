@@ -1027,25 +1027,33 @@ export default function App() {
     };
   }, [phase, cohort]);
 
-  // ── Session persistence: survive an accidental refresh / back-swipe ──
-  // Funnel progress lives in sessionStorage, NOT localStorage: it must survive a
-  // refresh or back-swipe within the same tab, but a fresh visit (new tab,
-  // reopened browser, retyped URL) must ALWAYS land on the marketing page and
-  // never resume straight into the quiz. PDF/screenshots are not persisted
-  // (too large for storage).
+  // ── Resume an in-progress analysis ────────────────────────────────────────
+  // Funnel progress is saved in localStorage so someone who steps away can come
+  // back later and pick up where they left off. We NEVER auto-advance into the
+  // quiz on load — doing so silently hid the landing from returning visitors.
+  // Instead we surface an explicit "Continue your analysis" button on the
+  // landing and only resume when they choose to. PDF/screenshots aren't saved.
+  const [savedProgress, setSavedProgress] = useState(null);
+  const [resumeDismissed, setResumeDismissed] = useState(false);
+
   useEffect(() => {
-    // Wipe the legacy localStorage copy: it persisted across visits and silently
-    // dropped returning users into the quiz instead of showing the landing.
-    try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {}
     if (/^\/plan\//.test(window.location.pathname)) return; // shared link wins
     let snap;
-    try { snap = JSON.parse(sessionStorage.getItem("ls_funnel_v1") || "null"); } catch (e) { snap = null; }
+    try { snap = JSON.parse(localStorage.getItem("ls_funnel_v1") || "null"); } catch (e) { snap = null; }
     if (!snap || !snap.phase) return;
-    if (Date.now() - (snap.ts || 0) > 6 * 60 * 60 * 1000) { try { sessionStorage.removeItem("ls_funnel_v1"); } catch (e) {} return; }
+    if (Date.now() - (snap.ts || 0) > 7 * 24 * 60 * 60 * 1000) { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} return; }
     let target = snap.phase;
     if (target === "analyzing" || target === "generating") target = snap.planId ? "paywall" : "post_screenshots";
     const RESTORABLE = ["cohort", "form", "pdf_upload", "quiz", "note", "revenue", "post_screenshots", "paywall"];
     if (!RESTORABLE.includes(target)) return;
+    setSavedProgress({ ...snap, target }); // offer resume; do NOT auto-advance
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Apply a saved snapshot only when the visitor clicks "Continue your analysis".
+  const resumeFunnel = () => {
+    const snap = savedProgress;
+    if (!snap) return;
     if (snap.userData) setUserData(snap.userData);
     if (snap.cohort) setCohort(snap.cohort);
     if (snap.answers) setAnswers(snap.answers);
@@ -1060,22 +1068,22 @@ export default function App() {
     if (snap.revChannelShare) setRevChannelShare(snap.revChannelShare);
     if (snap.noPostsYet) setNoPostsYet(snap.noPostsYet);
     if (snap.planId) { setPlanId(snap.planId); planRef.current = snap.planId; }
-    if (target === "quiz") {
+    if (snap.target === "quiz") {
       const qs = getQuestionsForCohort(snap.cohort);
       const qq = qs[snap.currentQ];
       restoreSelection(qq, qq ? (snap.answers || {})[qq.id] : null);
     }
-    setPhase(target);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    setSavedProgress(null);
+    setPhase(snap.target);
+  };
 
   useEffect(() => {
     if (phase === "intro" || phase === "result" || phase === "plan_missing") {
-      if (phase === "result") { try { sessionStorage.removeItem("ls_funnel_v1"); } catch (e) {} }
+      if (phase === "result") { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} }
       return;
     }
     try {
-      sessionStorage.setItem("ls_funnel_v1", JSON.stringify({
+      localStorage.setItem("ls_funnel_v1", JSON.stringify({
         ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
         revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
       }));
@@ -1373,7 +1381,7 @@ export default function App() {
   // resets and "start over" keep the user on their localized route.
   const localeHome = locale === "en" ? "/" : "/" + locale + "/";
 
-  const reset = () => { try { sessionStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_funnel_v1"); } catch (e) {} setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   const progress = (currentQ/QUESTIONS.length)*100;
 
@@ -1461,6 +1469,16 @@ export default function App() {
       <>
         <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
         <div className="ls-home" dangerouslySetInnerHTML={{ __html: homeHtml(locale) }} />
+        {savedProgress && !resumeDismissed && (
+          <div style={{ position:"fixed", left:0, right:0, bottom:18, zIndex:9998, display:"flex", justifyContent:"center", padding:"0 12px", pointerEvents:"none" }}>
+            <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:4, background:"#0d0d18", border:"1px solid #2a2a3e", borderRadius:100, padding:6, boxShadow:"0 18px 50px -16px rgba(0,0,0,0.9)", fontFamily:"'DM Sans',sans-serif" }}>
+              <button onClick={resumeFunnel} style={{ display:"flex", alignItems:"center", gap:10, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:100, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                {t("resume_cta")} <span style={{ fontSize:16, lineHeight:1 }}>→</span>
+              </button>
+              <button onClick={()=>setResumeDismissed(true)} aria-label={t("resume_dismiss")} title={t("resume_dismiss")} style={{ background:"transparent", border:"none", color:"#8a8aa6", fontSize:20, lineHeight:1, cursor:"pointer", padding:"6px 11px" }}>×</button>
+            </div>
+          </div>
+        )}
       </>
     );
   }
