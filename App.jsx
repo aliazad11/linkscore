@@ -1155,6 +1155,11 @@ export default function App() {
         : selected;
     }
     setAnswers({...answers, [q.id]:finalAnswer});
+    // Capture free-text "Other" answers for review (best-effort, never blocks).
+    const isOther = q.multiSelect ? multiSelected.includes("Other / Something else") : selected === "Other / Something else";
+    if (isOther && currentOtherText.trim()) {
+      try { fetch("/api/log-other", { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ cohort, question_id: q.id, user_text: currentOtherText.trim(), locale }) }); } catch (e) {}
+    }
     setSelected(null); setOtherText(""); setMultiSelected([]);
     const nextQ = currentQ + 1;
     if (nextQ < QUESTIONS.length) setCurrentQ(nextQ);
@@ -1886,6 +1891,9 @@ export default function App() {
               )}
             </div>
           </div>
+        )}
+        {specialNote && specialNote.trim() && (
+          <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.6, marginBottom:10 }}>{t("gate_goal")} <span style={{ color:"#e8e8f0", fontStyle:"italic" }}>&ldquo;{specialNote.trim().slice(0,180)}{specialNote.trim().length>180?"…":""}&rdquo;</span></p>
         )}
         <p style={{ ...s.sub, marginBottom:16 }}>{t("paywall_sub")}</p>
         <div style={{ position:"relative", marginBottom:22 }}>
