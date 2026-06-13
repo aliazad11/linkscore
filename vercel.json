@@ -32,6 +32,10 @@
       "destination": "/imprint.html"
     },
     {
+      "source": "/cookies",
+      "destination": "/cookies.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

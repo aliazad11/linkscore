@@ -4,6 +4,7 @@ import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
 import { track, identify } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
+import { openCookieSettings } from "./CookieConsent.jsx";
 
 const LOGO_URL = logoAsset;
 
@@ -753,7 +754,9 @@ function Footer() {
     <footer style={{ marginTop:34, paddingTop:18, borderTop:"1px solid #16162a", display:"flex", flexWrap:"wrap", gap:"6px 16px", alignItems:"center", justifyContent:"center" }}>
       <a href="/imprint.html" style={lk}>{t("legal_imprint")}</a>
       <a href="/privacy.html" style={lk}>{t("legal_privacy")}</a>
+      <a href="/cookies.html" style={lk}>{t("legal_cookies")}</a>
       <a href="/terms.html" style={lk}>{t("legal_terms")}</a>
+      <button onClick={openCookieSettings} style={{ ...lk, background:"transparent", border:"none", cursor:"pointer", padding:0 }}>{t("cc_settings")}</button>
       <span style={{ color:"#56566f", fontSize:12 }}>© 2026 LinkedScore</span>
     </footer>
   );

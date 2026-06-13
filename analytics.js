@@ -10,8 +10,27 @@ const _queue = [];
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY || "phc_spF8qvv4nf2kqeURp9rUCccDZjRCReamUeHZMytVDk4y";
 const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com";
 
+// ── Consent (GDPR) ──────────────────────────────────────────────────────────
+// Analytics (PostHog) is non-essential and stays off until the visitor opts in.
+// The language preference (ls_locale) is functional/strictly-necessary and is
+// not gated. Consent shape: { analytics: bool, ts: number }.
+const CONSENT_KEY = "ls_consent_v1";
+export function getConsent() {
+  try { const v = JSON.parse(localStorage.getItem(CONSENT_KEY)); return v && typeof v === "object" ? v : null; }
+  catch (e) { return null; }
+}
+export function setConsent(c) {
+  try { localStorage.setItem(CONSENT_KEY, JSON.stringify(c)); } catch (e) {}
+}
+export function hasAnalyticsConsent() {
+  const c = getConsent();
+  return !!(c && c.analytics);
+}
+
 export function initAnalytics() {
   if (!POSTHOG_KEY || typeof window === "undefined") return;
+  if (!hasAnalyticsConsent()) return; // never load analytics without opt-in
+  if (_ph) return; // already initialized
   import("posthog-js")
     .then(({ default: posthog }) => {
       posthog.init(POSTHOG_KEY, {
