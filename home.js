@@ -97,9 +97,11 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home .hero{padding:54px 0 60px}
 }
 @media (max-width:640px){
-.ls-home .nav-r{gap:12px}
-.ls-home .nav-r a{display:none}
-.ls-home .nav-r .btn-gold{padding:10px 14px;font-size:13px}
+.ls-home nav .wrap{padding:0 16px}
+.ls-home nav img{height:22px}
+.ls-home .nav-r{gap:10px}
+.ls-home .nav-r > a{display:none}
+.ls-home .nav-r .btn-gold{padding:9px 12px;font-size:13px;white-space:nowrap}
 }
 .ls-home .foot-links{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .ls-home .foot-links a{color:var(--sub);text-decoration:none}
