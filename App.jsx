@@ -516,9 +516,18 @@ function fmtMoney(n, code) {
   catch (e) { return (code || "") + " " + Math.round(n).toLocaleString(); }
 }
 
-function finalizePlan(plan, rev) {
+function finalizePlan(plan, rev, locale = "en") {
   if (!plan || typeof plan !== "object") return plan;
-  const strip = (s) => typeof s === "string" ? s.replace(/\[([^\]\[]{1,80})\]/g, "$1") : s;
+  // House style: English copy carries no em/long dashes. The prompt already
+  // forbids them; this is the deterministic backstop (#16) so a model slip
+  // never reaches the user. Other locales keep their native typography.
+  const noDash = locale === "en";
+  const strip = (s) => {
+    if (typeof s !== "string") return s;
+    let out = s.replace(/\[([^\]\[]{1,80})\]/g, "$1");
+    if (noDash) out = out.replace(/\s*[—―]\s*/g, ", ");
+    return out;
+  };
   const walk = (v) => {
     if (typeof v === "string") return strip(v);
     if (Array.isArray(v)) return v.map(walk);
@@ -614,7 +623,7 @@ DIRECTIVE 3, REPLACE GENERIC WISDOM WITH USER-SPECIFIC STRATEGY: advice like "ad
 
 DIRECTIVE 4, CALIBRATE TO GOAL AND SITUATION: a job seeker, a founder, a consultant, and a personal-brand-builder must receive materially different strategies, not the same roadmap reworded. Tie every calendar topic, format, and CTA to the specific outcome this user selected as success.
 
-DIRECTIVE 5, MAKE THE CALENDAR OBEY THE CADENCE PHILOSOPHY: the 30-day calendar must reflect low-frequency publishing. Only the two POST weeks are real publishes; the two ENGAGEMENT weeks must be specific engagement activity that names who to engage with and how. Never output a post-every-week grid that contradicts the cadence advice.
+DIRECTIVE 5, MAKE THE CALENDAR OBEY THE CADENCE PHILOSOPHY: the 30-day calendar must reflect low-frequency publishing. Only the two POST weeks are real publishes; the two ENGAGEMENT weeks must be specific engagement activity that names who to engage with and how. Never output a post-every-week grid that contradicts the cadence advice. No week's topic or action may instruct the user to publish more than once that week, schedule daily or weekly posting, or otherwise contradict the twice-a-month maximum in FOUNDER RULES; ENGAGEMENT weeks describe commenting, replying and connecting, never publishing a post.
 
 DIRECTIVE 6, QUANTIFY EVERY DIAGNOSIS: for every score you assign, name the one or two specific things that cost the points and the single change that would move the number most. Never give a score without a stated reason.
 
@@ -952,7 +961,7 @@ export default function App() {
             // Match the result chrome to the language the plan was generated in,
             // so a shared plan never shows (e.g.) German tabs around English text.
             if (p && typeof p._locale === "string" && p._locale) { try { setLocale(p._locale); } catch (e) {} }
-            setPlan(finalizePlan(safePlan));
+            setPlan(finalizePlan(safePlan, undefined, (p && p._locale) || "en"));
             setUserData(d => ({ ...d, firstName: data.first_name || "there" }));
             setSharedView(true);
             setPlanId(id);
@@ -1255,7 +1264,7 @@ export default function App() {
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
       const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
-      const finalized = finalizePlan(result, revInputs);
+      const finalized = finalizePlan(result, revInputs, locale);
       setPlan(finalized);
 
       // Persist user + plan via the server (service key), so the browser never
