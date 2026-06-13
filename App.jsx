@@ -708,6 +708,9 @@ ${schema}`;
 const GLOBAL_CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: #08080e; }
+  *:focus-visible { outline: 2px solid #c8a96e; outline-offset: 2px; border-radius: 4px; }
+  .skip-link { position:absolute; left:8px; top:-52px; z-index:1000; background:#c8a96e; color:#0a0a0f; padding:9px 16px; border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; text-decoration:none; transition:top 0.15s ease; }
+  .skip-link:focus { top:8px; }
   .page-enter { animation: pageEnter 0.6s cubic-bezier(0.16,1,0.3,1) forwards; }
   @keyframes pageEnter { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
   .opt-row { display:flex; align-items:center; gap:14px; padding:14px 18px; border-radius:14px; background:#0d0d18; border:1px solid #1a1a2e; cursor:pointer; transition:all 0.2s ease; font-family:'DM Sans',sans-serif; width:100%; text-align:left; }
@@ -718,7 +721,7 @@ const GLOBAL_CSS = `
   .primary-btn:disabled { background:#1a1a2e; color:#3a3a5a; cursor:not-allowed; }
   .ghost-btn { width:100%; padding:13px 24px; border:1px solid #1a1a2e; border-radius:14px; background:transparent; color:#9696b4; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; }
   .ghost-btn:hover { border-color:#2a2a3e; color:#c8c8dc; }
-  .tab-pill { padding:7px 16px; border-radius:100px; border:1px solid #1a1a2e; background:transparent; color:#8a8aa6; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; letter-spacing:0.5px; text-transform:uppercase; }
+  .tab-pill { padding:7px 16px; border-radius:100px; border:1px solid #1a1a2e; background:transparent; color:#c8c7dd; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; cursor:pointer; transition:all 0.2s; letter-spacing:0.5px; text-transform:uppercase; }
   .tab-pill:hover { border-color:#c8a96e44; color:#8a8a9a; }
   .tab-pill.active { border-color:#c8a96e; background:rgba(200,169,110,0.1); color:#c8a96e; }
   .card-block { background:#0d0d18; border:1px solid #1a1a2e; border-radius:16px; padding:20px; margin-bottom:12px; transition:border-color 0.2s; }
@@ -747,11 +750,12 @@ function Layout({ children }) {
   return (
     <div style={{ minHeight:"100vh", background:"#08080e", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px 16px", position:"relative", fontFamily:"'DM Sans',sans-serif" }}>
       <style>{GLOBAL_CSS}</style>
+      <a href="#ls-main" className="skip-link">Skip to main content</a>
       <div style={{ position:"fixed", top:"-15%", right:"-5%", width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle, rgba(200,169,110,0.06) 0%, transparent 65%)", pointerEvents:"none" }} />
       <div style={{ position:"fixed", bottom:"-20%", left:"-10%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(100,80,180,0.05) 0%, transparent 65%)", pointerEvents:"none" }} />
-      <div style={{ width:"100%", maxWidth:540, position:"relative", zIndex:2 }}>
+      <main id="ls-main" style={{ width:"100%", maxWidth:540, position:"relative", zIndex:2 }}>
         {children}
-      </div>
+      </main>
     </div>
   );
 }
@@ -1385,6 +1389,7 @@ export default function App() {
         <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:28 }}>
           {COHORTS.map(c => (
             <button key={c.id}
+              aria-label={`${cohortText(locale, c.id, "label", c.label)}: ${cohortText(locale, c.id, "sub", c.sub)}`}
               onClick={()=>{ track("cohort_selected", { cohort: c.id }); if (c.id !== cohort) { setAnswers({}); setCurrentQ(0); setSelected(null); setMultiSelected([]); setOtherText(""); } setCohort(c.id); setPhase("form"); }}
               style={{
                 background: cohort===c.id ? "rgba(200,169,110,0.15)" : "#0d0d18",
@@ -1397,7 +1402,7 @@ export default function App() {
               <span style={{ fontSize:24, color: cohort===c.id?"#c8a96e":"#8a8aa8", lineHeight:0, display:"flex", flexShrink:0 }} dangerouslySetInnerHTML={{ __html: iconFor(c.emoji) }} />
               <div>
                 <p style={{ color:"#F9FAFB", fontSize:15, fontWeight:700, marginBottom:2 }}>{cohortText(locale, c.id, "label", c.label)}</p>
-                <p style={{ color:"#8a8aa6", fontSize:12 }}>{cohortText(locale, c.id, "sub", c.sub)}</p>
+                <p style={{ color:"#c8c7dd", fontSize:12 }}>{cohortText(locale, c.id, "sub", c.sub)}</p>
               </div>
             </button>
           ))}
@@ -1455,7 +1460,7 @@ export default function App() {
           <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:16 }}>
             <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
               <span style={{ fontSize:16 }}>📊</span>
-              <label style={{ ...s.label, margin:0 }}>{t("ssi_label")} <span style={{ color:"#8a8aa6", fontWeight:400 }}>{t("ssi_optional")}</span></label>
+              <label style={{ ...s.label, margin:0 }}>{t("ssi_label")} <span style={{ color:"#c8c7dd", fontWeight:400 }}>{t("ssi_optional")}</span></label>
             </div>
             <p style={{ color:"#7a7a96", fontSize:11, marginBottom:12 }}>{(()=>{ const help=t("ssi_help"), url="linkedin.com/sales/ssi", i=help.indexOf(url); if(i===-1) return help; return (<>{help.slice(0,i)}<a href="https://linkedin.com/sales/ssi" target="_blank" rel="noreferrer" style={{ color:"#c8a96e" }}>{url}</a>{help.slice(i+url.length)}</>); })()}</p>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
@@ -1466,7 +1471,7 @@ export default function App() {
                 ["build_relationships", t("ssi_relations")],
               ].map(([key, label]) => (
                 <div key={key}>
-                  <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>{label}</p>
+                  <p style={{ color:"#c8c7dd", fontSize:11, marginBottom:4 }}>{label}</p>
                   <input
                     className="field-input"
                     type="number" min="0" max="25"
@@ -1501,9 +1506,9 @@ export default function App() {
         </div>
         <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>{QUESTIONS.map(function(qq, i){ var answered = answers[qq.id] != null; var isCur = i === currentQ; var ok = isCur || answered; return (<button key={qq.id} onClick={function(){ if (ok) goToQuestion(i); }} disabled={!ok} style={{ width:30, height:30, borderRadius:"50%", border: isCur ? "2px solid #c8a96e" : (answered ? "1px solid #6a5a9a" : "1px solid #2a2a3a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (answered ? "#c8a96e" : "#3a3a5a"), fontSize:12, fontWeight:700, cursor: ok ? "pointer" : "default", padding:0 }}>{i + 1}</button>); })}</div>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8, lineHeight:1.3 }}>{q.question}</h2>
-        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
+        <p style={{ color:"#c8c7dd", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
-          {q.multiSelect && <p style={{ color:"#8a8aa6", fontSize:11, marginBottom:4 }}>{t("select_all")}</p>}
+          {q.multiSelect && <p style={{ color:"#c8c7dd", fontSize:11, marginBottom:4 }}>{t("select_all")}</p>}
           {q.options.map(opt=>{
             const isMultiActive = q.multiSelect && multiSelected.includes(opt.label);
             const isSingleActive = !q.multiSelect && selected===opt.label;
@@ -1525,7 +1530,7 @@ export default function App() {
                 }}
               >
                 <span style={{ fontSize:20, color: isActive?"#c8a96e":"#55556f", lineHeight:0, display:"flex", flexShrink:0 }} dangerouslySetInnerHTML={{ __html: iconFor(opt.emoji) }} />
-                <span style={{ color:isActive?"#c8a96e":"#6a6a8a", fontSize:14, fontWeight:isActive?600:400, flex:1 }}>{opt.display || opt.label}</span>
+                <span style={{ color:isActive?"#c8a96e":"#b6b5cc", fontSize:14, fontWeight:isActive?600:400, flex:1 }}>{opt.display || opt.label}</span>
                 {q.multiSelect
                   ? <span style={{ width:18, height:18, borderRadius:4, border:`2px solid ${isActive?"#c8a96e":"#2a2a4a"}`, background:isActive?"#c8a96e":"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                       {isActive && <span style={{ color:"#0d0d18", fontSize:12, fontWeight:900 }}>✓</span>}
@@ -1584,13 +1589,13 @@ export default function App() {
           {pdfName ? (
             <div>
               <p style={{ color:"#c8a96e", fontSize:14, fontWeight:700, marginBottom:4 }}>✓ {pdfName}</p>
-              <p style={{ color:"#8a8aa6", fontSize:12 }}>{pdfText ? t("pdf_analyzed") : t("pdf_reading")}</p>
+              <p style={{ color:"#c8c7dd", fontSize:12 }}>{pdfText ? t("pdf_analyzed") : t("pdf_reading")}</p>
             </div>
           ) : (
             <div>
               <p style={{ fontSize:28, marginBottom:12 }}>📄</p>
               <p style={{ color:"#c8a96e", fontSize:15, fontWeight:700, marginBottom:4 }}>{t("pdf_upload_cta")}</p>
-              <p style={{ color:"#6a6a8a", fontSize:12 }}>{t("pdf_browse")}</p>
+              <p style={{ color:"#b6b5cc", fontSize:12 }}>{t("pdf_browse")}</p>
             </div>
           )}
         </div>
@@ -1598,7 +1603,7 @@ export default function App() {
         <p style={{ color:"#7a7a96", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>{t("pdf_privacy")}</p>
         {pdfName
           ? <button className="primary-btn" onClick={()=>setPhase("quiz")}>{t("btn_continue")}</button>
-          : <button className="ghost-btn" onClick={()=>setPhase("quiz")} style={{ color:"#8a8aa6", fontSize:13 }}>{t("skip_preliminary")}</button>}
+          : <button className="ghost-btn" onClick={()=>setPhase("quiz")} style={{ color:"#c8c7dd", fontSize:13 }}>{t("skip_preliminary")}</button>}
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>{t("btn_back")}</button>
       </div>
     </Layout>
@@ -1670,7 +1675,7 @@ export default function App() {
           )}
           {showMoney && (
             <>
-              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{L.amt}</label>
+              <label style={{ color:"#b6b5cc", fontSize:13, display:"block", marginBottom:8 }}>{L.amt}</label>
               <div style={{ display:"flex", gap:8, marginBottom: isConsultant?6:18 }}>
                 <select value={curVal} onChange={e=>setRevCurrency(e.target.value)} className="field-input" style={{ flex:"0 0 130px", cursor:"pointer" }}>
                   {curList.map(c => <option key={c} value={c}>{c} — {currencyName(c)}</option>)}
@@ -1684,9 +1689,9 @@ export default function App() {
                   ))}
                 </div>
               )}
-              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{L.tgt}</label>
+              <label style={{ color:"#b6b5cc", fontSize:13, display:"block", marginBottom:8 }}>{L.tgt}</label>
               <input type="number" inputMode="numeric" value={revTarget} onChange={e=>setRevTarget(e.target.value)} placeholder="e.g. 10" className="field-input" style={{ marginBottom:18 }} />
-              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:8 }}>{t("rev_share_q")}</label>
+              <label style={{ color:"#b6b5cc", fontSize:13, display:"block", marginBottom:8 }}>{t("rev_share_q")}</label>
               <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:24 }}>
                 {[["0.15",t("rev_share_little")],["0.3",t("rev_share_some")],["0.5",t("rev_share_lot")],["0.7",t("rev_share_most")]].map(cs=>(
                   <button key={cs[0]} className="tab-pill" onClick={()=>setRevChannelShare(cs[0])} style={{ flexBasis:"47%", flexGrow:1, borderColor: revChannelShare===cs[0]?"#c8a96e":"#1a1a2e", color: revChannelShare===cs[0]?"#c8a96e":"#4a4a6a", background: revChannelShare===cs[0]?"rgba(200,169,110,0.1)":"transparent" }}>{cs[1]}</button>
@@ -1698,7 +1703,7 @@ export default function App() {
           )}
           {preRevenue && (
             <>
-              <label style={{ color:"#6a6a8a", fontSize:13, display:"block", marginBottom:10 }}>{t("rev_unlock_q")}</label>
+              <label style={{ color:"#b6b5cc", fontSize:13, display:"block", marginBottom:10 }}>{t("rev_unlock_q")}</label>
               <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:24 }}>
                 {[["Investors",t("rev_unlock_investors")],["Customers",t("rev_unlock_customers")],["Hires",t("rev_unlock_hires")],["Partnerships",t("rev_unlock_partnerships")]].map(([val,disp])=>(
                   <button key={val} className="opt-row" onClick={()=>setFounderUnlock(val)} style={{ borderColor: founderUnlock===val?"#c8a96e":"#1a1a2e" }}>
@@ -1722,7 +1727,7 @@ export default function App() {
         <Logo onHome={goHome} />
         {renderStepRail("post_screenshots")}
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8 }}>{t("ss_title")}</h2>
-        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:24 }}>{t("ss_sub")}</p>
+        <p style={{ color:"#c8c7dd", fontSize:13, marginBottom:24 }}>{t("ss_sub")}</p>
         
         {!noPostsYet && (
           <div style={{ display:"flex", flexDirection:"column", gap:12, marginBottom:20 }}>
@@ -1744,14 +1749,14 @@ export default function App() {
                       <img src={postScreenshots[i].preview} alt={`Post ${i+1}`} style={{ width:72, height:56, objectFit:"cover", borderRadius:10, flexShrink:0 }} />
                       <div>
                         <p style={{ color:"#c8a96e", fontSize:13, fontWeight:700 }}>✓ {t("ss_post_uploaded", {n: i+1})}</p>
-                        <p style={{ color:"#8a8aa6", fontSize:11 }}>{t("ss_replace")}</p>
+                        <p style={{ color:"#c8c7dd", fontSize:11 }}>{t("ss_replace")}</p>
                       </div>
                     </>
                   ) : (
                     <>
                       <span style={{ fontSize:20 }}>📸</span>
                       <div>
-                        <p style={{ color:"#8a8aa6", fontSize:13, fontWeight:600 }}>{t("ss_post", {n: i+1})}</p>
+                        <p style={{ color:"#c8c7dd", fontSize:13, fontWeight:600 }}>{t("ss_post", {n: i+1})}</p>
                         <p style={{ color:"#7a7a96", fontSize:11 }}>{t("ss_upload")}</p>
                       </div>
                     </>
@@ -1803,16 +1808,16 @@ export default function App() {
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>
           {t("analyzing_title", {name: userData.firstName})}
         </h2>
-        <p style={{ color:"#8a8aa6", fontSize:13, marginBottom:32 }}>{t("analyzing_sub")}</p>
+        <p style={{ color:"#c8c7dd", fontSize:13, marginBottom:32 }}>{t("analyzing_sub")}</p>
         <div style={{ background:"#0F1117", borderRadius:100, height:4, marginBottom:16, overflow:"hidden" }}>
           <div style={{ height:"100%", width:`${analysisProgress}%`, background:"linear-gradient(90deg,#c8a96e,#e8c98e)", borderRadius:100, transition:"width 0.3s ease" }} />
         </div>
-        <p style={{ color:"#8a8aa6", fontSize:12, marginBottom:28 }}>{t("analyzing_complete", {n: analysisProgress})}</p>
+        <p style={{ color:"#c8c7dd", fontSize:12, marginBottom:28 }}>{t("analyzing_complete", {n: analysisProgress})}</p>
         <div style={{ textAlign:"left", display:"flex", flexDirection:"column", gap:10 }}>
           {ANALYSIS_STEPS.map((step,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:12 }}>
               <div style={{ width:6, height:6, borderRadius:"50%", background:i<=analysisStep?"#c8a96e":"#1a1a2e", flexShrink:0, transition:"background 0.3s" }} className={i===analysisStep?"analysis-dot":""} />
-              <span style={{ color:i<=analysisStep?"#6a6a8a":"#2a2a3a", fontSize:13 }}>{locale==="en" ? step.text : t(ANALYSIS_STEP_KEYS[i])}</span>
+              <span style={{ color:i<=analysisStep?"#b6b5cc":"#2a2a3a", fontSize:13 }}>{locale==="en" ? step.text : t(ANALYSIS_STEP_KEYS[i])}</span>
             </div>
           ))}
         </div>
@@ -1834,7 +1839,7 @@ export default function App() {
           {[...((REVENUE_COHORTS.indexOf(cohort) !== -1 && revValue && revTarget && !(cohort === "Startup Founder" && founderHasRevenue !== "yes")) ? [t("inc_revenue")] : []),t("inc_score"),t("inc_profile"),t("inc_hooks"),t("inc_calendar"),t("inc_rules"),t("inc_tactics")].map((item,i)=>(
             <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
               <span style={{ color:"#c8a96e", fontSize:10 }}>◆</span>
-              <span style={{ color:"#8a8aa6", fontSize:13 }}>{item}</span>
+              <span style={{ color:"#c8c7dd", fontSize:13 }}>{item}</span>
             </div>
           ))}
         </div>
@@ -1857,7 +1862,7 @@ export default function App() {
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
         <h2 style={{ color:"#F9FAFB", fontSize:24, fontWeight:700, marginBottom:8 }}>{t("gen_title")}</h2>
-        <p style={{ color:"#8a8aa6", fontSize:13 }}>{t("gen_sub")}</p>
+        <p style={{ color:"#c8c7dd", fontSize:13 }}>{t("gen_sub")}</p>
       </div>
     </Layout>
   );
@@ -1882,7 +1887,7 @@ export default function App() {
               <span style={{ color:"#c8a96e", fontWeight:800 }}>{plan.archetype}</span>
             </h1>
             <div className="gold-rule" />
-            <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
+            <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
           </div>
 
           {/* Scores Row */}
@@ -1911,8 +1916,8 @@ export default function App() {
                 <div style={{ width:52, height:52, borderRadius:"50%", border:"2px dashed #2a2a4a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:20 }}>📸</div>
                 <div>
                   <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
-                  <p style={{ color:"#8a8aa6", fontSize:12, fontWeight:600, marginBottom:3 }}>{t("tl_not_calc")}</p>
-                  <p style={{ color:"#8a8aa6", fontSize:11 }}>{t("tl_upload_unlock")}</p>
+                  <p style={{ color:"#c8c7dd", fontSize:12, fontWeight:600, marginBottom:3 }}>{t("tl_not_calc")}</p>
+                  <p style={{ color:"#c8c7dd", fontSize:11 }}>{t("tl_upload_unlock")}</p>
                 </div>
               </div>
             )}
@@ -1937,7 +1942,7 @@ export default function App() {
               {[[t("ps_headline"), plan.profile_scores.headline],[t("ps_about"), plan.profile_scores.about],[t("ps_experience"), plan.profile_scores.experience]].map(([label,score])=>(
                 <div key={label} style={{ marginBottom:12 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                    <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
+                    <span style={{ color:"#b6b5cc", fontSize:13 }}>{label}</span>
                     <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
                   </div>
                   <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
@@ -1965,7 +1970,7 @@ export default function App() {
                     {locked && <span style={{ marginRight:4, fontSize:10 }}>🔒</span>}{t(tabKey)}
                   </button>
                   {locked && (
-                    <div className="tab-tooltip" style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#1a1a2e", border:"1px solid #2a2a4a", borderRadius:8, padding:"4px 10px", whiteSpace:"nowrap", fontSize:11, color:"#6a6a8a", pointerEvents:"none", zIndex:10 }}>
+                    <div className="tab-tooltip" style={{ position:"absolute", bottom:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)", background:"#1a1a2e", border:"1px solid #2a2a4a", borderRadius:8, padding:"4px 10px", whiteSpace:"nowrap", fontSize:11, color:"#b6b5cc", pointerEvents:"none", zIndex:10 }}>
                       {lockMsg}
                     </div>
                   )}
@@ -1985,7 +1990,7 @@ export default function App() {
                 {plan.growth_tactics?.map((tactic,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:12 }}>
                     <span style={{ color:"#c8a96e", fontSize:12, flexShrink:0, marginTop:2 }}>→</span>
-                    <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tactic}</p>
+                    <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{tactic}</p>
                   </div>
                 ))}
               </div>
@@ -2008,13 +2013,13 @@ export default function App() {
                 {plan.profile_fixes?.map((fix,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                     <div style={{ width:24, height:24, borderRadius:"50%", background:"rgba(200,169,110,0.1)", border:"1px solid #c8a96e33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#c8a96e", fontSize:11, fontWeight:700 }}>{i+1}</div>
-                    <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{fix}</p>
+                    <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{fix}</p>
                   </div>
                 ))}
               </div>
             )}
 
-            {activeSection===1 && plan.keyword_analysis && (plan.keyword_analysis.target || plan.keyword_analysis.missing?.length > 0 || plan.keyword_analysis.present?.length > 0) && (<div className="card-block" style={{ marginBottom:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("kw_analysis")}</p>{plan.keyword_analysis.target && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{t("kw_optimizing")} <span style={{ color:"#e8e8f0", fontWeight:600 }}>{plan.keyword_analysis.target}</span></p>)}{plan.keyword_analysis.present?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{t("kw_present")}</p><div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{plan.keyword_analysis.present.map((kw,ki)=>(<span key={ki} style={{ background:"rgba(120,200,140,0.12)", border:"1px solid rgba(120,200,140,0.35)", color:"#7fc99a", borderRadius:6, padding:"5px 10px", fontSize:13, fontWeight:600 }}>{kw}</span>))}</div></div>)}{plan.keyword_analysis.missing?.length > 0 && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>{t("kw_missing")}</p>{plan.keyword_analysis.missing.map((m,mi)=>(<div key={mi} style={{ marginBottom:12, paddingBottom:12, borderBottom: mi < plan.keyword_analysis.missing.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}><span style={{ color:"#e8e8f0", fontSize:14, fontWeight:700 }}>{m.keyword}</span>{m.where && (<span style={{ background:"rgba(200,169,110,0.12)", border:"1px solid #c8a96e33", color:"#c8a96e", borderRadius:5, padding:"2px 8px", fontSize:11, fontWeight:600 }}>{m.where}</span>)}</div>{m.example && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{m.example}</p>)}</div>))}</div>)}</div>)}
+            {activeSection===1 && plan.keyword_analysis && (plan.keyword_analysis.target || plan.keyword_analysis.missing?.length > 0 || plan.keyword_analysis.present?.length > 0) && (<div className="card-block" style={{ marginBottom:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("kw_analysis")}</p>{plan.keyword_analysis.target && (<p style={{ color:"#b6b5cc", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{t("kw_optimizing")} <span style={{ color:"#e8e8f0", fontWeight:600 }}>{plan.keyword_analysis.target}</span></p>)}{plan.keyword_analysis.present?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#b6b5cc", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{t("kw_present")}</p><div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>{plan.keyword_analysis.present.map((kw,ki)=>(<span key={ki} style={{ background:"rgba(120,200,140,0.12)", border:"1px solid rgba(120,200,140,0.35)", color:"#7fc99a", borderRadius:6, padding:"5px 10px", fontSize:13, fontWeight:600 }}>{kw}</span>))}</div></div>)}{plan.keyword_analysis.missing?.length > 0 && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>{t("kw_missing")}</p>{plan.keyword_analysis.missing.map((m,mi)=>(<div key={mi} style={{ marginBottom:12, paddingBottom:12, borderBottom: mi < plan.keyword_analysis.missing.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4, flexWrap:"wrap" }}><span style={{ color:"#e8e8f0", fontSize:14, fontWeight:700 }}>{m.keyword}</span>{m.where && (<span style={{ background:"rgba(200,169,110,0.12)", border:"1px solid #c8a96e33", color:"#c8a96e", borderRadius:5, padding:"2px 8px", fontSize:11, fontWeight:600 }}>{m.where}</span>)}</div>{m.example && (<p style={{ color:"#b6b5cc", fontSize:13, lineHeight:1.6, margin:0 }}>{m.example}</p>)}</div>))}</div>)}</div>)}
 
             {/* Thought Leader */}
             {activeSection===2 && (
@@ -2025,7 +2030,7 @@ export default function App() {
                     {[[t("tl_hook_quality"),plan.thought_leader.hook_score],[t("tl_engagement"),plan.thought_leader.engagement_score],[t("tl_voice"),plan.thought_leader.voice_score],[t("tl_structure"),plan.thought_leader.structure_score]].map(([label,score])=>(
                       <div key={label} style={{ marginBottom:12 }}>
                         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                          <span style={{ color:"#6a6a8a", fontSize:13 }}>{label}</span>
+                          <span style={{ color:"#b6b5cc", fontSize:13 }}>{label}</span>
                           <span style={{ color:score<40?"#ef4444":score<70?"#f59e0b":"#10b981", fontSize:13, fontWeight:700 }}>{score}/100</span>
                         </div>
                         <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden" }}>
@@ -2033,19 +2038,19 @@ export default function App() {
                         </div>
                       </div>
                     ))}
-                    <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e", marginBottom:20 }}>{plan.thought_leader.analysis}</p>
+                    <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.6, marginTop:14, paddingTop:14, borderTop:"1px solid #1a1a2e", marginBottom:20 }}>{plan.thought_leader.analysis}</p>
                     <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("tl_improve")}</p>
                     {plan.thought_leader.improvements?.map((tip,i)=>(
                       <div key={i} className="card-block" style={{ display:"flex", gap:14 }}>
                         <div style={{ width:26, height:26, borderRadius:"50%", background:"rgba(167,139,250,0.1)", border:"1px solid #a78bfa33", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, color:"#a78bfa", fontSize:12, fontWeight:700 }}>{i+1}</div>
-                        <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{tip}</p>
+                        <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{tip}</p>
                       </div>
                     ))}
                   </>
                 ) : (
                   <div style={{ textAlign:"center", padding:"40px 20px" }}>
                     <p style={{ fontSize:32, marginBottom:12 }}>📸</p>
-                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>{t("tl_empty_title")}</p>
+                    <p style={{ color:"#c8c7dd", fontSize:15, fontWeight:600, marginBottom:8 }}>{t("tl_empty_title")}</p>
                     <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>{t("tl_empty_sub")}</p>
                   </div>
                 )}
@@ -2061,7 +2066,7 @@ export default function App() {
                     <div className="card-block" style={{ marginBottom:20 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:14 }}>
                         <div style={{ width:52, height:52, borderRadius:"50%", border:"3px solid #38bdf8", display:"flex", alignItems:"center", justifyContent:"center", color:"#38bdf8", fontSize:18, fontWeight:800, flexShrink:0 }}>{plan.ssi_plan.total}</div>
-                        <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{plan.ssi_plan.overview}</p>
+                        <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{plan.ssi_plan.overview}</p>
                       </div>
                     </div>
                     <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{t("ssi_pillars")}</p>
@@ -2077,7 +2082,7 @@ export default function App() {
                           <div style={{ height:4, background:"#1a1a2e", borderRadius:4, overflow:"hidden", marginBottom:10 }}>
                             <div style={{ height:"100%", width:`${pct}%`, background:color, borderRadius:4, transition:"width 1.2s ease" }} />
                           </div>
-                          <p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6 }}>{pillar.advice}</p>
+                          <p style={{ color:"#b6b5cc", fontSize:13, lineHeight:1.6 }}>{pillar.advice}</p>
                         </div>
                       );
                     })}
@@ -2085,14 +2090,14 @@ export default function App() {
                 ) : (
                   <div style={{ textAlign:"center", padding:"40px 20px" }}>
                     <p style={{ fontSize:32, marginBottom:12 }}>📊</p>
-                    <p style={{ color:"#8a8aa6", fontSize:15, fontWeight:600, marginBottom:8 }}>{t("ssi_empty_title")}</p>
+                    <p style={{ color:"#c8c7dd", fontSize:15, fontWeight:600, marginBottom:8 }}>{t("ssi_empty_title")}</p>
                     <p style={{ color:"#7a7a96", fontSize:13, lineHeight:1.6 }}>{t("ssi_empty_sub")}</p>
                   </div>
                 )}
               </div>
             )}
 
-            {(activeSection===3 || (activeSection===0 && !plan.ssi_plan?.available)) && plan.networking && (plan.networking.headline || plan.networking.targets?.length > 0 || plan.networking.connection_message) && (<div className="card-block" style={{ marginTop:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("net_title")}</p>{plan.networking.headline && (<p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{plan.networking.headline}</p>)}{plan.networking.targets?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#6a6a8a", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? t("net_accounts") : t("net_people")}</p>{plan.networking.targets.map((tg,ti)=>(<div key={ti} style={{ marginBottom:10, paddingBottom:10, borderBottom: ti < plan.networking.targets.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><p style={{ color:"#e8e8f0", fontSize:14, fontWeight:700, marginBottom:2 }}>{tg.who}</p><p style={{ color:"#6a6a8a", fontSize:13, lineHeight:1.6, margin:0 }}>{tg.action}</p></div>))}</div>)}{plan.networking.connection_message && (<div style={{ marginBottom:12 }}><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? t("net_comment_opener") : t("net_connection_req")}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.connection_message}</p></div>)}{plan.networking.follow_up_message && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{t("net_followup")}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.follow_up_message}</p></div>)}</div>)}
+            {(activeSection===3 || (activeSection===0 && !plan.ssi_plan?.available)) && plan.networking && (plan.networking.headline || plan.networking.targets?.length > 0 || plan.networking.connection_message) && (<div className="card-block" style={{ marginTop:16 }}><p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:10 }}>{t("net_title")}</p>{plan.networking.headline && (<p style={{ color:"#b6b5cc", fontSize:13, lineHeight:1.6, marginBottom:14 }}>{plan.networking.headline}</p>)}{plan.networking.targets?.length > 0 && (<div style={{ marginBottom:16 }}><p style={{ color:"#b6b5cc", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? t("net_accounts") : t("net_people")}</p>{plan.networking.targets.map((tg,ti)=>(<div key={ti} style={{ marginBottom:10, paddingBottom:10, borderBottom: ti < plan.networking.targets.length-1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}><p style={{ color:"#e8e8f0", fontSize:14, fontWeight:700, marginBottom:2 }}>{tg.who}</p><p style={{ color:"#b6b5cc", fontSize:13, lineHeight:1.6, margin:0 }}>{tg.action}</p></div>))}</div>)}{plan.networking.connection_message && (<div style={{ marginBottom:12 }}><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{plan.networking.mode === "engagement" ? t("net_comment_opener") : t("net_connection_req")}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.connection_message}</p></div>)}{plan.networking.follow_up_message && (<div><p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>{t("net_followup")}</p><p style={{ color:"#e8e8f0", fontSize:14, lineHeight:1.7, fontWeight:400, whiteSpace:"pre-wrap" }}>{plan.networking.follow_up_message}</p></div>)}</div>)}
 
             {/* Content Strategy */}
             {activeSection===4 && (
@@ -2100,7 +2105,7 @@ export default function App() {
                 {[[t("cs_frequency"),plan.content_strategy?.post_frequency],[t("cs_times"),plan.content_strategy?.best_posting_times],[t("cs_mix"),plan.content_strategy?.content_mix],[t("cs_hook_formula"),plan.content_strategy?.hook_formula],[t("cs_formats"),plan.content_strategy?.content_types]].map(([label,val],i)=>(
                   <div key={i} className="card-block">
                     <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>{label}</p>
-                    <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{val}</p>
+                    <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{val}</p>
                   </div>
                 ))}
               </div>
@@ -2131,7 +2136,7 @@ export default function App() {
                     </div>
                     <p style={{ color:"#e8e8f0", fontSize:14, fontWeight:600, marginBottom:6 }}>{w.topic}</p>
                     {w.hook && <p style={{ color:"#8a8a9a", fontSize:13, fontStyle:"italic", lineHeight:1.5, marginBottom:6 }}>"{w.hook}"</p>}
-                    <p style={{ color:"#8a8aa6", fontSize:13, lineHeight:1.5 }}>{w.action}</p>
+                    <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.5 }}>{w.action}</p>
                   </div>
                 ))}
               </div>
@@ -2144,7 +2149,7 @@ export default function App() {
                 {plan.critical_rules?.map((rule,i)=>(
                   <div key={i} className="card-block" style={{ display:"flex", gap:12, alignItems:"flex-start" }}>
                     <span style={{ fontSize:18, color:"#c8a96e", lineHeight:0, display:"flex", flexShrink:0, marginTop:1 }} dangerouslySetInnerHTML={{ __html: iconFor("⚠") }} />
-                    <p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6 }}>{rule}</p>
+                    <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{rule}</p>
                   </div>
                 ))}
               </div>
@@ -2156,7 +2161,7 @@ export default function App() {
 
 
 
-          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><img src="data:image/jpeg;base64,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" alt="Ali Azad" style={{ width:72, height:72, borderRadius:"50%", objectFit:"cover", display:"block", marginBottom:14 }} /><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>{t("founder_title")}</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>{t("founder_bio1")}</p><p style={{ color:"#6a6a8a", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>{t("founder_bio2")}</p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener noreferrer" onClick={()=>track("calendly_clicked", { placement:"result" })} style={{ display:"inline-block", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none" }}>{t("founder_cta_book")}</a><a href="https://www.linkedin.com/in/aliazad11/" target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", marginLeft:10, background:"#ffffff", color:"#0a66c2", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none", border:"1px solid #0a66c2" }}>{t("founder_cta_linkedin")}</a></div><button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>{t("btn_start_over")}</button>
+          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><img src="data:image/jpeg;base64,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" alt="Ali Azad" style={{ width:72, height:72, borderRadius:"50%", objectFit:"cover", display:"block", marginBottom:14 }} /><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>{t("founder_title")}</p><p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>{t("founder_bio1")}</p><p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>{t("founder_bio2")}</p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener noreferrer" onClick={()=>track("calendly_clicked", { placement:"result" })} style={{ display:"inline-block", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none" }}>{t("founder_cta_book")}</a><a href="https://www.linkedin.com/in/aliazad11/" target="_blank" rel="noopener noreferrer" style={{ display:"inline-block", marginLeft:10, background:"#ffffff", color:"#0a66c2", fontWeight:600, fontSize:14, padding:"11px 20px", borderRadius:9, textDecoration:"none", border:"1px solid #0a66c2" }}>{t("founder_cta_linkedin")}</a></div><button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>{t("btn_start_over")}</button>
         </div>
       </Layout>
     );
