@@ -861,6 +861,67 @@ function Badge({ children, color="#c8a96e" }) {
   );
 }
 
+// Clipboard with a legacy fallback for browsers without the async clipboard API.
+function copyText(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(text);
+  } catch (e) { /* fall through */ }
+  return new Promise((resolve, reject) => {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand("copy"); document.body.removeChild(ta); resolve();
+    } catch (e) { reject(e); }
+  });
+}
+
+const LinkedInGlyph = ({ size = 15, fill = "#08080e" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 110-4.14 2.07 2.07 0 010 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
+);
+
+// Owner-only: turn a finished plan into a shareable LinkedScore card. The link
+// (/plan/:id) already unfurls a personalized OG image; this is the trigger.
+function ShareBar({ planId, score, archetype, t }) {
+  const url = "https://www.linkedscore.app/plan/" + planId;
+  const caption = t("share_caption", { score: score, archetype: archetype });
+  const [copied, setCopied] = useState(false);
+  const [capCopied, setCapCopied] = useState(false);
+  const [liHint, setLiHint] = useState(false);
+  const flash = (set) => { set(true); setTimeout(() => set(false), 2200); };
+  const track = (via) => { try { if (window.posthog && window.posthog.capture) window.posthog.capture("plan_shared", { via: via }); } catch (e) {} };
+  const shareLinkedIn = () => {
+    copyText(caption).then(() => flash(setLiHint)).catch(() => {});
+    track("linkedin");
+    window.open("https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(url), "_blank", "noopener,noreferrer");
+  };
+  return (
+    <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:16, marginBottom:20 }}>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:12, flexWrap:"wrap" }}>
+        <div style={{ minWidth:0 }}>
+          <p style={{ color:"#F9FAFB", fontSize:14, fontWeight:700, marginBottom:2 }}>{t("share_title")}</p>
+          <p style={{ color:"#8a8aa6", fontSize:12 }}>{t("share_sub")}</p>
+        </div>
+        <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          <button onClick={shareLinkedIn} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"10px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+            <LinkedInGlyph /> {t("share_linkedin")}
+          </button>
+          <button onClick={()=>{ copyText(url).then(()=>flash(setCopied)).catch(()=>{}); track("copy"); }} style={{ background:"transparent", color:"#c8a96e", border:"1px solid #c8a96e", borderRadius:10, padding:"10px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+            {copied ? t("share_copied") : t("share_copy")}
+          </button>
+        </div>
+      </div>
+      {liHint && <p style={{ color:"#56c08a", fontSize:12, marginTop:10, fontWeight:600 }}>{t("share_li_hint")}</p>}
+      <div style={{ marginTop:12, display:"flex", alignItems:"center", gap:10, borderTop:"1px solid #1a1a2e", paddingTop:12 }}>
+        <p style={{ color:"#7a7a96", fontSize:12, flex:1, lineHeight:1.5, fontStyle:"italic" }}>{caption}</p>
+        <button onClick={()=>{ copyText(caption).then(()=>flash(setCapCopied)).catch(()=>{}); }} style={{ background:"transparent", color:"#8a8aa6", border:"1px solid #2a2a3e", borderRadius:8, padding:"7px 12px", fontWeight:600, fontSize:12, cursor:"pointer", whiteSpace:"nowrap", fontFamily:"'DM Sans',sans-serif" }}>
+          {capCopied ? t("share_copied") : t("share_caption_copy")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ScoreRing({ score, color="#c8a96e" }) {
   const r = 36; const c = 2 * Math.PI * r;
   const gradId = `grad_${color.replace('#','')}`;
@@ -2055,6 +2116,10 @@ export default function App() {
                 </div>
               ))}
             </div>
+          )}
+
+          {!sharedView && planId && (
+            <ShareBar planId={planId} score={plan.score} archetype={plan.archetype} t={t} />
           )}
 
           {/* Tabs */}
