@@ -1028,13 +1028,20 @@ export default function App() {
   }, [phase, cohort]);
 
   // ── Session persistence: survive an accidental refresh / back-swipe ──
-  // PDF/screenshots are intentionally not persisted (too large for localStorage).
+  // Funnel progress lives in sessionStorage, NOT localStorage: it must survive a
+  // refresh or back-swipe within the same tab, but a fresh visit (new tab,
+  // reopened browser, retyped URL) must ALWAYS land on the marketing page and
+  // never resume straight into the quiz. PDF/screenshots are not persisted
+  // (too large for storage).
   useEffect(() => {
+    // Wipe the legacy localStorage copy: it persisted across visits and silently
+    // dropped returning users into the quiz instead of showing the landing.
+    try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {}
     if (/^\/plan\//.test(window.location.pathname)) return; // shared link wins
     let snap;
-    try { snap = JSON.parse(localStorage.getItem("ls_funnel_v1") || "null"); } catch (e) { snap = null; }
+    try { snap = JSON.parse(sessionStorage.getItem("ls_funnel_v1") || "null"); } catch (e) { snap = null; }
     if (!snap || !snap.phase) return;
-    if (Date.now() - (snap.ts || 0) > 6 * 60 * 60 * 1000) { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} return; }
+    if (Date.now() - (snap.ts || 0) > 6 * 60 * 60 * 1000) { try { sessionStorage.removeItem("ls_funnel_v1"); } catch (e) {} return; }
     let target = snap.phase;
     if (target === "analyzing" || target === "generating") target = snap.planId ? "paywall" : "post_screenshots";
     const RESTORABLE = ["cohort", "form", "pdf_upload", "quiz", "note", "revenue", "post_screenshots", "paywall"];
@@ -1064,11 +1071,11 @@ export default function App() {
 
   useEffect(() => {
     if (phase === "intro" || phase === "result" || phase === "plan_missing") {
-      if (phase === "result") { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} }
+      if (phase === "result") { try { sessionStorage.removeItem("ls_funnel_v1"); } catch (e) {} }
       return;
     }
     try {
-      localStorage.setItem("ls_funnel_v1", JSON.stringify({
+      sessionStorage.setItem("ls_funnel_v1", JSON.stringify({
         ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
         revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
       }));
@@ -1366,7 +1373,7 @@ export default function App() {
   // resets and "start over" keep the user on their localized route.
   const localeHome = locale === "en" ? "/" : "/" + locale + "/";
 
-  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+  const reset = () => { try { sessionStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_funnel_v1"); } catch (e) {} setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   const progress = (currentQ/QUESTIONS.length)*100;
 
