@@ -308,7 +308,7 @@ export function homeHtml(loc = "en") {
 
 <footer><div class="wrap">
   <span>${L.footer_tagline}</span>
-  <span class="foot-links"><a href="/privacy.html">${L.footer_privacy}</a><a href="/terms.html">${L.footer_terms}</a><span>© 2026 LinkedScore</span></span>
+  <span class="foot-links"><a href="/imprint.html">${L.footer_imprint}</a><a href="/privacy.html">${L.footer_privacy}</a><a href="/terms.html">${L.footer_terms}</a><span>© 2026 LinkedScore</span></span>
 </div></footer>`;
 }
 

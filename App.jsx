@@ -746,6 +746,19 @@ const GLOBAL_CSS = `
   .week-card.engagement { border-left:3px solid #3a6a4a; }
 `;
 
+function Footer() {
+  const { t } = useLocale();
+  const lk = { color:"#9696b4", textDecoration:"none", fontSize:12 };
+  return (
+    <footer style={{ marginTop:34, paddingTop:18, borderTop:"1px solid #16162a", display:"flex", flexWrap:"wrap", gap:"6px 16px", alignItems:"center", justifyContent:"center" }}>
+      <a href="/imprint.html" style={lk}>{t("legal_imprint")}</a>
+      <a href="/privacy.html" style={lk}>{t("legal_privacy")}</a>
+      <a href="/terms.html" style={lk}>{t("legal_terms")}</a>
+      <span style={{ color:"#56566f", fontSize:12 }}>© 2026 LinkedScore</span>
+    </footer>
+  );
+}
+
 function Layout({ children }) {
   return (
     <div style={{ minHeight:"100vh", background:"#08080e", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px 16px", position:"relative", fontFamily:"'DM Sans',sans-serif" }}>
@@ -753,9 +766,12 @@ function Layout({ children }) {
       <a href="#ls-main" className="skip-link">Skip to main content</a>
       <div style={{ position:"fixed", top:"-15%", right:"-5%", width:500, height:500, borderRadius:"50%", background:"radial-gradient(circle, rgba(200,169,110,0.06) 0%, transparent 65%)", pointerEvents:"none" }} />
       <div style={{ position:"fixed", bottom:"-20%", left:"-10%", width:400, height:400, borderRadius:"50%", background:"radial-gradient(circle, rgba(100,80,180,0.05) 0%, transparent 65%)", pointerEvents:"none" }} />
-      <main id="ls-main" style={{ width:"100%", maxWidth:540, position:"relative", zIndex:2 }}>
-        {children}
-      </main>
+      <div style={{ width:"100%", maxWidth:540, position:"relative", zIndex:2 }}>
+        <main id="ls-main">
+          {children}
+        </main>
+        <Footer />
+      </div>
     </div>
   );
 }

@@ -28,6 +28,10 @@
       "destination": "/api/plan?id=:id"
     },
     {
+      "source": "/imprint",
+      "destination": "/imprint.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
