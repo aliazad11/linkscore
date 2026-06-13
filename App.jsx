@@ -869,6 +869,7 @@ export default function App() {
   const [activeSection, setActiveSection] = useState(0);
   const [pdfText, setPdfText] = useState("");
   const [planId, setPlanId] = useState(null);
+  const [teaser, setTeaser] = useState(null); // {archetype, profileOverall, ssiTotal, tlAvailable, tlScore} for the email gate
   const [sharedView, setSharedView] = useState(false);
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
@@ -1197,6 +1198,7 @@ export default function App() {
     const data = await res.json();
     // Server sends { text: "{...json with prefill prepended...}" }
     if (!data.planId) throw new Error('Analysis response was malformed. Please try again.');
+    if (data.teaser) setTeaser(data.teaser); // scores + archetype for the email gate
     return data.planId;
   };
 
@@ -1826,22 +1828,61 @@ export default function App() {
   );
 
   // ── PAYWALL ────────────────────────────────────────────────────────────────
-  if (phase==="paywall") return (
+  if (phase==="paywall") {
+    // Displayed LinkedIn Score, computed from the gate teaser the same way finalizePlan does.
+    const gateScore = (teaser && teaser.profileOverall != null)
+      ? Math.max(35, Math.min(95, teaser.ssiTotal != null ? Math.round(0.6 * teaser.profileOverall + 0.4 * teaser.ssiTotal) : Math.round(teaser.profileOverall)))
+      : null;
+    return (
     <Layout>
       <div className="page-enter" style={{ textAlign:"center" }}>
         <Logo onHome={goHome} />
         <Badge color="#10b981">{t("paywall_badge")}</Badge>
-        <h2 style={{ ...s.h1, fontSize:28 }}>{t("paywall_ready")}<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>
+        {teaser && teaser.archetype
+          ? <h2 style={{ ...s.h1, fontSize:26 }}>{userData.firstName}, {t("result_you_are")}<br /><span style={{ color:"#c8a96e", fontWeight:800 }}>{teaser.archetype}</span></h2>
+          : <h2 style={{ ...s.h1, fontSize:28 }}>{t("paywall_ready")}<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>}
         <div className="gold-rule" />
-        <p style={{ ...s.sub, marginBottom:24 }}>{t("paywall_sub")}</p>
-        <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:24, textAlign:"left" }}>
-          <p style={{ color:"#7a7a96", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:12 }}>{t("paywall_includes")}</p>
-          {[...((REVENUE_COHORTS.indexOf(cohort) !== -1 && revValue && revTarget && !(cohort === "Startup Founder" && founderHasRevenue !== "yes")) ? [t("inc_revenue")] : []),t("inc_score"),t("inc_profile"),t("inc_hooks"),t("inc_calendar"),t("inc_rules"),t("inc_tactics")].map((item,i)=>(
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-              <span style={{ color:"#c8a96e", fontSize:10 }}>◆</span>
-              <span style={{ color:"#c8c7dd", fontSize:13 }}>{item}</span>
+        {gateScore != null && (
+          <div style={{ display:"flex", gap:12, marginBottom:18 }}>
+            <div style={{ flex:1, display:"flex", alignItems:"center", gap:12, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:14 }}>
+              <ScoreRing score={gateScore} />
+              <div style={{ textAlign:"left" }}>
+                <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("sec_linkedin_score")}</p>
+                <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700 }}>{gateScore<40?t("needs_work"):gateScore<70?t("good_foundation"):t("strong_profile")}</p>
+              </div>
             </div>
-          ))}
+            <div style={{ flex:1, display:"flex", alignItems:"center", gap:12, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:14 }}>
+              {teaser.tlAvailable ? (
+                <><ScoreRing score={teaser.tlScore} color="#a78bfa" />
+                <div style={{ textAlign:"left" }}>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
+                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700 }}>{teaser.tlScore<40?t("tl_early"):teaser.tlScore<70?t("tl_growing"):t("tl_strong")}</p>
+                </div></>
+              ) : (
+                <div style={{ textAlign:"left" }}>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
+                  <p style={{ color:"#c8c7dd", fontSize:12 }}>{t("tl_not_calc")}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        <p style={{ ...s.sub, marginBottom:16 }}>{t("paywall_sub")}</p>
+        <div style={{ position:"relative", marginBottom:22 }}>
+          <div aria-hidden="true" style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, textAlign:"left", filter:"blur(3.5px)", opacity:0.5, userSelect:"none", pointerEvents:"none" }}>
+            {[t("inc_profile"), t("inc_hooks"), t("inc_calendar"), t("inc_rules")].map((label,i)=>(
+              <div key={i} style={{ marginBottom:14 }}>
+                <p style={{ color:"#c8a96e", fontSize:11, fontWeight:700, marginBottom:6 }}>{label}</p>
+                <div style={{ height:7, background:"#1f1f30", borderRadius:5, marginBottom:5, width:"92%" }} />
+                <div style={{ height:7, background:"#1f1f30", borderRadius:5, width:"68%" }} />
+              </div>
+            ))}
+          </div>
+          <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", padding:12 }}>
+            <div style={{ background:"rgba(13,13,24,0.9)", border:"1px solid #c8a96e44", borderRadius:12, padding:"10px 16px", display:"flex", alignItems:"center", gap:8, color:"#c8a96e", fontSize:13, fontWeight:600 }}>
+              <span>🔒</span> {t("paywall_locked")}
+            </div>
+          </div>
         </div>
         <div style={{ marginBottom:14, textAlign:"left" }}>
           <label style={s.label}>{t("email_label")}</label>
@@ -1854,7 +1895,8 @@ export default function App() {
         <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>{t("paywall_consent")} <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
       </div>
     </Layout>
-  );
+    );
+  }
 
   // ── GENERATING ─────────────────────────────────────────────────────────────
   if (phase==="generating") return (

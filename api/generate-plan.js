@@ -117,7 +117,24 @@ export default async function handler(req, res) {
     const planId = rows && rows[0] && rows[0].id;
     if (!planId) return res.status(500).json({ error: "Could not store plan" });
 
-    return res.status(200).json({ planId: planId, ready: true });
+    // Non-sensitive teaser for the email gate (scores + archetype only; the full
+    // report stays gated). Fully optional — any failure leaves teaser null and the
+    // planId flow is unaffected.
+    let teaser = null;
+    try {
+      const ps = plan.profile_scores || {};
+      const ssi = plan.ssi_plan || {};
+      const tl = plan.thought_leader || {};
+      teaser = {
+        archetype: typeof plan.archetype === "string" ? plan.archetype : null,
+        profileOverall: Number(ps.overall) || null,
+        ssiTotal: (ssi.available && Number(ssi.total)) ? Number(ssi.total) : null,
+        tlAvailable: !!tl.available,
+        tlScore: tl.available ? (Number(tl.score) || 0) : null,
+      };
+    } catch (e) { teaser = null; }
+
+    return res.status(200).json({ planId: planId, ready: true, teaser: teaser });
   } catch (e) {
     clearTimeout(timeout);
     if (e.name === "AbortError") return res.status(504).json({ error: "Analysis timed out. Please try again." });
