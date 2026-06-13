@@ -57,6 +57,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Privacy",
     "footer_terms": "Terms",
     "footer_imprint": "Legal",
+    "footer_cookies": "Cookies",
     "switcher_aria": "Language"
   },
   "de": {
@@ -116,6 +117,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Datenschutz",
     "footer_terms": "AGB",
     "footer_imprint": "Impressum",
+    "footer_cookies": "Cookies",
     "switcher_aria": "Sprache"
   },
   "fr": {
@@ -175,6 +177,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Confidentialité",
     "footer_terms": "Conditions",
     "footer_imprint": "Mentions légales",
+    "footer_cookies": "Cookies",
     "switcher_aria": "Langue"
   },
   "es": {
@@ -234,6 +237,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Privacidad",
     "footer_terms": "Términos",
     "footer_imprint": "Aviso legal",
+    "footer_cookies": "Cookies",
     "switcher_aria": "Idioma"
   },
   "pt": {
@@ -293,6 +297,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Privacidade",
     "footer_terms": "Termos",
     "footer_imprint": "Informações legais",
+    "footer_cookies": "Cookies",
     "switcher_aria": "Idioma"
   },
   "nl": {
@@ -352,6 +357,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Privacy",
     "footer_terms": "Voorwaarden",
     "footer_imprint": "Juridische informatie",
+    "footer_cookies": "Cookies",
     "switcher_aria": "Taal"
   },
   "it": {
@@ -411,6 +417,7 @@ export const HOME_STRINGS = {
     "footer_privacy": "Privacy",
     "footer_terms": "Termini",
     "footer_imprint": "Note legali",
+    "footer_cookies": "Cookie",
     "switcher_aria": "Lingua"
   }
 };

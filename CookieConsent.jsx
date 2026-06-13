@@ -7,7 +7,8 @@ let _open = null;
 export function openCookieSettings() { if (_open) _open(); }
 
 export function CookieConsent() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
+  const base = locale === "en" ? "" : "/" + locale;
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState(false);
   const [analytics, setAnalytics] = useState(false);
@@ -38,7 +39,7 @@ export function CookieConsent() {
       <div style={{ pointerEvents: "auto", width: "100%", maxWidth: 560, background: "#0d0d18", border: "1px solid #2a2a3e", borderRadius: 16, padding: "18px 20px", boxShadow: "0 24px 70px -20px rgba(0,0,0,0.95)", fontFamily: "'DM Sans',sans-serif" }}>
         <p style={{ color: "#F9FAFB", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{t("cc_title")}</p>
         <p style={{ color: "#b6b5cc", fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
-          {t("cc_desc")} <a href="/cookies.html" style={{ color: "#c8a96e" }}>{t("legal_cookies")}</a> · <a href="/privacy.html" style={{ color: "#c8a96e" }}>{t("legal_privacy")}</a>
+          {t("cc_desc")} <a href={`${base}/cookies.html`} style={{ color: "#c8a96e" }}>{t("legal_cookies")}</a> · <a href={`${base}/privacy.html`} style={{ color: "#c8a96e" }}>{t("legal_privacy")}</a>
         </p>
         {custom && (
           <div style={{ marginBottom: 14 }}>
