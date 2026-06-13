@@ -1555,7 +1555,7 @@ export default function App() {
             ? multiSelected.length === 0
             : !selected
         } onClick={handleNext}>
-          {currentQ+1===QUESTIONS.length?t("btn_almost_done"):t("btn_continue")}
+          {t("btn_continue")}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={handlePrev}>{t("btn_back")}</button>
       </div>
@@ -1574,6 +1574,7 @@ export default function App() {
           : t("pdf_sub")}</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
+          style={!pdfName ? { borderColor:"#c8a96e", background:"rgba(200,169,110,0.05)" } : undefined}
           onClick={()=>fileInputRef.current?.click()}
           onDragOver={e=>{ e.preventDefault(); setIsDragging(true); }}
           onDragLeave={()=>setIsDragging(false)}
@@ -1588,16 +1589,16 @@ export default function App() {
           ) : (
             <div>
               <p style={{ fontSize:28, marginBottom:12 }}>📄</p>
-              <p style={{ color:"#6a6a8a", fontSize:14, fontWeight:600, marginBottom:4 }}>{t("pdf_drop")}</p>
-              <p style={{ color:"#3a3a4a", fontSize:12 }}>{t("pdf_browse")}</p>
+              <p style={{ color:"#c8a96e", fontSize:15, fontWeight:700, marginBottom:4 }}>{t("pdf_upload_cta")}</p>
+              <p style={{ color:"#6a6a8a", fontSize:12 }}>{t("pdf_browse")}</p>
             </div>
           )}
         </div>
         {pdfError && <p style={{ color:"#ef4444", fontSize:12, textAlign:"center", marginTop:10 }}>{pdfError}</p>}
         <p style={{ color:"#7a7a96", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>{t("pdf_privacy")}</p>
-        <button className="primary-btn" onClick={()=>setPhase("quiz")}>
-          {pdfName?t("btn_continue_questions"):t("btn_skip_continue")}
-        </button>
+        {pdfName
+          ? <button className="primary-btn" onClick={()=>setPhase("quiz")}>{t("btn_continue")}</button>
+          : <button className="ghost-btn" onClick={()=>setPhase("quiz")} style={{ color:"#8a8aa6", fontSize:13 }}>{t("skip_preliminary")}</button>}
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>{t("btn_back")}</button>
       </div>
     </Layout>
@@ -1626,7 +1627,7 @@ export default function App() {
         />
         <p style={{ color:"#7a7a96", fontSize:11, textAlign:"right", marginBottom:20 }}>{specialNote.length}/500</p>
         <button className="primary-btn" onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "post_screenshots")}>
-          {specialNote ? t("btn_got_it") : t("btn_skip_continue")}
+          {t("btn_continue")}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>{ const last = QUESTIONS.length-1; restoreSelection(QUESTIONS[last], answers[QUESTIONS[last].id]); setCurrentQ(last); setPhase("quiz"); }}>{t("btn_back")}</button>
       </div>
@@ -1787,7 +1788,7 @@ export default function App() {
             .then(id => { planRef.current = id; setPlanId(id); track("plan_generated"); })
             .catch(err => { planRef.current = {_error: err.message}; track("plan_failed", { error: String(err.message).slice(0,120) }); });
         }}>
-          {postScreenshots.some(s=>s!==null)||noPostsYet ? t("btn_analyze") : t("btn_skip_continue")}
+          {t("btn_continue")}
         </button>
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase(REVENUE_COHORTS.indexOf(cohort) !== -1 ? "revenue" : "note")}>{t("btn_back")}</button>
       </div>
@@ -1843,7 +1844,7 @@ export default function App() {
           {emailError&&<p style={s.err}>{emailError}</p>}
         </div>
         <button className="primary-btn" disabled={loading} onClick={handlePaywall}>
-          {loading?t("btn_generating"):t("btn_unlock")}
+          {loading?t("btn_generating"):t("btn_get_plan")}
         </button>
         <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>{t("paywall_consent")} <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
       </div>
