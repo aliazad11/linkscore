@@ -295,7 +295,7 @@ export function homeHtml(loc = "en") {
       <h3>${L.founder_h}</h3>
       <div class="role">${L.founder_role}</div>
       <p>${L.founder_p}</p>
-      <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener" class="btn btn-ghost">${L.founder_cta}</a>
+      <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener" class="btn btn-gold">${L.founder_cta}</a>
     </div>
   </div>
 </div></section>
