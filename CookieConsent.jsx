@@ -61,8 +61,8 @@ export function CookieConsent() {
             <button onClick={() => decide(analytics)} style={btnPrimary}>{t("cc_save")}</button>
           ) : (
             <>
+              <button onClick={() => decide(true)} style={btnPrimary}>{t("cc_accept")}</button>
               <button onClick={() => decide(false)} style={btnEqual}>{t("cc_reject")}</button>
-              <button onClick={() => decide(true)} style={btnEqual}>{t("cc_accept")}</button>
               <button onClick={() => setCustom(true)} style={btnText}>{t("cc_customize")}</button>
             </>
           )}
