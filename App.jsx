@@ -792,6 +792,8 @@ function Footer() {
   const lk = { color:"#9696b4", textDecoration:"none", fontSize:12 };
   return (
     <footer style={{ marginTop:34, paddingTop:18, borderTop:"1px solid #16162a", display:"flex", flexWrap:"wrap", gap:"6px 16px", alignItems:"center", justifyContent:"center" }}>
+      <a href="/about.html" style={lk}>{t("nav_about")}</a>
+      <a href="/faq.html" style={lk}>{t("nav_faq")}</a>
       <a href="/imprint.html" style={lk}>{t("legal_imprint")}</a>
       <a href={`${base}/privacy.html`} style={lk}>{t("legal_privacy")}</a>
       <a href={`${base}/cookies.html`} style={lk}>{t("legal_cookies")}</a>

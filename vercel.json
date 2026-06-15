@@ -36,6 +36,14 @@
       "destination": "/cookies.html"
     },
     {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/faq.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
