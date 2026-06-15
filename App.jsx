@@ -1547,7 +1547,8 @@ export default function App() {
             firstName: userData.firstName,
             plan: finalized,
             planId: savedPlanId,
-            locale
+            locale,
+            archetype: fixedArchetype(cohort, finalized.score, locale, userData.firstName) || finalized.archetype
           })
         });
         const emailData = await emailRes.json();

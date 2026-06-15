@@ -49,7 +49,7 @@ export default async function handler(req) {
   }
 
   try {
-    const { email, firstName, plan, planId, locale } = await req.json();
+    const { email, firstName, plan, planId, locale, archetype } = await req.json();
     const lang = EMAIL_STRINGS[locale] ? locale : "en";
     const L = EMAIL_STRINGS[lang];
 
@@ -120,7 +120,7 @@ export default async function handler(req) {
   <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
     <img src="https://www.linkedscore.app/logo.png" alt="Linkedscore" style="height:36px;margin-bottom:36px;display:block;" />
     <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${name}, ${L.you_are}</h1>
-    <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(plan.archetype || '').slice(0, 80))}</h2>
+    <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(archetype || plan.archetype || '').slice(0, 80))}</h2>
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
     <p style="color:#4a4a6a;font-size:14px;line-height:1.7;margin-bottom:32px;">${esc(String(plan.headline || '').slice(0, 300))}</p>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
