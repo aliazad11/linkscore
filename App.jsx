@@ -2266,7 +2266,7 @@ export default function App() {
           )}
 
           {!sharedView && planId && (
-            locale === "en"
+            cardIdFor(cohort, plan.score)
               ? <ShareCardSection cohort={cohort} score={plan.score} name={userData.firstName} />
               : <ShareBar planId={planId} score={plan.score} archetype={plan.archetype} t={t} />
           )}
