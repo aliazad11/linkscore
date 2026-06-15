@@ -5,6 +5,7 @@ import logoAsset from "./logo.png";
 import { track, identify } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
+import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
 
 const LOGO_URL = logoAsset;
 
@@ -524,7 +525,17 @@ function finalizePlan(plan, rev, locale = "en") {
   const noDash = locale === "en";
   const strip = (s) => {
     if (typeof s !== "string") return s;
-    let out = s.replace(/\[([^\]\[]{1,80})\]/g, "$1");
+    // Map the common placeholder slots a model still slips into ready-to-paste
+    // copy to graceful prose, so the bracket-strip never leaves broken text like
+    // "Hi ," or "post about and". Then strip any other leftover [slot] generically.
+    let out = s
+      .replace(/\[\s*(?:first\s+)?name\s*\]/gi, "there")
+      .replace(/\[\s*(?:their|your|recipient'?s?)\s+name\s*\]/gi, "there")
+      .replace(/\[\s*(?:specific\s+)?topic\s*\]/gi, "your recent post")
+      .replace(/\[\s*(?:their|your)\s+(?:topic|post|subject)\s*\]/gi, "your recent post")
+      .replace(/\s*:?\s*\[\s*(?:link|url|profile\s+link|your\s+link)\s*\]/gi, " (link in my profile)")
+      .replace(/\[\s*(?:company|company\s*name|their\s+company)\s*\]/gi, "your company")
+      .replace(/\[([^\]\[]{1,80})\]/g, "$1");
     if (noDash) out = out.replace(/\s*[—―]\s*/g, ", ");
     return out;
   };
@@ -535,6 +546,18 @@ function finalizePlan(plan, rev, locale = "en") {
     return v;
   };
   plan = walk(plan);
+  // Backstop: the prompt bans "Invisible"/"Silent" archetypes, but the model still
+  // slips (e.g. "The Invisible Authority"). There is no second chance client-side, so
+  // neutralize the banned word deterministically before it ever reaches the user.
+  if (typeof plan.archetype === "string") {
+    plan.archetype = plan.archetype.replace(/\bInvisible\b/g, "Quiet").replace(/\binvisible\b/g, "quiet").replace(/\bSilent\b/g, "Quiet").replace(/\bsilent\b/g, "quiet");
+  }
+  // Backstop: the calendar is always a 4 week plan (2 POST, 2 ENGAGEMENT). A long
+  // user timeline ("next 90 days") sometimes makes the model emit 12 weeks, which
+  // overflows the Calendar tab; clamp to the first 4 entries.
+  if (Array.isArray(plan.content_calendar) && plan.content_calendar.length > 4) {
+    plan.content_calendar = plan.content_calendar.slice(0, 4);
+  }
   const ps = plan.profile_scores || {};
   let overall = Number(ps.overall);
   if (!overall) { const h = Number(ps.headline) || 0, a = Number(ps.about) || 0, e = Number(ps.experience) || 0; overall = Math.round((h + a + e) / 3) || 50; }
@@ -709,6 +732,13 @@ NETWORKING (follow exactly): Fill networking with a concrete, ready-to-use outre
 - connection_message: for outreach, a ready-to-send LinkedIn connection request under 300 characters, warm and specific, no flattery filler. For engagement, a strong sample comment they could leave on a post from a bigger account in their niche to get noticed. Write it in their voice.
 - follow_up_message: a short follow-up to send after they connect or after the first interaction, in their voice.
 ${hasPdf ? "Ground the names and angles in their real role and background from the PDF." : "Base it on their role, cohort, and quiz answers."} No fabricated facts about specific companies or people.
+
+FINAL HARD GUARDS, these override anything above:
+1. NUMBERS AND DATES: never state a follower count, connection count, client, customer or deal count, revenue figure, percentage, start year, or any specific number or date that is not present verbatim in their profile. Never write "you have N followers" or a number like "737 followers", and never invent a dated anecdote such as "In 2011 we...". If you lack a real number, describe it qualitatively instead.
+2. NAMED ENTITIES: never name a specific person, colleague, company, competitor, product, tool, platform, portal, or regulation in ANY field unless that exact name appears in their profile. This applies especially to critical_rules, content_calendar, growth_tactics and post_hooks. Never claim a keyword, tool, skill, company or regulation is "already present" or "already in your profile" unless you actually saw it in the attached PDF. Never alter the spelling of their company or institute name.
+3. READY-TO-PASTE COPY: connection_message, follow_up_message and the three post_hooks must be complete, paste-ready sentences. Never include a bracketed slot like [Name], [specific topic], [company] or [link]. To personalize, say it in plain prose (for example "open with their first name"), never a bracket.
+4. CALENDAR LENGTH: content_calendar must contain EXACTLY 4 entries, Week 1 through Week 4, and never more, even if the user mentions a 30, 60, 90 day, or longer timeline. Fold any longer runway into these first 4 weeks.
+5. ARCHETYPE ACCURACY: the archetype must be factually true to this person, must never contain the words "Invisible" or "Silent", and must never imply relocation, expatriation, or any status the profile does not support.
 
 SCHEMA:
 ${schema}`;
@@ -916,6 +946,123 @@ function ShareBar({ planId, score, archetype, t }) {
         <p style={{ color:"#7a7a96", fontSize:12, flex:1, lineHeight:1.5, fontStyle:"italic" }}>{caption}</p>
         <button onClick={()=>{ copyText(caption).then(()=>flash(setCapCopied)).catch(()=>{}); }} style={{ background:"transparent", color:"#8a8aa6", border:"1px solid #2a2a3e", borderRadius:8, padding:"7px 12px", fontWeight:600, fontSize:12, cursor:"pointer", whiteSpace:"nowrap", fontFamily:"'DM Sans',sans-serif" }}>
           {capCopied ? t("share_copied") : t("share_caption_copy")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Smart default for the share-card gender variant: a curated set of common female
+// first names across our 7 locales (plus a few Arabic/Persian). Unknown -> "m",
+// and the user can always flip it with the on-card toggle, so a miss is harmless.
+const FEMALE_NAMES = new Set(["mary","patricia","jennifer","linda","elizabeth","barbara","susan","jessica","sarah","karen","nancy","lisa","betty","margaret","sandra","ashley","kimberly","emily","donna","michelle","carol","amanda","melissa","deborah","stephanie","laura","rebecca","sharon","cynthia","kathryn","kathleen","helen","amy","anna","anne","angela","ruth","julie","emma","olivia","sophia","isabella","mia","charlotte","amelia","grace","chloe","hannah","claire","alice","lucy","ella","maria","marta","martha","sofia","lucia","carmen","elena","laura","paula","sara","ana","isabel","cristina","valentina","camila","julia","marie","camille","manon","léa","lea","chloé","emma","jeanne","nathalie","sylvie","catherine","isabelle","sophie","celine","céline","aurelie","aurélie","heike","petra","sabine","andrea","claudia","stefanie","nicole","katja","birgit","ursula","ingrid","monika","gabriele","brigitte","franziska","lena","hanna","greta"," inge","giulia","francesca","chiara","sara","martina","alessia","federica","valentina","beatrice","aurora","ginevra","emma","mariana","beatriz","ines","inês","catarina","carolina","leonor","matilde","sanne","fenna","saar","julia","emma","sophie","lieke","femke","anouk","eva","noa","sara","laura","fatima","fatemeh","zahra","maryam","leila","layla","aisha","yasmin","nour","sara","mina","parisa","shirin","negar","aida","tahmineh"]);
+function guessGender(name) {
+  const f = String(name || "").trim().toLowerCase().split(/\s+/)[0].replace(/[^a-zà-ÿ]/g, "");
+  return FEMALE_NAMES.has(f) ? "f" : "m";
+}
+
+// Viral share: a pre-rendered archetype card (cohort x hidden score tier) the user
+// posts NATIVELY on LinkedIn (image + pasted caption). Localized by app locale and
+// by gender (masculine/feminine variants for de/fr/es/pt/it), with a manual toggle.
+function ShareCardSection({ cohort, score, name }) {
+  const { t, locale } = useLocale();
+  const nn = cardIdFor(cohort, score);
+  const card = nn ? SHARE_CARDS[nn] : null;
+  const [gender, setGender] = useState(() => guessGender(name));
+  const [vi, setVi] = useState(0);
+  const [personal, setPersonal] = useState("");
+  const [copied, setCopied] = useState(false);
+  const [dl, setDl] = useState(false);
+  if (!card) return null;
+  const loc = (SHARE_I18N[locale] && SHARE_I18N[locale][nn]) ? locale : "en";
+  const gendered = GENDERED_LOCALES.indexOf(loc) !== -1;
+  const g = gendered ? gender : "m";
+  const entry = (SHARE_I18N[loc][nn] && SHARE_I18N[loc][nn][g]) || SHARE_I18N.en[nn].m;
+  const title = entry.title;
+  const captions = entry.captions;
+  const imgPath = gendered
+    ? "/share-cards/" + loc + "/" + g + "/" + nn + "-" + card.slug + ".jpg"
+    : "/share-cards/" + loc + "/" + nn + "-" + card.slug + ".jpg";
+  const caption = (personal.trim() ? personal.trim() + "\n\n" : "") + captions[vi % captions.length];
+  const ev = (n2) => { try { if (window.posthog && window.posthog.capture) window.posthog.capture(n2, { card: nn, locale: loc, gender: g }); } catch (e) {} };
+  const flash = (set) => { set(true); setTimeout(() => set(false), 2200); };
+
+  const copyCaption = () => { copyText(caption).then(()=>flash(setCopied)).catch(()=>{}); ev("share_caption_copied"); };
+
+  const downloadImage = async () => {
+    ev("share_image_downloaded");
+    try {
+      const res = await fetch(imgPath); const blob = await res.blob();
+      const url = URL.createObjectURL(blob); const a = document.createElement("a");
+      a.href = url; a.download = "linkedscore-" + card.slug + ".jpg";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 4000); flash(setDl);
+    } catch (e) { window.open(imgPath, "_blank", "noopener"); }
+  };
+
+  const shareNow = async () => {
+    ev("share_clicked");
+    try {
+      const res = await fetch(imgPath); const blob = await res.blob();
+      const file = new File([blob], "linkedscore-" + card.slug + ".jpg", { type:"image/jpeg" });
+      if (navigator.canShare && navigator.canShare({ files:[file] })) {
+        await navigator.share({ files:[file], text: caption });
+        return;
+      }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    copyText(caption).catch(()=>{});
+    window.open("https://www.linkedin.com/feed/?shareActive=true", "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginBottom:20 }}>
+      <p style={{ color:"#c8a96e", fontSize:10, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>{t("sc_kicker")}</p>
+      <h3 style={{ color:"#F9FAFB", fontSize:18, fontWeight:800, margin:"0 0 14px", lineHeight:1.3 }}>
+        {t("sc_heading_pre")}<span style={{ color:"#c8a96e" }}>{title}</span>{t("sc_heading_post")}
+      </h3>
+
+      {gendered && (
+        <div style={{ display:"flex", gap:6, marginBottom:12 }}>
+          {[["m","♂ "+t("sc_male")],["f","♀ "+t("sc_female")]].map(([gg,lbl])=>(
+            <button key={gg} onClick={()=>setGender(gg)} aria-pressed={g===gg}
+              style={{ background: g===gg ? "#c8a96e" : "transparent", color: g===gg ? "#08080e" : "#8a8aa6", border:"1px solid "+(g===gg?"#c8a96e":"#2a2a3e"), borderRadius:8, padding:"5px 13px", fontWeight:700, fontSize:12.5, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+              {lbl}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <img src={imgPath} alt={title + " share card"} loading="lazy"
+        style={{ width:"100%", display:"block", borderRadius:12, border:"1px solid #20202f", marginBottom:14 }} />
+
+      <div style={{ display:"flex", gap:8, background:"rgba(200,169,110,0.07)", border:"1px solid #c8a96e33", borderRadius:10, padding:"10px 12px", marginBottom:14 }}>
+        <span style={{ fontSize:14, lineHeight:1.2 }}>📌</span>
+        <p style={{ color:"#c8c7dd", fontSize:12.5, lineHeight:1.55, margin:0 }}>
+          {t("sc_instruction")}
+        </p>
+      </div>
+
+      <input value={personal} onChange={e=>setPersonal(e.target.value)} maxLength={140}
+        placeholder={t("sc_personal_ph")}
+        style={{ width:"100%", boxSizing:"border-box", background:"#08080e", border:"1px solid #20202f", borderRadius:10, padding:"11px 13px", color:"#F9FAFB", fontSize:13, marginBottom:10, fontFamily:"'DM Sans',sans-serif" }} />
+
+      <div style={{ background:"#08080e", border:"1px solid #1a1a2e", borderRadius:10, padding:"13px 14px", marginBottom:10 }}>
+        <p style={{ color:"#d8d7e8", fontSize:13, lineHeight:1.65, margin:0, whiteSpace:"pre-wrap" }}>{caption}</p>
+      </div>
+
+      <button onClick={()=>setVi((vi+1)%captions.length)} style={{ background:"transparent", border:"none", color:"#8a8aa6", fontSize:12, fontWeight:600, cursor:"pointer", padding:"2px 0", marginBottom:14, fontFamily:"'DM Sans',sans-serif" }}>
+        ↻ {t("sc_try")} ({(vi%captions.length)+1}/{captions.length})
+      </button>
+
+      <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+        <button onClick={shareNow} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+          <LinkedInGlyph /> {t("share_linkedin")}
+        </button>
+        <button onClick={downloadImage} style={{ background:"transparent", color:"#c8a96e", border:"1px solid #c8a96e", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+          {dl ? t("sc_saved")+" ✓" : t("sc_download")}
+        </button>
+        <button onClick={copyCaption} style={{ background:"transparent", color:"#8a8aa6", border:"1px solid #2a2a3e", borderRadius:10, padding:"11px 16px", fontWeight:600, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+          {copied ? t("share_copied") : t("share_caption_copy")}
         </button>
       </div>
     </div>
@@ -2119,7 +2266,9 @@ export default function App() {
           )}
 
           {!sharedView && planId && (
-            <ShareBar planId={planId} score={plan.score} archetype={plan.archetype} t={t} />
+            locale === "en"
+              ? <ShareCardSection cohort={cohort} score={plan.score} name={userData.firstName} />
+              : <ShareBar planId={planId} score={plan.score} archetype={plan.archetype} t={t} />
           )}
 
           {/* Tabs */}
