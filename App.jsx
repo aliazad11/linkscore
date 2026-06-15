@@ -974,6 +974,17 @@ function fixedArchetype(cohort, score, locale, name) {
   return e ? e.title : null;
 }
 
+// The relative path to this user's curated share-card image (locale + gender), used
+// to embed the banner in the result email so it matches the website and the card.
+function cardImagePath(cohort, score, locale, name) {
+  const nn = cardIdFor(cohort, score);
+  if (!nn || !SHARE_CARDS[nn]) return null;
+  const loc = (SHARE_I18N[locale] && SHARE_I18N[locale][nn]) ? locale : "en";
+  const g = GENDERED_LOCALES.indexOf(loc) !== -1 ? guessGender(name) : null;
+  const slug = SHARE_CARDS[nn].slug;
+  return g ? `/share-cards/${loc}/${g}/${nn}-${slug}.jpg` : `/share-cards/${loc}/${nn}-${slug}.jpg`;
+}
+
 // Native file-share is real on mobile (opens the OS share sheet with the image) but a
 // no-op on desktop, so we only show the "Share to LinkedIn" button where it works.
 const CAN_NATIVE_SHARE = (() => {
@@ -1539,6 +1550,7 @@ export default function App() {
       // Send email via serverless function
       console.log("Sending email with planId:", savedPlanId);
       try {
+        const cardImg = (function(){ var p = cardImagePath(cohort, finalized.score, locale, userData.firstName); return p ? "https://www.linkedscore.app" + p : ""; })();
         const emailRes = await fetch("/api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -1548,7 +1560,8 @@ export default function App() {
             plan: finalized,
             planId: savedPlanId,
             locale,
-            archetype: fixedArchetype(cohort, finalized.score, locale, userData.firstName) || finalized.archetype
+            archetype: fixedArchetype(cohort, finalized.score, locale, userData.firstName) || finalized.archetype,
+            cardImage: cardImg
           })
         });
         const emailData = await emailRes.json();

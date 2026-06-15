@@ -49,7 +49,7 @@ export default async function handler(req) {
   }
 
   try {
-    const { email, firstName, plan, planId, locale, archetype } = await req.json();
+    const { email, firstName, plan, planId, locale, archetype, cardImage } = await req.json();
     const lang = EMAIL_STRINGS[locale] ? locale : "en";
     const L = EMAIL_STRINGS[lang];
 
@@ -122,6 +122,7 @@ export default async function handler(req) {
     <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${name}, ${L.you_are}</h1>
     <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(archetype || plan.archetype || '').slice(0, 80))}</h2>
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
+    ${cardImage ? `<img src="${esc(cardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 24px;display:block;" />` : ''}
     <p style="color:#4a4a6a;font-size:14px;line-height:1.7;margin-bottom:32px;">${esc(String(plan.headline || '').slice(0, 300))}</p>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
       <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.profile_score}</p>
