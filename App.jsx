@@ -961,6 +961,15 @@ function guessGender(name) {
   return FEMALE_NAMES.has(f) ? "f" : "m";
 }
 
+// Clean word-boundary truncation for summary cards, so a preview never cuts mid-word.
+function summarize(s, max) {
+  s = String(s || "").trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const i = cut.lastIndexOf(" ");
+  return (i > Math.floor(max * 0.5) ? cut.slice(0, i) : cut).replace(/[\s,.;:!?-]+$/, "") + "…";
+}
+
 // Single source of truth for the archetype name shown to the user: the curated card
 // archetype for their cohort + score tier, in the right locale and gender. Used for
 // BOTH the report headline and the share card so they always match (the free-form AI
@@ -2166,7 +2175,7 @@ export default function App() {
           </div>
         )}
         {specialNote && specialNote.trim() && (
-          <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.6, marginBottom:10 }}>{t("gate_goal")} <span style={{ color:"#e8e8f0", fontStyle:"italic" }}>&ldquo;{specialNote.trim().slice(0,180)}{specialNote.trim().length>180?"…":""}&rdquo;</span></p>
+          <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.6, marginBottom:10 }}>{t("gate_goal")} <span style={{ color:"#e8e8f0", fontStyle:"italic" }}>&ldquo;{summarize(specialNote, 180)}&rdquo;</span></p>
         )}
         <p style={{ ...s.sub, marginBottom:16 }}>{t("paywall_sub")}</p>
         <div style={{ position:"relative", marginBottom:22 }}>
@@ -2257,7 +2266,7 @@ export default function App() {
                 <div>
                   <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
                   <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?t("tl_early"):plan.thought_leader.score<70?t("tl_growing"):t("tl_strong")}</p>
-                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{plan.thought_leader.analysis}</p>
+                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{summarize(plan.thought_leader.analysis, 120)}</p>
                 </div>
               </div>
             ) : (
