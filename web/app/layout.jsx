@@ -3,6 +3,7 @@ import PostHogInit from "./posthog-init";
 
 export const metadata = {
   metadataBase: new URL("https://www.linkedscore.app"),
+  icons: { icon: "/favicon.png", shortcut: "/favicon.png" },
   title: { default: "Linkedscore", template: "%s | Linkedscore" },
   description: "Practical, no-fluff guides to growing on LinkedIn: profile, content and personal brand.",
   openGraph: { type: "website", siteName: "Linkedscore", title: "Linkedscore", description: "Practical, no-fluff guides to growing on LinkedIn.", url: "https://www.linkedscore.app" },
