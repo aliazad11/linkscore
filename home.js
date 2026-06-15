@@ -224,7 +224,8 @@ export function homeHtml(loc = "en") {
     <a href="#get">${L.nav_what}</a>
     <a href="/blog">${L.nav_blog}</a>
     <a href="/about.html">${L.nav_about}</a>
-    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/blog">${L.nav_blog}</a><a href="/about.html">${L.nav_about}</a></div></details>
+    <a href="/faq.html">${L.nav_faq}</a>
+    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/blog">${L.nav_blog}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a></div></details>
     ${langSwitcher(loc)}
     <button class="btn btn-gold">${L.nav_cta}</button>
   </div>
