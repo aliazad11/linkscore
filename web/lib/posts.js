@@ -3,7 +3,7 @@ const posts = [
 slug: "creative-linkedin-tactics-that-kill-your-authority",
 title: `5 "Creative" LinkedIn Tactics That Quietly Kill Your Authority`,
 date: "2026-06-12",
-image: "https://d8j0ntlcm91z4.cloudfront.net/user_31domaGJVBaDm5nIHjWEPBwzYKh/hf_20260611_224142_d0e88e98-7c50-4a84-84da-48f599a14816.png",
+image: "/creative-tactics.jpg",
 excerpt: "These 5 LinkedIn tactics work for reach but quietly cost you trust. Here is the line between the legitimate version and the bait version of each.",
 html: `<p>Let me start by conceding the thing most posts like this pretend is not true. These tactics work. The glamour shot gets likes. The poll gets votes. The trending-name post gets reach. If they did not work, nobody would do them, and smart people would not keep reaching for them.</p>
 <p>So this is not a list of things that fail. It is a list of things that succeed at the wrong thing. They buy reach, and they pay for it with trust. Those are two different currencies, and most people on LinkedIn never notice they are spending one to earn the other until the bill comes due.</p>
