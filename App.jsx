@@ -961,6 +961,26 @@ function guessGender(name) {
   return FEMALE_NAMES.has(f) ? "f" : "m";
 }
 
+// Single source of truth for the archetype name shown to the user: the curated card
+// archetype for their cohort + score tier, in the right locale and gender. Used for
+// BOTH the report headline and the share card so they always match (the free-form AI
+// archetype is no longer displayed).
+function fixedArchetype(cohort, score, locale, name) {
+  const nn = cardIdFor(cohort, score);
+  if (!nn) return null;
+  const loc = (SHARE_I18N[locale] && SHARE_I18N[locale][nn]) ? locale : "en";
+  const g = GENDERED_LOCALES.indexOf(loc) !== -1 ? guessGender(name) : "m";
+  const e = SHARE_I18N[loc][nn] && SHARE_I18N[loc][nn][g];
+  return e ? e.title : null;
+}
+
+// Native file-share is real on mobile (opens the OS share sheet with the image) but a
+// no-op on desktop, so we only show the "Share to LinkedIn" button where it works.
+const CAN_NATIVE_SHARE = (() => {
+  try { return typeof navigator !== "undefined" && !!navigator.canShare && navigator.canShare({ files: [new File([""], "x.jpg", { type: "image/jpeg" })] }); }
+  catch (e) { return false; }
+})();
+
 // Viral share: a pre-rendered archetype card (cohort x hidden score tier) the user
 // posts NATIVELY on LinkedIn (image + pasted caption). Localized by app locale and
 // by gender (masculine/feminine variants for de/fr/es/pt/it), with a manual toggle.
@@ -1055,9 +1075,11 @@ function ShareCardSection({ cohort, score, name }) {
       </button>
 
       <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+        {CAN_NATIVE_SHARE && (
         <button onClick={shareNow} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
           <LinkedInGlyph /> {t("share_linkedin")}
         </button>
+        )}
         <button onClick={downloadImage} style={{ background:"transparent", color:"#c8a96e", border:"1px solid #c8a96e", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
           {dl ? t("sc_saved")+" ✓" : t("sc_download")}
         </button>
@@ -2106,7 +2128,7 @@ export default function App() {
         <Logo onHome={goHome} />
         <Badge color="#10b981">{t("paywall_badge")}</Badge>
         {teaser && teaser.archetype
-          ? <h2 style={{ ...s.h1, fontSize:26 }}>{userData.firstName}, {t("result_you_are")}<br /><span style={{ color:"#c8a96e", fontWeight:800 }}>{teaser.archetype}</span></h2>
+          ? <h2 style={{ ...s.h1, fontSize:26 }}>{userData.firstName}, {t("result_you_are")}<br /><span style={{ color:"#c8a96e", fontWeight:800 }}>{fixedArchetype(cohort, gateScore, locale, userData.firstName) || teaser.archetype}</span></h2>
           : <h2 style={{ ...s.h1, fontSize:28 }}>{t("paywall_ready")}<br /><span style={{ color:"#c8a96e" }}>{userData.firstName}.</span></h2>}
         <div className="gold-rule" />
         {gateScore != null && (
@@ -2196,11 +2218,17 @@ export default function App() {
             <Badge>{t("result_badge")}</Badge>
             <h1 style={{ ...s.h1, fontSize:28 }}>
               {userData.firstName}, {t("result_you_are")}<br />
-              <span style={{ color:"#c8a96e", fontWeight:800 }}>{plan.archetype}</span>
+              <span style={{ color:"#c8a96e", fontWeight:800 }}>{fixedArchetype(cohort, plan.score, locale, userData.firstName) || plan.archetype}</span>
             </h1>
             <div className="gold-rule" />
             <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.7 }}>{plan.headline}</p>
           </div>
+
+          {!sharedView && planId && (
+            cardIdFor(cohort, plan.score)
+              ? <ShareCardSection cohort={cohort} score={plan.score} name={userData.firstName} />
+              : <ShareBar planId={planId} score={plan.score} archetype={plan.archetype} t={t} />
+          )}
 
           {/* Scores Row */}
           <div style={{ display:"flex", gap:12, marginBottom:20 }}>
@@ -2263,12 +2291,6 @@ export default function App() {
                 </div>
               ))}
             </div>
-          )}
-
-          {!sharedView && planId && (
-            cardIdFor(cohort, plan.score)
-              ? <ShareCardSection cohort={cohort} score={plan.score} name={userData.firstName} />
-              : <ShareBar planId={planId} score={plan.score} archetype={plan.archetype} t={t} />
           )}
 
           {/* Tabs */}
