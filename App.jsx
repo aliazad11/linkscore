@@ -1338,7 +1338,7 @@ export default function App() {
 
     const arc = root.querySelector("#arc"), num = root.querySelector("#score"), gaugeEl = root.querySelector(".gauge");
     if (arc && num && gaugeEl) {
-      const target = 38, arcLen = 377;
+      const target = 48, arcLen = 377;
       const runGauge = () => {
         if (reduce) { arc.style.strokeDashoffset = arcLen * (1 - target / 100); num.textContent = target; return; }
         arc.style.transition = "stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1)";

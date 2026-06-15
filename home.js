@@ -22,6 +22,7 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home nav{position:sticky;top:0;z-index:50;background:rgba(8,8,14,.72);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.05)}
 .ls-home nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
 .ls-home nav img{height:24px;display:block}
+nav .brand{display:flex;align-items:center}
 .ls-home .nav-r{display:flex;align-items:center;gap:26px}
 .ls-home .nav-r a{font-size:14px;color:var(--sub);font-weight:500}
 .ls-home .nav-r a:hover{color:var(--ink)}
@@ -33,9 +34,13 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home .btn-lg{padding:16px 30px;font-size:16px;border-radius:13px}
 .ls-home .hero{position:relative;padding:84px 0 90px}
 .ls-home .hero::before{content:"";position:absolute;top:-160px;right:-120px;width:620px;height:620px;border-radius:50%;background:radial-gradient(circle,rgba(200,169,110,.10),transparent 62%);pointer-events:none}
-.ls-home .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;position:relative}
-.ls-home .hero h1{font-size:clamp(38px,5.4vw,62px);margin:18px 0 22px}
-.ls-home .hero p.lede{font-size:18px;color:var(--sub);max-width:480px;margin-bottom:30px}
+.ls-home .hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:52px;align-items:center;position:relative}
+.ls-home .hero h1{font-size:clamp(34px,4.6vw,52px);line-height:1.05;margin:18px 0 22px}
+.ls-home .hero p.lede{font-size:18px;color:var(--sub);max-width:480px;margin-bottom:20px}
+.edge{list-style:none;padding:0;margin:0 0 28px;display:grid;gap:11px;max-width:480px}
+.edge li{position:relative;padding-left:32px;font-size:15px;color:var(--ink);line-height:1.4}
+.edge li::before{content:"";position:absolute;left:0;top:1px;width:21px;height:21px;border-radius:6px;background:rgba(200,169,110,.12) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e7cf9a' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 13l4 4L19 7'/%3E%3C/svg%3E") center/12px no-repeat;border:1px solid rgba(200,169,110,.32)}
+.edge li b{color:var(--gold-lt);font-weight:600}
 .ls-home .cta-row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:26px}
 .ls-home .proof{display:flex;align-items:center;gap:18px;flex-wrap:wrap;color:var(--mute);font-size:13px}
 .ls-home .proof .dot{width:3px;height:3px;border-radius:50%;background:var(--mute)}
@@ -101,6 +106,7 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home nav img{height:22px}
 .ls-home .nav-r{gap:10px}
 .ls-home .nav-r > a{display:none}
+.ls-home nav .navmenu{display:block}
 .ls-home .nav-r .btn-gold{padding:9px 12px;font-size:13px;white-space:nowrap}
 }
 .ls-home .foot-links{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
@@ -171,7 +177,16 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 .ls-home .langmenu{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:158px;display:flex;flex-direction:column;box-shadow:0 24px 60px -24px rgba(0,0,0,.95);z-index:60}
 .ls-home .langmenu a{padding:8px 12px;border-radius:8px;font-size:14px;color:var(--sub);font-weight:500}
 .ls-home .langmenu a:hover{background:var(--bg2);color:var(--ink)}
-.ls-home .langmenu a.cur{color:var(--gold);font-weight:600}`;
+.ls-home .langmenu a.cur{color:var(--gold);font-weight:600}
+.ls-home .navmenu{display:none;position:relative}
+.ls-home .navmenu summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub);padding:7px 9px;border-radius:9px;border:1px solid var(--line)}
+.ls-home .navmenu summary::-webkit-details-marker{display:none}
+.ls-home .navmenu summary:hover{color:var(--ink);border-color:var(--gold)}
+.ls-home .navmenu[open] summary{color:var(--gold);border-color:var(--gold)}
+.ls-home .navmenu summary svg{width:18px;height:18px;display:block}
+.ls-home .navmenu-list{position:absolute;right:0;top:calc(100% + 8px);background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px;min-width:172px;display:flex;flex-direction:column;box-shadow:0 24px 60px -24px rgba(0,0,0,.95);z-index:60}
+.ls-home .navmenu-list a{padding:9px 12px;border-radius:8px;font-size:14px;color:var(--sub);font-weight:500}
+.ls-home .navmenu-list a:hover{background:var(--bg2);color:var(--ink)}`;
 
 // Landing-page locales and their native names (left-to-right launch set).
 export const LANDING_LOCALES = [
@@ -203,11 +218,13 @@ function S(loc) { return Object.assign({}, HOME_STRINGS.en, HOME_STRINGS[loc] ||
 export function homeHtml(loc = "en") {
   const L = S(loc);
   return `<nav><div class="wrap">
-  <img src="/logo.png" alt="LinkedScore" />
+  <a href="/" aria-label="LinkedScore home" class="brand"><img src="/logo.png" alt="LinkedScore" /></a>
   <div class="nav-r">
     <a href="#how">${L.nav_how}</a>
     <a href="#get">${L.nav_what}</a>
     <a href="/blog">${L.nav_blog}</a>
+    <a href="/about.html">${L.nav_about}</a>
+    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/blog">${L.nav_blog}</a><a href="/about.html">${L.nav_about}</a></div></details>
     ${langSwitcher(loc)}
     <button class="btn btn-gold">${L.nav_cta}</button>
   </div>
@@ -217,7 +234,11 @@ export function homeHtml(loc = "en") {
   <div>
     <span class="eyebrow reveal" style="transition-delay:0s">${L.hero_eyebrow}</span>
     <h1 class="reveal" style="transition-delay:.07s">${L.hero_h1}</h1>
-    <p class="lede reveal" style="transition-delay:.14s">${L.hero_lede}</p>
+    <ul class="edge reveal" style="transition-delay:.14s">
+      <li>${L.edge1}</li>
+      <li>${L.edge2}</li>
+      <li>${L.edge3}</li>
+    </ul>
     <div class="cta-row reveal" style="transition-delay:.21s">
       <button class="btn btn-gold btn-lg">${L.hero_cta}</button>
       <a href="#get" class="btn btn-ghost btn-lg">${L.hero_cta2}</a>
@@ -279,8 +300,8 @@ export function homeHtml(loc = "en") {
     <p>${L.get_p}</p>
   </div>
   <div class="grid">
-    <div class="feat"><div class="ic"><svg class="ic-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 0 1 16 0"/><line class="needle" x1="12" y1="16" x2="15.6" y2="11"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg></div><h3>${L.f1_h}</h3><p>${L.f1_p}</p><div class="mini"><span>38/100</span><span class="b"></span></div></div>
-    <div class="feat"><div class="ic"><svg class="ic-risk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline class="trend" points="3 8 9 13 13 10 21 17"/><polyline points="21 12 21 17 16 17"/></svg></div><h3>${L.f2_h}</h3><p>${L.f2_p}</p><div class="mini"><span>${L.f2_mini}</span><span class="b"></span></div></div>
+    <div class="feat"><div class="ic"><svg class="ic-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16a8 8 0 0 1 16 0"/><line class="needle" x1="12" y1="16" x2="15.6" y2="11"/><circle cx="12" cy="16" r="1.3" fill="currentColor" stroke="none"/></svg></div><h3>${L.f1_h}</h3><p>${L.f1_p}</p></div>
+    <div class="feat"><div class="ic"><svg class="ic-risk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline class="trend" points="3 8 9 13 13 10 21 17"/><polyline points="21 12 21 17 16 17"/></svg></div><h3>${L.f2_h}</h3><p>${L.f2_p}</p></div>
     <div class="feat"><div class="ic"><svg class="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5l4 4L9 19l-4.5 1L5.5 15.5z"/><line x1="13" y1="7" x2="17" y2="11"/></svg></div><h3>${L.f3_h}</h3><p>${L.f3_p}</p></div>
     <div class="feat"><div class="ic"><svg class="ic-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="sp1" d="M11 3.5l1.4 4.1 4.1 1.4-4.1 1.4L11 14.5 9.6 10.4 5.5 9l4.1-1.4z"/><path class="sp2" d="M17.5 14l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg></div><h3>${L.f4_h}</h3><p>${L.f4_p}</p></div>
     <div class="feat"><div class="ic"><svg class="ic-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><line x1="3.5" y1="9.2" x2="20.5" y2="9.2"/><line x1="8" y1="3.2" x2="8" y2="6.4"/><line x1="16" y1="3.2" x2="16" y2="6.4"/><circle class="cday" cx="9" cy="13.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="16" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="9" cy="16.8" r="1.1" fill="currentColor" stroke="none" opacity=".45"/></svg></div><h3>${L.f5_h}</h3><p>${L.f5_p}</p></div>
@@ -295,7 +316,7 @@ export function homeHtml(loc = "en") {
       <h3>${L.founder_h}</h3>
       <div class="role">${L.founder_role}</div>
       <p>${L.founder_p}</p>
-      <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener" class="btn btn-gold">${L.founder_cta}</a>
+      <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener" class="btn btn-ghost">${L.founder_cta}</a>
     </div>
   </div>
 </div></section>
