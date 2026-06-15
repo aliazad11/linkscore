@@ -1075,12 +1075,7 @@ function ShareCardSection({ cohort, score, name }) {
       </button>
 
       <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-        {CAN_NATIVE_SHARE && (
-        <button onClick={shareNow} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
-          <LinkedInGlyph /> {t("share_linkedin")}
-        </button>
-        )}
-        <button onClick={downloadImage} style={{ background:"transparent", color:"#c8a96e", border:"1px solid #c8a96e", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+        <button onClick={downloadImage} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
           {dl ? t("sc_saved")+" ✓" : t("sc_download")}
         </button>
         <button onClick={copyCaption} style={{ background:"transparent", color:"#8a8aa6", border:"1px solid #2a2a3e", borderRadius:10, padding:"11px 16px", fontWeight:600, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
