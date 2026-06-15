@@ -970,6 +970,19 @@ function summarize(s, max) {
   return (i > Math.floor(max * 0.5) ? cut.slice(0, i) : cut).replace(/[\s,.;:!?-]+$/, "") + "…";
 }
 
+// Returns the first COMPLETE sentence for tight one-line summary cards, so the card reads as
+// a clean summary instead of the whole analysis cut mid-thought with "…". Falls back to
+// summarize() for a single giant sentence or text with no terminator. The (?=\s|$) lookahead
+// avoids splitting inside decimals like "3.5M". Locale-safe: en/de/fr/es/pt/nl/it end with . ! ?
+function firstSentence(s, cap) {
+  s = String(s || "").trim();
+  if (!s) return s;
+  const m = s.match(/^[\s\S]*?[.!?](?=\s|$)/);
+  const first = m ? m[0].trim() : "";
+  if (first && first.length <= cap) return first;
+  return summarize(s, cap);
+}
+
 // Single source of truth for the archetype name shown to the user: the curated card
 // archetype for their cohort + score tier, in the right locale and gender. Used for
 // BOTH the report headline and the share card so they always match (the free-form AI
@@ -1471,9 +1484,9 @@ export default function App() {
       messageContent.push({ type:"document", source:{ type:"base64", media_type:"application/pdf", data:base64 } });
     }
 
-    // NOTE: Screenshots removed from main call to avoid 60s timeout
-    // Thought Leader score is estimated from quiz answers instead
-    // Screenshots kept for future enhancement
+    // Post screenshots ARE sent to the analysis (added as image blocks below, within an
+    // image-byte budget). They sharpen the Thought Leader score and make the hooks specific
+    // to what the user already posts. maxDuration is 300s server-side so the call has headroom.
 
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote, !!(profile && profile.startsWith("PDF_BASE64:")), locale) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
@@ -2094,6 +2107,11 @@ export default function App() {
         )}
         <button className="primary-btn" onClick={()=>{
           setGenError("");
+          // Clear any planId left in memory from a prior run in this same (un-reloaded) tab,
+          // so the analyzing screen waits for THIS run's fresh result instead of short-circuiting
+          // to a stale plan in 500ms (see the analyzing effect's planRef.current check).
+          planRef.current = null;
+          setPlanId(null);
           setPhase("analyzing");
           const ans = founderUnlock ? { ...answers, what_they_need_linkedin_to_unlock: founderUnlock } : answers;
           // Start API call immediately parallel to animation
@@ -2266,7 +2284,7 @@ export default function App() {
                 <div>
                   <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
                   <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700, marginBottom:3 }}>{plan.thought_leader.score<40?t("tl_early"):plan.thought_leader.score<70?t("tl_growing"):t("tl_strong")}</p>
-                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{summarize(plan.thought_leader.analysis, 120)}</p>
+                  <p style={{ color:"#a78bfa", fontSize:11, lineHeight:1.4, opacity:0.8 }}>{firstSentence(plan.thought_leader.analysis, 120)}</p>
                 </div>
               </div>
             ) : (
