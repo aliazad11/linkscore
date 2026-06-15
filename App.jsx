@@ -983,6 +983,78 @@ function firstSentence(s, cap) {
   return summarize(s, cap);
 }
 
+// #20 — in-product "How accurate is your archetype?" survey on the Overview tab.
+// 1-5 stars + an optional comment, persisted anonymously via /api/log-accuracy. Once a
+// user answers (per planId), we don't ask again. Hidden on shared-link views (the viewer
+// is not the person the archetype is about).
+function AccuracySurvey({ planId, cohort, archetype, score }) {
+  const { t, locale } = useLocale();
+  const lsKey = "ls_acc_" + (planId || "x");
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState("");
+  const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  let answered = false;
+  try { answered = !!localStorage.getItem(lsKey); } catch (e) {}
+  if (answered) return null;
+
+  if (sent) {
+    return (
+      <div className="card-block" style={{ textAlign: "center", padding: "16px" }}>
+        <p style={{ color: "#c8a96e", fontSize: 13, fontWeight: 600, margin: 0 }}>★ {t("survey_thanks")}</p>
+      </div>
+    );
+  }
+
+  const submit = async () => {
+    if (!rating || sent || submitting) return;
+    setSubmitting(true);
+    let ok = false;
+    try {
+      const r = await fetch("/api/log-accuracy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, cohort, archetype, score, comment: comment.trim(), locale }),
+      });
+      ok = !!(r && r.ok);
+    } catch (e) {}
+    // Only mark "answered" (and suppress on reload) when the write actually landed,
+    // so a transient failure gets a retry next visit instead of silently losing the rating.
+    if (ok) { try { localStorage.setItem(lsKey, "1"); } catch (e) {} }
+    setSubmitting(false);
+    setSent(true);
+  };
+
+  return (
+    <div className="card-block">
+      <p style={{ color: "#7a7a96", fontSize: 10, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>{t("survey_q")}</p>
+      <div role="radiogroup" aria-label={t("survey_q")} style={{ display: "flex", gap: 6, marginBottom: rating ? 14 : 0 }}>
+        {[1, 2, 3, 4, 5].map((n) => {
+          const on = (hover || rating) >= n;
+          return (
+            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={t("survey_rate", { n })}
+              onClick={() => setRating(n)}
+              onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)}
+              onFocus={() => setHover(n)} onBlur={() => setHover(0)}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: 2, fontSize: 26, lineHeight: 1, color: on ? "#c8a96e" : "#3a3a4e", transition: "color 0.15s", borderRadius: 4 }}>
+              {on ? "★" : "☆"}
+            </button>
+          );
+        })}
+      </div>
+      {rating > 0 && (
+        <div>
+          <textarea value={comment} onChange={(e) => setComment(e.target.value)} maxLength={200}
+            placeholder={t("survey_ph")} rows={2}
+            style={{ width: "100%", boxSizing: "border-box", background: "#0d0d18", border: "1px solid #2a2a3e", borderRadius: 10, color: "#e8e8f0", fontSize: 13, lineHeight: 1.5, padding: "10px 12px", resize: "vertical", marginBottom: 10, fontFamily: "inherit" }} />
+          <button type="button" onClick={submit} disabled={submitting} className="primary-btn" style={{ width: "auto", padding: "8px 20px", fontSize: 13, opacity: submitting ? 0.6 : 1 }}>{t("survey_send")}</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Single source of truth for the archetype name shown to the user: the curated card
 // archetype for their cohort + score tier, in the right locale and gender. Used for
 // BOTH the report headline and the share card so they always match (the free-form AI
@@ -2369,6 +2441,7 @@ export default function App() {
                     <p style={{ color:"#b6b5cc", fontSize:14, lineHeight:1.6 }}>{tactic}</p>
                   </div>
                 ))}
+                {!sharedView && <AccuracySurvey planId={planId} cohort={cohort} archetype={fixedArchetype(cohort, plan.score, locale, userData.firstName) || plan.archetype} score={plan.score} />}
               </div>
             )}
 
