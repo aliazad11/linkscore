@@ -1456,6 +1456,27 @@ export default function App() {
     setPhase(snap.target);
   };
 
+  // E18 funnel instrumentation: a step event on every phase change (so PostHog can chart the
+  // full drop-off), a distinct paywall_viewed (the core gate->unlock conversion metric), and a
+  // per-question event so quiz abandonment is visible. track() no-ops without analytics consent.
+  useEffect(() => {
+    const FUNNEL_STEPS = ["cohort","form","pdf_upload","quiz","post_screenshots","note","analyzing","paywall","result"];
+    if (FUNNEL_STEPS.indexOf(phase) === -1) return;
+    track("funnel_step", { step: phase, cohort: cohort || null });
+    if (phase === "paywall") {
+      track("paywall_viewed", {
+        cohort: cohort || null,
+        profile_overall: (teaser && teaser.profileOverall != null) ? teaser.profileOverall : null,
+        tl_score: (teaser && teaser.tlScore != null) ? teaser.tlScore : null,
+        had_profile: !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
+      });
+    }
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "quiz") track("quiz_question_viewed", { index: currentQ, cohort: cohort || null });
+  }, [currentQ, phase]);
+
   useEffect(() => {
     if (phase === "intro" || phase === "result" || phase === "plan_missing") {
       if (phase === "result") { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} }
@@ -1714,7 +1735,7 @@ export default function App() {
       } catch(e) { console.log("Email error:", e); }
 
       identify(email);
-      track("plan_unlocked", { cohort });
+      track("plan_unlocked", { cohort, planId: pid || null, score: (finalized && finalized.score) || null, had_profile: hadProfile });
       setPhase("result");
     } catch(e) {
       if (e.message === "Failed to fetch") {
@@ -2240,7 +2261,7 @@ export default function App() {
           // Start API call immediately parallel to animation
           track("analysis_started", { cohort, has_pdf: !!pdfText, screenshots: noPostsYet ? 0 : postScreenshots.filter(Boolean).length });
           callAPI(userData, ans, pdfText, noPostsYet ? [] : postScreenshots, cohort, specialNote)
-            .then(id => { planRef.current = id; setPlanId(id); track("plan_generated"); })
+            .then(id => { planRef.current = id; setPlanId(id); track("plan_generated", { planId: id }); })
             .catch(err => { planRef.current = {_error: err.message}; track("plan_failed", { error: String(err.message).slice(0,120) }); });
         }}>
           {t("btn_continue")}
