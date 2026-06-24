@@ -1312,26 +1312,40 @@ function Sparkline({ data, width = 220, height = 44, color = "#c8a96e" }) {
 // A saved report row: the earned share-card image sits behind it at low opacity with a
 // dark gradient so the data (score, archetype, date, delta) stays the hero. Falls back
 // to the plain dark card + gold ring when no card art exists for that cohort/score.
-function ReportCard({ p, delta, locale }) {
+function neutralizeArchetype(a) {
+  return typeof a === "string"
+    ? a.replace(/\bInvisible\b/g, "Quiet").replace(/\binvisible\b/g, "quiet").replace(/\bSilent\b/g, "Quiet").replace(/\bsilent\b/g, "quiet")
+    : a;
+}
+// The name shown for a saved report: the curated archetype if one exists, else the stored AI
+// archetype with banned "Silent/Invisible" words neutralized (old reports predate the gen-time guard).
+function displayArchetype(cohort, score, locale, name, raw) {
+  return fixedArchetype(cohort, score, locale, name || "") || neutralizeArchetype(raw) || "Your LinkedIn report";
+}
+
+function ReportCard({ p, delta, locale, onDelete }) {
   const img = cardImagePath(p.cohort, p.score, locale, p.firstName || "");
-  const archetype = fixedArchetype(p.cohort, p.score, locale, p.firstName || "") || p.archetype || "Your plan";
+  const archetype = displayArchetype(p.cohort, p.score, locale, p.firstName, p.archetype);
   const dt = fmtReportDate(p.createdAt, locale);
   return (
-    <a href={`/plan/${p.planId}`} style={{ display: "block", position: "relative", borderRadius: 14, overflow: "hidden", border: "1px solid #1a1a2e", marginBottom: 12, textDecoration: "none", background: "#0d0d18" }}>
-      {img && <img src={img} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 32%", opacity: 0.42 }} />}
-      {img && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(8,8,14,0.95) 36%, rgba(8,8,14,0.45))" }} />}
-      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14, padding: 14 }}>
-        <ScoreRing score={p.score || 0} />
-        <div style={{ textAlign: "left", flex: 1, minWidth: 0 }}>
-          <p style={{ color: "#c8a96e", fontWeight: 700, fontSize: 15 }}>{archetype}</p>
-          <p style={{ color: "#9696b4", fontSize: 12 }}>{p.cohort || ""}</p>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
-            {dt && <span style={{ color: "#7a7a96", fontSize: 11 }}>{dt.abs} · {dt.rel}</span>}
-            <DeltaBadge value={delta} />
+    <div style={{ position: "relative", marginBottom: 12 }}>
+      <a href={`/plan/${p.planId}`} style={{ display: "block", position: "relative", borderRadius: 14, overflow: "hidden", border: "1px solid #1a1a2e", textDecoration: "none", background: "#0d0d18" }}>
+        {img && <img src={img} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 32%", opacity: 0.42 }} />}
+        {img && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(8,8,14,0.95) 36%, rgba(8,8,14,0.45))" }} />}
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14, padding: 14 }}>
+          <ScoreRing score={p.score || 0} />
+          <div style={{ textAlign: "left", flex: 1, minWidth: 0, paddingRight: 22 }}>
+            <p style={{ color: "#c8a96e", fontWeight: 700, fontSize: 15 }}>{archetype}</p>
+            <p style={{ color: "#9696b4", fontSize: 12 }}>{p.cohort || ""}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+              {dt && <span style={{ color: "#7a7a96", fontSize: 11 }}>{dt.abs} · {dt.rel}</span>}
+              <DeltaBadge value={delta} />
+            </div>
           </div>
         </div>
-      </div>
-    </a>
+      </a>
+      {onDelete && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(p.planId); }} title="Delete this report" aria-label="Delete this report" style={{ position: "absolute", top: 8, right: 8, zIndex: 2, background: "rgba(8,8,14,0.55)", border: "1px solid #2a2a3e", color: "#8a8aa6", borderRadius: 8, width: 26, height: 26, cursor: "pointer", fontSize: 13, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>}
+    </div>
   );
 }
 
@@ -1364,6 +1378,7 @@ export default function App() {
   const [signinSent, setSigninSent] = useState(false);
   const [acctEmail, setAcctEmail] = useState(undefined); // undefined=checking, null=signed out, string=signed in
   const [myPlans, setMyPlans] = useState(null);
+  const [showAllReports, setShowAllReports] = useState(false);
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
   const [specialNote, setSpecialNote] = useState("");
@@ -1978,7 +1993,14 @@ export default function App() {
     const latest = plans[0];
     const heroDelta = (latest && plans[1] && plans[1].score != null) ? latest.score - plans[1].score : null;
     const series = plans.map(p => p.score).slice().reverse(); // oldest -> newest for the sparkline
-    const latestArchetype = latest ? (fixedArchetype(latest.cohort, latest.score, locale, latest.firstName || "") || latest.archetype || "Your latest report") : null;
+    const latestArchetype = latest ? displayArchetype(latest.cohort, latest.score, locale, latest.firstName, latest.archetype) : null;
+    const REPORTS_CAP = 12;
+    const shownPlans = showAllReports ? plans : plans.slice(0, REPORTS_CAP);
+    const deletePlan = async (id) => {
+      if (!window.confirm("Delete this report? This cannot be undone.")) return;
+      try { await fetch("/api/delete-plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId: id }) }); } catch (e) {}
+      setMyPlans((prev) => (prev || []).filter((x) => x.planId !== id));
+    };
     let loginMsg = null;
     try {
       const q = new URLSearchParams(window.location.search).get("login");
@@ -2014,11 +2036,14 @@ export default function App() {
             ) : null}
 
             <h2 style={{ ...s.h1, fontSize: 22, marginBottom: 14 }}>{plans.length ? "Your saved reports" : "Your account"}</h2>
-            {plans.length ? plans.map((p, i) => {
+            {plans.length ? shownPlans.map((p, i) => {
               const older = plans[i + 1];
               const d = (older && older.score != null) ? p.score - older.score : null;
-              return <ReportCard key={p.planId} p={p} delta={d} locale={locale} />;
+              return <ReportCard key={p.planId} p={p} delta={d} locale={locale} onDelete={deletePlan} />;
             }) : <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your free score</a> and it will be saved here.</p>}
+            {plans.length > REPORTS_CAP && !showAllReports && (
+              <button onClick={() => setShowAllReports(true)} style={{ display: "block", width: "100%", background: "transparent", border: "1px solid #20202f", color: "#9696b4", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontSize: 13, marginTop: 2 }}>Show all {plans.length} reports</button>
+            )}
 
             <div style={{ marginTop: 26, paddingTop: 16, borderTop: "1px solid #16162a", display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center" }}>
               <span style={{ color: "#7a7a96", fontSize: 12 }}>Signed in as {acctEmail}</span>
