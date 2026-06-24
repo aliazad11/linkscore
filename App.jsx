@@ -1995,7 +1995,8 @@ export default function App() {
     const series = plans.map(p => p.score).slice().reverse(); // oldest -> newest for the sparkline
     const latestArchetype = latest ? displayArchetype(latest.cohort, latest.score, locale, latest.firstName, latest.archetype) : null;
     const REPORTS_CAP = 12;
-    const shownPlans = showAllReports ? plans : plans.slice(0, REPORTS_CAP);
+    const history = plans.slice(1); // the latest report is the hero; the list shows only older ones
+    const shownHistory = showAllReports ? history : history.slice(0, REPORTS_CAP);
     const deletePlan = async (id) => {
       if (!window.confirm("Delete this report? This cannot be undone.")) return;
       try { await fetch("/api/delete-plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId: id }) }); } catch (e) {}
@@ -2020,7 +2021,7 @@ export default function App() {
             {latest ? (
               <div style={{ background: "linear-gradient(135deg,#101019,#0b0b14)", border: "1px solid #20202f", borderRadius: 18, padding: 22, marginBottom: 22 }}>
                 <p style={{ color: "#9696b4", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>Welcome back{latest.firstName ? ", " + latest.firstName : ""}</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                <a href={`/plan/${latest.planId}`} style={{ display: "flex", alignItems: "center", gap: 18, textDecoration: "none" }}>
                   <ScoreRing score={latest.score} size={108} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ color: "#c8a96e", fontSize: 17, fontWeight: 800, lineHeight: 1.15 }}>{latestArchetype}</p>
@@ -2029,20 +2030,27 @@ export default function App() {
                       {heroDelta != null ? <DeltaBadge value={heroDelta} withLabel /> : <span style={{ color: "#7a7a96", fontSize: 12 }}>your first report</span>}
                     </div>
                     {series.length > 1 && <Sparkline data={series} />}
+                    <span style={{ color: "#56566f", fontSize: 11, display: "block", marginTop: series.length > 1 ? 6 : 2 }}>View this report →</span>
                   </div>
-                </div>
+                </a>
                 <a href="/" className="primary-btn" style={{ display: "block", textAlign: "center", marginTop: 18, textDecoration: "none" }}>Re-check my score</a>
               </div>
             ) : null}
 
-            <h2 style={{ ...s.h1, fontSize: 22, marginBottom: 14 }}>{plans.length ? "Your saved reports" : "Your account"}</h2>
-            {plans.length ? shownPlans.map((p, i) => {
-              const older = plans[i + 1];
+            {!latest && (
+              <>
+                <h2 style={{ ...s.h1, fontSize: 22, marginBottom: 14 }}>Your account</h2>
+                <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your free score</a> and it will be saved here.</p>
+              </>
+            )}
+            {history.length > 0 && <h3 style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>Earlier reports</h3>}
+            {shownHistory.map((p, i) => {
+              const older = history[i + 1];
               const d = (older && older.score != null) ? p.score - older.score : null;
               return <ReportCard key={p.planId} p={p} delta={d} locale={locale} onDelete={deletePlan} />;
-            }) : <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your free score</a> and it will be saved here.</p>}
-            {plans.length > REPORTS_CAP && !showAllReports && (
-              <button onClick={() => setShowAllReports(true)} style={{ display: "block", width: "100%", background: "transparent", border: "1px solid #20202f", color: "#9696b4", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontSize: 13, marginTop: 2 }}>Show all {plans.length} reports</button>
+            })}
+            {history.length > REPORTS_CAP && !showAllReports && (
+              <button onClick={() => setShowAllReports(true)} style={{ display: "block", width: "100%", background: "transparent", border: "1px solid #20202f", color: "#9696b4", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontSize: 13, marginTop: 2 }}>Show all {history.length} earlier reports</button>
             )}
 
             <div style={{ marginTop: 26, paddingTop: 16, borderTop: "1px solid #16162a", display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center" }}>
