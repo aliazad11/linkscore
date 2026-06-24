@@ -1240,18 +1240,98 @@ function ShareCardSection({ cohort, score, name }) {
   );
 }
 
-function ScoreRing({ score, color="#c8a96e" }) {
-  const r = 36; const c = 2 * Math.PI * r;
-  const gradId = `grad_${color.replace('#','')}`;
+function ScoreRing({ score, color="#c8a96e", size=80 }) {
+  const stroke = 5;
+  const r = size / 2 - 4; const c = 2 * Math.PI * r;
+  const fontSize = Math.round(size * 0.25);
   return (
-    <div style={{ position:"relative", width:80, height:80, flexShrink:0 }}>
-      <svg width={80} height={80} style={{ transform:"rotate(-90deg)" }}>
-        <circle cx={40} cy={40} r={r} fill="none" stroke="#1a1a2e" strokeWidth={5} />
-        <circle cx={40} cy={40} r={r} fill="none" stroke={color} strokeWidth={5}
+    <div style={{ position:"relative", width:size, height:size, flexShrink:0 }}>
+      <svg width={size} height={size} style={{ transform:"rotate(-90deg)" }}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#1a1a2e" strokeWidth={stroke} />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
           strokeDasharray={`${(score/100)*c} ${c}`} strokeLinecap="round" />
       </svg>
-      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", color, fontSize:20, fontWeight:800 }}>{score}</div>
+      <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", color, fontSize, fontWeight:800 }}>{score}</div>
     </div>
+  );
+}
+
+// ── Dashboard helpers (date, delta, sparkline, report card) ──────────────────
+function fmtReportDate(iso, locale) {
+  if (!iso) return null;
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return null;
+    const abs = d.toLocaleDateString(locale || "en", { month: "short", day: "numeric", year: "numeric" });
+    const days = Math.floor((Date.now() - d.getTime()) / 86400000);
+    let rel;
+    if (days <= 0) rel = "today";
+    else if (days === 1) rel = "yesterday";
+    else if (days < 7) rel = days + " days ago";
+    else if (days < 14) rel = "1 week ago";
+    else if (days < 60) rel = Math.floor(days / 7) + " weeks ago";
+    else if (days < 730) rel = Math.floor(days / 30) + " months ago";
+    else rel = Math.floor(days / 365) + " years ago";
+    return { abs, rel };
+  } catch (e) { return null; }
+}
+
+// Tiny colored trend pill: green up, red down, muted flat. The ONLY place color
+// leaves the champagne palette, by design - direction is the one fact worth a color.
+function DeltaBadge({ value, withLabel }) {
+  if (value == null) return null;
+  const flat = value === 0;
+  const up = value > 0;
+  const color = flat ? "#7a7a96" : (up ? "#56c08a" : "#e0556b");
+  const arrow = flat ? "→" : (up ? "▲" : "▼");
+  return (
+    <span style={{ color, fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+      {arrow} {Math.abs(value)}{withLabel ? " pts vs last" : ""}
+    </span>
+  );
+}
+
+function Sparkline({ data, width = 220, height = 44, color = "#c8a96e" }) {
+  if (!data || data.length < 2) return null;
+  const min = Math.min(...data), max = Math.max(...data);
+  const range = (max - min) || 1;
+  const xy = (v, i) => {
+    const x = (i / (data.length - 1)) * (width - 8) + 4;
+    const y = height - 5 - ((v - min) / range) * (height - 12);
+    return [x, y];
+  };
+  const pts = data.map((v, i) => xy(v, i).map(n => n.toFixed(1)).join(",")).join(" ");
+  return (
+    <svg width={width} height={height} style={{ display: "block", maxWidth: "100%" }}>
+      <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      {data.map((v, i) => { const [x, y] = xy(v, i); return <circle key={i} cx={x} cy={y} r={2.6} fill={i === data.length - 1 ? "#ecd6a3" : color} />; })}
+    </svg>
+  );
+}
+
+// A saved report row: the earned share-card image sits behind it at low opacity with a
+// dark gradient so the data (score, archetype, date, delta) stays the hero. Falls back
+// to the plain dark card + gold ring when no card art exists for that cohort/score.
+function ReportCard({ p, delta, locale }) {
+  const img = cardImagePath(p.cohort, p.score, locale, p.firstName || "");
+  const archetype = fixedArchetype(p.cohort, p.score, locale, p.firstName || "") || p.archetype || "Your plan";
+  const dt = fmtReportDate(p.createdAt, locale);
+  return (
+    <a href={`/plan/${p.planId}`} style={{ display: "block", position: "relative", borderRadius: 14, overflow: "hidden", border: "1px solid #1a1a2e", marginBottom: 12, textDecoration: "none", background: "#0d0d18" }}>
+      {img && <img src={img} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4 }} />}
+      {img && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(8,8,14,0.94) 38%, rgba(8,8,14,0.5))" }} />}
+      <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14, padding: 14 }}>
+        <ScoreRing score={p.score || 0} />
+        <div style={{ textAlign: "left", flex: 1, minWidth: 0 }}>
+          <p style={{ color: "#c8a96e", fontWeight: 700, fontSize: 15 }}>{archetype}</p>
+          <p style={{ color: "#9696b4", fontSize: 12 }}>{p.cohort || ""}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, flexWrap: "wrap" }}>
+            {dt && <span style={{ color: "#7a7a96", fontSize: 11 }}>{dt.abs} · {dt.rel}</span>}
+            <DeltaBadge value={delta} />
+          </div>
+        </div>
+      </div>
+    </a>
   );
 }
 
@@ -1894,6 +1974,18 @@ export default function App() {
 
   // ── ACCOUNT (front-door login + saved-reports dashboard) ────────────────────
   if (phase==="account") {
+    const plans = (myPlans || []).filter(p => p && p.score != null);
+    const latest = plans[0];
+    const heroDelta = (latest && plans[1] && plans[1].score != null) ? latest.score - plans[1].score : null;
+    const series = plans.map(p => p.score).slice().reverse(); // oldest -> newest for the sparkline
+    let loginMsg = null;
+    try {
+      const q = new URLSearchParams(window.location.search).get("login");
+      if (q === "expired") loginMsg = "That sign-in link expired. Links last 15 minutes, so just request a fresh one below.";
+      else if (q === "error") loginMsg = "Something went wrong with that sign-in link. Request a fresh one below.";
+    } catch (e) {}
+    const logout = async () => { try { await fetch("/api/logout", { method: "POST" }); } catch (e) {} setAcctEmail(null); setMyPlans(null); };
+    const ctrlLink = { background: "transparent", border: "none", cursor: "pointer", padding: 0, fontSize: 12, textDecoration: "underline" };
     return (
     <Layout>
       <div className="page-enter">
@@ -1902,30 +1994,52 @@ export default function App() {
           <p style={{ color:"#9696b4", textAlign:"center", marginTop:24 }}>Loading...</p>
         ) : acctEmail ? (
           <>
-            <h2 style={{ ...s.h1, fontSize:24 }}>Your saved reports</h2>
-            <p style={{ color:"#7a7a96", fontSize:12, marginBottom:18 }}>Signed in as {acctEmail} · <button onClick={async ()=>{ try{ await fetch("/api/logout",{method:"POST"}); }catch(e){} setAcctEmail(null); setMyPlans(null); }} style={{ background:"transparent", border:"none", color:"#c8a96e", cursor:"pointer", fontSize:12, padding:0, textDecoration:"underline" }}>Log out</button></p>
-            {(myPlans && myPlans.length) ? myPlans.map(p => (
-              <a key={p.planId} href={`/plan/${p.planId}`} style={{ display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:14, marginBottom:10, textDecoration:"none" }}>
-                <ScoreRing score={p.score || 0} />
-                <div style={{ textAlign:"left" }}>
-                  <p style={{ color:"#c8a96e", fontWeight:700, fontSize:15 }}>{fixedArchetype(p.cohort, p.score, locale, "") || p.archetype || "Your plan"}</p>
-                  <p style={{ color:"#7a7a96", fontSize:12 }}>{p.cohort || ""}</p>
+            {latest ? (
+              <div style={{ background: "linear-gradient(135deg,#101019,#0b0b14)", border: "1px solid #20202f", borderRadius: 18, padding: 22, marginBottom: 22 }}>
+                <p style={{ color: "#9696b4", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>Welcome back{latest.firstName ? ", " + latest.firstName : ""}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+                  <ScoreRing score={latest.score} size={108} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ color: "#f5f5fc", fontSize: 15, fontWeight: 700 }}>Your latest score</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "2px 0 6px" }}>
+                      {heroDelta != null ? <DeltaBadge value={heroDelta} withLabel /> : <span style={{ color: "#7a7a96", fontSize: 12 }}>your first report</span>}
+                    </div>
+                    {series.length > 1 && <Sparkline data={series} />}
+                  </div>
                 </div>
-              </a>
-            )) : <p style={{ color:"#9696b4", fontSize:14 }}>No saved reports on this email yet.</p>}
-            <button onClick={async ()=>{ if(!window.confirm("Delete your account and all saved reports? This cannot be undone."))return; try{ await fetch("/api/delete-account",{method:"POST"}); }catch(e){} setAcctEmail(null); setMyPlans(null); }} style={{ background:"transparent", border:"none", color:"#7a5a6a", cursor:"pointer", fontSize:11, padding:0, marginTop:20, textDecoration:"underline" }}>Delete my account and data</button>
+                <a href="/" className="primary-btn" style={{ display: "block", textAlign: "center", marginTop: 18, textDecoration: "none" }}>Re-check my score</a>
+              </div>
+            ) : null}
+
+            <h2 style={{ ...s.h1, fontSize: 22, marginBottom: 14 }}>{plans.length ? "Your saved reports" : "Your account"}</h2>
+            {plans.length ? plans.map((p, i) => {
+              const older = plans[i + 1];
+              const d = (older && older.score != null) ? p.score - older.score : null;
+              return <ReportCard key={p.planId} p={p} delta={d} locale={locale} />;
+            }) : <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your free score</a> and it will be saved here.</p>}
+
+            <div style={{ marginTop: 26, paddingTop: 16, borderTop: "1px solid #16162a", display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center" }}>
+              <span style={{ color: "#7a7a96", fontSize: 12 }}>Signed in as {acctEmail}</span>
+              <button onClick={logout} style={{ ...ctrlLink, color: "#c8a96e" }}>Log out</button>
+              <a href="/api/export-data" style={{ color: "#9696b4", fontSize: 12 }}>Download my data</a>
+              <button onClick={async ()=>{ if(!window.confirm("Delete your account and all saved reports? This cannot be undone."))return; try{ await fetch("/api/delete-account",{method:"POST"}); }catch(e){} setAcctEmail(null); setMyPlans(null); }} style={{ ...ctrlLink, color: "#7a5a6a" }}>Delete my account and data</button>
+            </div>
           </>
         ) : (
           <>
             <h2 style={{ ...s.h1, fontSize:24 }}>Sign in</h2>
+            {loginMsg && <p style={{ color: "#e0a23c", fontSize: 13, marginBottom: 12, lineHeight: 1.5, background: "#1a1410", border: "1px solid #3a2e16", borderRadius: 10, padding: "10px 12px" }}>{loginMsg}</p>}
             <p style={{ color:"#9696b4", fontSize:13, marginBottom:14, lineHeight:1.5 }}>Enter your email and we will send you a secure link to see your saved reports.</p>
             {signinSent ? (
               <p style={{ color:"#56c08a", fontSize:13, fontWeight:600 }}>Check your email for a sign-in link.</p>
             ) : (
-              <div style={{ display:"flex", gap:8 }}>
-                <input type="email" value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
-                <button className="primary-btn" style={{ width:"auto", whiteSpace:"nowrap" }} onClick={async ()=>{ if(!signinEmail.includes("@")||!signinEmail.includes("."))return; try{ await fetch("/api/auth-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signinEmail.trim().toLowerCase(),next:"/account"})}); }catch(e){} setSigninSent(true); }}>Send link</button>
-              </div>
+              <>
+                <div style={{ display:"flex", gap:8 }}>
+                  <input type="email" value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
+                  <button className="primary-btn" style={{ width:"auto", whiteSpace:"nowrap" }} onClick={async ()=>{ if(!signinEmail.includes("@")||!signinEmail.includes("."))return; try{ await fetch("/api/auth-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signinEmail.trim().toLowerCase(),next:"/account"})}); }catch(e){} setSigninSent(true); }}>Send link</button>
+                </div>
+                <p style={{ color: "#56566f", fontSize: 11.5, marginTop: 10, lineHeight: 1.5 }}>Secure email sign-in. No password to remember, lose or leak.</p>
+              </>
             )}
           </>
         )}

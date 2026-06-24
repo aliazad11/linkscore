@@ -12,18 +12,19 @@ function redirect(res, path) {
 }
 
 export default async function handler(req, res) {
-  if (!process.env.AUTH_SECRET) return redirect(res, "/?login=error");
+  // Expired/invalid links land back on the sign-in page (with a message), not the homepage.
+  if (!process.env.AUTH_SECRET) return redirect(res, "/account?login=error");
   const token = (req.query && req.query.token) || "";
   const payload = verifyToken(token);
   if (!payload || payload.purpose !== "login" || !payload.email) {
-    return redirect(res, "/?login=expired");
+    return redirect(res, "/account?login=expired");
   }
   try {
     const maxAge = SESSION_DAYS * 24 * 3600;
     const session = signToken({ email: payload.email, purpose: "session" }, maxAge);
     res.setHeader("Set-Cookie", sessionCookie(session, maxAge));
   } catch (e) {
-    return redirect(res, "/?login=error");
+    return redirect(res, "/account?login=error");
   }
   // Back to where they were (e.g. the /plan/:id they tried to view), if it's a safe relative path.
   const next = (typeof payload.next === "string" && /^\/[A-Za-z0-9/_-]*$/.test(payload.next)) ? payload.next : "/?account=1";

@@ -217,6 +217,7 @@ function S(loc) { return Object.assign({}, HOME_STRINGS.en, HOME_STRINGS[loc] ||
 // across locales (only text changes) so the React reveal/CTA wiring works unchanged.
 export function homeHtml(loc = "en") {
   const L = S(loc);
+  const loginLabel = ({ en:"Log in", de:"Anmelden", fr:"Connexion", es:"Entrar", pt:"Entrar", nl:"Inloggen", it:"Accedi" })[loc] || "Log in";
   return `<nav><div class="wrap">
   <a href="/" aria-label="LinkedScore home" class="brand"><img src="/logo.png" alt="LinkedScore" /></a>
   <div class="nav-r">
@@ -225,7 +226,8 @@ export function homeHtml(loc = "en") {
     <a href="/about.html">${L.nav_about}</a>
     <a href="/faq.html">${L.nav_faq}</a>
     <a href="/blog">${L.nav_blog}</a>
-    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a><a href="/blog">${L.nav_blog}</a></div></details>
+    <a href="/account">${loginLabel}</a>
+    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a><a href="/blog">${L.nav_blog}</a><a href="/account">${loginLabel}</a></div></details>
     ${langSwitcher(loc)}
     <button class="btn btn-gold">${L.nav_cta}</button>
   </div>
