@@ -8,6 +8,7 @@ export const config = { runtime: "edge" };
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 const GOLD = "#c8a96e";
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const el = (type, style, children) => ({ type, props: { style, children } });
 
@@ -19,14 +20,16 @@ export default async function handler(req) {
   let score = 0;
   let arch = "Your LinkedIn growth plan";
   try {
-    const r = await fetch(SUPABASE_URL + "/rest/v1/plans?id=eq." + encodeURIComponent(id) + "&select=first_name,plan_data", {
-      headers: { apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: "Bearer " + process.env.SUPABASE_SERVICE_KEY },
-    });
-    const rows = await r.json();
-    if (rows && rows[0] && rows[0].plan_data) {
-      name = rows[0].first_name || "LinkedScore";
-      score = Math.max(0, Math.min(100, Math.round(Number(rows[0].plan_data.score) || 0)));
-      arch = rows[0].plan_data.archetype || arch;
+    if (UUID_RE.test(id)) {
+      const r = await fetch(SUPABASE_URL + "/rest/v1/plans?id=eq." + encodeURIComponent(id) + "&select=first_name,plan_data", {
+        headers: { apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: "Bearer " + process.env.SUPABASE_SERVICE_KEY },
+      });
+      const rows = await r.json();
+      if (rows && rows[0] && rows[0].plan_data) {
+        name = rows[0].first_name || "LinkedScore";
+        score = Math.max(0, Math.min(100, Math.round(Number(rows[0].plan_data.score) || 0)));
+        arch = rows[0].plan_data.archetype || arch;
+      }
     }
   } catch (e) { /* fall back to defaults */ }
 

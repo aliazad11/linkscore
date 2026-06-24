@@ -136,6 +136,7 @@ async function loadFonts(origin) {
   ]);
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export default async function handler(req) {
   const u = new URL(req.url);
   const sp = u.searchParams;
@@ -144,7 +145,7 @@ export default async function handler(req) {
   let data = { name: sp.get("name") || "", score: sp.get("score") || 72, archetype: sp.get("arch") || "The Quiet Operator", tlAvailable: sp.get("tl") != null, tlScore: sp.get("tl") || 0 };
 
   const id = sp.get("id") || "";
-  if (id) {
+  if (id && UUID_RE.test(id)) {
     try {
       const r = await fetch(SUPABASE_URL + "/rest/v1/plans?id=eq." + encodeURIComponent(id) + "&select=first_name,plan_data", {
         headers: { apikey: process.env.SUPABASE_SERVICE_KEY, Authorization: "Bearer " + process.env.SUPABASE_SERVICE_KEY },
