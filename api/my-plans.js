@@ -15,10 +15,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const r = await fetch(
-      SUPABASE_URL + "/rest/v1/plans?email=eq." + encodeURIComponent(session.email) + "&select=id,cohort,plan_data",
-      { headers: { "apikey": SERVICE_KEY, "Authorization": "Bearer " + SERVICE_KEY } }
-    );
+    const headers = { "apikey": SERVICE_KEY, "Authorization": "Bearer " + SERVICE_KEY };
+    const base = SUPABASE_URL + "/rest/v1/plans?email=eq." + encodeURIComponent(session.email);
+    // Newest report first. created_at is Supabase's default row timestamp; if the table
+    // happens to lack it, fall back to an unordered fetch so the dashboard still loads.
+    let r = await fetch(base + "&select=id,cohort,plan_data,created_at&order=created_at.desc", { headers });
+    if (!r.ok) r = await fetch(base + "&select=id,cohort,plan_data", { headers });
     if (!r.ok) return res.status(500).json({ error: "Lookup failed" });
     const rows = await r.json();
     const plans = (rows || []).map((row) => {
