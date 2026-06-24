@@ -517,7 +517,7 @@ function fmtMoney(n, code) {
   catch (e) { return (code || "") + " " + Math.round(n).toLocaleString(); }
 }
 
-function finalizePlan(plan, rev, locale = "en") {
+function finalizePlan(plan, rev, locale = "en", hadProfile = true) {
   if (!plan || typeof plan !== "object") return plan;
   // House style: English copy carries no em/long dashes. The prompt already
   // forbids them; this is the deterministic backstop (#16) so a model slip
@@ -567,12 +567,34 @@ function finalizePlan(plan, rev, locale = "en") {
   let overall = Number(ps.overall);
   if (!overall) { const h = Number(ps.headline) || 0, a = Number(ps.about) || 0, e = Number(ps.experience) || 0; overall = Math.round((h + a + e) / 3) || 50; }
   overall = Math.max(0, Math.min(100, overall));
+  // A8 (2026-06-24): with no profile PDF and no posts, the score is only an estimate from
+  // self-reported quiz answers; cap it so confident self-claims cannot inflate the headline.
+  if (!hadProfile) overall = Math.min(overall, 50);
   // A1 (2026-06-20): the LinkedIn Score is the objective profile read only. SSI is
   // self-reported and gameable, so it stays in its own SSI Analysis panel and no longer
   // moves the headline; recent posts have their own Thought Leader Score.
   let score = Math.round(overall);
   score = Math.max(35, Math.min(95, score));
   plan.score = score;
+  // A3 (2026-06-24): make the Thought Leader score reflect its 4 sub-scores. The model
+  // tended to pin it at 58/62 while hook/engagement/voice/structure varied 12-70; average
+  // them so the headline TL number actually moves with the components.
+  if (plan.thought_leader && plan.thought_leader.available) {
+    const tl = plan.thought_leader;
+    const subs = ["hook_score","engagement_score","voice_score","structure_score"]
+      .map(k => Number(tl[k])).filter(n => !isNaN(n));
+    if (subs.length === 4) tl.score = Math.max(0, Math.min(100, Math.round(subs.reduce((a,b)=>a+b,0) / 4)));
+  }
+  // A8 prose backstop (English): the prompt forbids asserting an unseen profile is "strong",
+  // but the model still slips it into urgency/closing. Deterministically hedge those claims
+  // when no profile/posts were provided, so the copy never states unverified quality as fact.
+  if (!hadProfile && noDash) {
+    const hedge = (s) => typeof s === "string"
+      ? s.replace(/\b(your|the|a)\s+(profile|foundation|presence|positioning|content|brand|headline|about)\s+(is|looks|seems|appears)\s+(strong|solid|complete|completed|optimized|optimised|polished|good|great|excellent|impressive)\b/gi, "$1 $2 may be $4 (based on what you told us)")
+      : s;
+    if (plan.urgency) plan.urgency = hedge(plan.urgency);
+    if (plan.closing_message) plan.closing_message = hedge(plan.closing_message);
+  }
   if (!plan.headline_rewrite) plan.headline_rewrite = "";
   if (rev && rev.value && rev.target && REVENUE_COHORTS.indexOf(rev.cohort) !== -1 && !(rev.cohort === "Startup Founder" && rev.hasRevenue !== "yes")) {
     const v = Number(rev.value), t = Number(rev.target);
@@ -630,7 +652,7 @@ Answers:
 ${answersText}
 ${specialNote ? `Priority focus: ${specialNote}` : ""}
 ${profileSection}
-THOUGHT LEADER: always provide a preliminary read from their answers and profile. Set thought_leader.available=true and score all 4 sub-scores as best estimates from their stated behavior. In 'analysis' (max 15 words) note it is a preliminary estimate that sharpens when they upload recent post screenshots. Give 3 specific improvements.
+THOUGHT LEADER: always provide a preliminary read from their answers and profile. Set thought_leader.available=true and score all 4 sub-scores (hook_score, engagement_score, voice_score, structure_score) as honest best estimates on a 0 to 100 scale, using the FULL range, a weak area scores low and a strong one high. Never default a sub-score to 50. The overall thought_leader.score must equal the average of these four sub-scores. In 'analysis' (max 15 words) note it is a preliminary estimate that sharpens when they upload recent post screenshots. Give 3 specific improvements.
 ${(userData.establish_brand||userData.find_people||userData.engage_insights||userData.build_relationships) ? `SSI: Set ssi_plan.available=true, analyze each pillar, give specific actionable advice per pillar.` : `ssi_plan.available=false`}
 
 CORE PRINCIPLE:
@@ -684,6 +706,7 @@ PROFILE SCORING RULES, STRICT, CALIBRATE HONESTLY AND USE THE FULL RANGE:
   - 82 to 92: an elite profile, exceptional authoritative positioning a peer would immediately respect.
 - Score the headline, About and experience sub-scores independently against these same bands. A genuinely missing or empty section scores in the 30s, not 50, because it is a real gap to fix.
 - Pair every sub-score with the one reason it is not higher and the single fix that moves it most.
+${(!hasPdf && screenshotCount === 0) ? `- NO PROFILE OR POSTS PROVIDED (A8): this user uploaded no profile PDF and no post screenshots, so you have NOT seen their actual LinkedIn profile or any post. You cannot verify their headline, About, experience, or activity. Do NOT score these as if you read them, and do NOT treat confident quiz answers (for example claims their profile is complete, optimized, or keyword-rich) as evidence, those are unverified self-descriptions. Set profile_scores.headline, about, experience and overall NO HIGHER THAN 50, as a rough estimate. Do NOT state or imply in ANY field (especially urgency, the diagnosis, and closing_message) that their profile, headline, About, or content is strong, solid, complete, optimized, or good, because you have not seen it. Frame every profile or content reference as what they reported (for example "based on what you told us" or "your answers suggest"), never as an observed fact. The urgency line MUST explicitly say this is a preliminary estimate, and the closing_message must say that uploading their LinkedIn profile produces their real score. Never imply you have seen their profile.` : ""}
 
 ENGAGEMENT RULES, STRICT:
 - FORBIDDEN: daily quotas such as "comment on 3 posts a day", "like 10 posts a day", or "send 10 connection requests".
@@ -1635,7 +1658,8 @@ export default function App() {
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
       const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
-      const finalized = finalizePlan(result, revInputs, locale);
+      const hadProfile = !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0);
+      const finalized = finalizePlan(result, revInputs, locale, hadProfile);
       setPlan(finalized);
 
       // Persist user + plan via the server (service key), so the browser never
@@ -2255,8 +2279,10 @@ export default function App() {
   if (phase==="paywall") {
     // Displayed LinkedIn Score = the objective profile read only (matches finalizePlan A1).
     // SSI is self-reported, so it no longer moves this number; it lives in the SSI Analysis tab.
+    // A8: with no PDF and no posts the score is an estimate from self-reported answers; cap at 50.
+    const hadProfileGate = !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0);
     const gateScore = (teaser && teaser.profileOverall != null)
-      ? Math.max(35, Math.min(95, Math.round(teaser.profileOverall)))
+      ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(teaser.profileOverall)))
       : null;
     return (
     <Layout>
