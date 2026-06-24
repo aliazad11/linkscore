@@ -826,6 +826,7 @@ function Footer() {
   const lk = { color:"#9696b4", textDecoration:"none", fontSize:12 };
   return (
     <footer style={{ marginTop:34, paddingTop:18, borderTop:"1px solid #16162a", display:"flex", flexWrap:"wrap", gap:"6px 16px", alignItems:"center", justifyContent:"center" }}>
+      <a href="/account" style={lk}>My account</a>
       <a href="/about.html" style={lk}>{t("nav_about")}</a>
       <a href="/faq.html" style={lk}>{t("nav_faq")}</a>
       <a href="/imprint.html" style={lk}>{t("legal_imprint")}</a>
@@ -1259,7 +1260,7 @@ export default function App() {
   // On a shared /plan/<uuid> link, start in a neutral loading state so the
   // prerendered landing never flashes before the plan resolves.
   const [phase, setPhase] = useState(() => {
-    try { return /^\/plan\/[a-f0-9-]{36}$/.test(window.location.pathname) ? "loading" : "intro"; }
+    try { const p = window.location.pathname; if (/^\/account\/?$/.test(p) || /[?&]account=1\b/.test(window.location.search)) return "account"; return /^\/plan\/[a-f0-9-]{36}$/.test(p) ? "loading" : "intro"; }
     catch (e) { return "intro"; }
   });
   const [userData, setUserData] = useState({ firstName:"", lastName:"", age:"", jobTitle:"", linkedinUrl:"" });
@@ -1278,6 +1279,11 @@ export default function App() {
   const [planId, setPlanId] = useState(null);
   const [teaser, setTeaser] = useState(null); // {archetype, profileOverall, ssiTotal, tlAvailable, tlScore} for the email gate
   const [sharedView, setSharedView] = useState(false);
+  const [sharedLimited, setSharedLimited] = useState(false); // non-owner viewing a shared /plan/:id (owner gate)
+  const [signinEmail, setSigninEmail] = useState("");
+  const [signinSent, setSigninSent] = useState(false);
+  const [acctEmail, setAcctEmail] = useState(undefined); // undefined=checking, null=signed out, string=signed in
+  const [myPlans, setMyPlans] = useState(null);
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
   const [specialNote, setSpecialNote] = useState("");
@@ -1343,6 +1349,7 @@ export default function App() {
             setUserData(d => ({ ...d, firstName: data.first_name || "there" }));
             if (data.cohort) setCohort(data.cohort); // so the saved report can build the share card
             setSharedView(true);
+            setSharedLimited(data.owner === false); // owner gate: non-owners get the limited share view
             setPlanId(id);
             setPhase("result");
           } else {
@@ -1476,6 +1483,24 @@ export default function App() {
   useEffect(() => {
     if (phase === "quiz") track("quiz_question_viewed", { index: currentQ, cohort: cohort || null });
   }, [currentQ, phase]);
+
+  // Account section: on entering /account, check the session and load the saved reports.
+  useEffect(() => {
+    if (phase !== "account" || acctEmail !== undefined) return;
+    (async () => {
+      try {
+        const r = await fetch("/api/me");
+        const d = await r.json().catch(() => ({}));
+        const em = d && d.email ? d.email : null;
+        setAcctEmail(em);
+        if (em) {
+          const pr = await fetch("/api/my-plans", { method: "POST" });
+          const pd = await pr.json().catch(() => ({}));
+          setMyPlans((pd && pd.plans) || []);
+        }
+      } catch (e) { setAcctEmail(null); }
+    })();
+  }, [phase, acctEmail]);
 
   useEffect(() => {
     if (phase === "intro" || phase === "result" || phase === "plan_missing") {
@@ -1866,6 +1891,48 @@ export default function App() {
       </div>
     </Layout>
   );
+
+  // ── ACCOUNT (front-door login + saved-reports dashboard) ────────────────────
+  if (phase==="account") {
+    return (
+    <Layout>
+      <div className="page-enter">
+        <Logo onHome={goHome} />
+        {acctEmail === undefined ? (
+          <p style={{ color:"#9696b4", textAlign:"center", marginTop:24 }}>Loading...</p>
+        ) : acctEmail ? (
+          <>
+            <h2 style={{ ...s.h1, fontSize:24 }}>Your saved reports</h2>
+            <p style={{ color:"#7a7a96", fontSize:12, marginBottom:18 }}>Signed in as {acctEmail} · <button onClick={async ()=>{ try{ await fetch("/api/logout",{method:"POST"}); }catch(e){} setAcctEmail(null); setMyPlans(null); }} style={{ background:"transparent", border:"none", color:"#c8a96e", cursor:"pointer", fontSize:12, padding:0, textDecoration:"underline" }}>Log out</button></p>
+            {(myPlans && myPlans.length) ? myPlans.map(p => (
+              <a key={p.planId} href={`/plan/${p.planId}`} style={{ display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:14, padding:14, marginBottom:10, textDecoration:"none" }}>
+                <ScoreRing score={p.score || 0} />
+                <div style={{ textAlign:"left" }}>
+                  <p style={{ color:"#c8a96e", fontWeight:700, fontSize:15 }}>{fixedArchetype(p.cohort, p.score, locale, "") || p.archetype || "Your plan"}</p>
+                  <p style={{ color:"#7a7a96", fontSize:12 }}>{p.cohort || ""}</p>
+                </div>
+              </a>
+            )) : <p style={{ color:"#9696b4", fontSize:14 }}>No saved reports on this email yet.</p>}
+            <button onClick={async ()=>{ if(!window.confirm("Delete your account and all saved reports? This cannot be undone."))return; try{ await fetch("/api/delete-account",{method:"POST"}); }catch(e){} setAcctEmail(null); setMyPlans(null); }} style={{ background:"transparent", border:"none", color:"#7a5a6a", cursor:"pointer", fontSize:11, padding:0, marginTop:20, textDecoration:"underline" }}>Delete my account and data</button>
+          </>
+        ) : (
+          <>
+            <h2 style={{ ...s.h1, fontSize:24 }}>Sign in</h2>
+            <p style={{ color:"#9696b4", fontSize:13, marginBottom:14, lineHeight:1.5 }}>Enter your email and we will send you a secure link to see your saved reports.</p>
+            {signinSent ? (
+              <p style={{ color:"#56c08a", fontSize:13, fontWeight:600 }}>Check your email for a sign-in link.</p>
+            ) : (
+              <div style={{ display:"flex", gap:8 }}>
+                <input type="email" value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
+                <button className="primary-btn" style={{ width:"auto", whiteSpace:"nowrap" }} onClick={async ()=>{ if(!signinEmail.includes("@")||!signinEmail.includes("."))return; try{ await fetch("/api/auth-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signinEmail.trim().toLowerCase(),next:"/account"})}); }catch(e){} setSigninSent(true); }}>Send link</button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </Layout>
+    );
+  }
 
   if (phase==="intro") {
     // Render without `anim` so it matches the prerendered (build-time) landing and
@@ -2386,6 +2453,44 @@ export default function App() {
 
   // ── RESULT ─────────────────────────────────────────────────────────────────
   if (phase==="result"&&plan) {
+    // Owner gate: a non-owner opening a shared /plan/:id sees the result card + score and a
+    // sign-in prompt, NOT the full report (the personal content was stripped server-side).
+    if (sharedView && sharedLimited) {
+      const displayArch = fixedArchetype(cohort, plan.score, locale, userData.firstName) || plan.archetype;
+      return (
+      <Layout>
+        <div className="page-enter" style={{ textAlign:"center" }}>
+          <Logo onHome={goHome} />
+          <h2 style={{ ...s.h1, fontSize:26 }}>{userData.firstName}, {t("result_you_are")}<br /><span style={{ color:"#c8a96e", fontWeight:800 }}>{displayArch}</span></h2>
+          <div className="gold-rule" />
+          {plan.score != null && (
+            <div style={{ display:"flex", justifyContent:"center", margin:"18px 0" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:14, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:16 }}>
+                <ScoreRing score={plan.score} />
+                <div style={{ textAlign:"left" }}>
+                  <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("sec_linkedin_score")}</p>
+                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700 }}>{plan.score<40?t("needs_work"):plan.score<70?t("good_foundation"):t("strong_profile")}</p>
+                </div>
+              </div>
+            </div>
+          )}
+          {cardIdFor(cohort, plan.score) && <ShareCardSection cohort={cohort} score={plan.score} name={userData.firstName} />}
+          <div style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, marginTop:18, textAlign:"left" }}>
+            <p style={{ color:"#f5f5fc", fontSize:14, fontWeight:700, marginBottom:6 }}>This is a shared result.</p>
+            <p style={{ color:"#9696b4", fontSize:13, lineHeight:1.5, marginBottom:14 }}>The full report (rewrites, keywords and the content plan) is private to its owner. If this is yours, sign in and we will email you a secure link back to it.</p>
+            {signinSent ? (
+              <p style={{ color:"#56c08a", fontSize:13, fontWeight:600 }}>Check your email for a sign-in link.</p>
+            ) : (
+              <div style={{ display:"flex", gap:8 }}>
+                <input type="email" value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
+                <button className="primary-btn" style={{ width:"auto", whiteSpace:"nowrap" }} onClick={async ()=>{ if(!signinEmail.includes("@")||!signinEmail.includes("."))return; try{ await fetch("/api/auth-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signinEmail.trim().toLowerCase(),next:window.location.pathname})}); }catch(e){} setSigninSent(true); }}>Sign in</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </Layout>
+      );
+    }
     const TAB_KEYS = ["tab_overview","tab_profile","tab_tl","tab_ssi","tab_content","tab_hooks","tab_calendar","tab_rules"];
     return (
       <Layout>
