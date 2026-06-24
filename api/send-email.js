@@ -49,9 +49,21 @@ export default async function handler(req) {
   }
 
   try {
-    const { email, firstName, plan, planId, locale, archetype, cardImage } = await req.json();
+    const { email, firstName, plan, planId, locale, archetype, cardImage, cardCaption } = await req.json();
     const lang = EMAIL_STRINGS[locale] ? locale : "en";
     const L = EMAIL_STRINGS[lang];
+    // Ready-to-paste share copy heading, localized. The caption itself (cardCaption) is
+    // already in the user's locale and house style; this just labels it in the email.
+    const SHARE_COPY = {
+      en: "YOUR LINKEDIN POST, COPY AND PASTE IT WITH THE IMAGE ABOVE",
+      de: "DEIN LINKEDIN-POST, KOPIERE UND FÜGE IHN MIT DEM BILD OBEN EIN",
+      fr: "VOTRE POST LINKEDIN, À COPIER-COLLER AVEC L'IMAGE CI-DESSUS",
+      es: "TU PUBLICACIÓN DE LINKEDIN, CÓPIALA Y PÉGALA CON LA IMAGEN DE ARRIBA",
+      pt: "O TEU POST DO LINKEDIN, COPIA E COLA COM A IMAGEM ACIMA",
+      nl: "JOUW LINKEDIN-POST, KOPIEER EN PLAK MET DE AFBEELDING HIERBOVEN",
+      it: "IL TUO POST LINKEDIN, COPIALO E INCOLLALO CON L'IMMAGINE SOPRA",
+    };
+    const shareCopyLabel = SHARE_COPY[lang] || SHARE_COPY.en;
 
     if (!validEmail(email)) {
       return new Response(JSON.stringify({ error: 'A valid email is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -122,7 +134,11 @@ export default async function handler(req) {
     <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${name}, ${L.you_are}</h1>
     <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(archetype || plan.archetype || '').slice(0, 80))}</h2>
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
-    ${cardImage ? `<img src="${esc(cardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 24px;display:block;" />` : ''}
+    ${cardImage ? `<img src="${esc(cardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 16px;display:block;" />` : ''}
+    ${cardCaption ? `<div style="background:#0d0d18;border:1px solid #20202f;border-radius:14px;padding:20px;margin:0 0 24px;">
+      <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">${shareCopyLabel}</p>
+      <p style="color:#d8d7e8;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0;">${esc(String(cardCaption).slice(0, 1200))}</p>
+    </div>` : ''}
     <p style="color:#4a4a6a;font-size:14px;line-height:1.7;margin-bottom:32px;">${esc(String(plan.headline || '').slice(0, 300))}</p>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
       <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.profile_score}</p>
