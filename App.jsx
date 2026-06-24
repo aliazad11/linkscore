@@ -1318,8 +1318,8 @@ function ReportCard({ p, delta, locale }) {
   const dt = fmtReportDate(p.createdAt, locale);
   return (
     <a href={`/plan/${p.planId}`} style={{ display: "block", position: "relative", borderRadius: 14, overflow: "hidden", border: "1px solid #1a1a2e", marginBottom: 12, textDecoration: "none", background: "#0d0d18" }}>
-      {img && <img src={img} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.4 }} />}
-      {img && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(8,8,14,0.94) 38%, rgba(8,8,14,0.5))" }} />}
+      {img && <img src={img} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 32%", opacity: 0.42 }} />}
+      {img && <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(8,8,14,0.95) 36%, rgba(8,8,14,0.45))" }} />}
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14, padding: 14 }}>
         <ScoreRing score={p.score || 0} />
         <div style={{ textAlign: "left", flex: 1, minWidth: 0 }}>
@@ -1978,6 +1978,7 @@ export default function App() {
     const latest = plans[0];
     const heroDelta = (latest && plans[1] && plans[1].score != null) ? latest.score - plans[1].score : null;
     const series = plans.map(p => p.score).slice().reverse(); // oldest -> newest for the sparkline
+    const latestArchetype = latest ? (fixedArchetype(latest.cohort, latest.score, locale, latest.firstName || "") || latest.archetype || "Your latest report") : null;
     let loginMsg = null;
     try {
       const q = new URLSearchParams(window.location.search).get("login");
@@ -2000,8 +2001,9 @@ export default function App() {
                 <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
                   <ScoreRing score={latest.score} size={108} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: "#f5f5fc", fontSize: 15, fontWeight: 700 }}>Your latest score</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "2px 0 6px" }}>
+                    <p style={{ color: "#c8a96e", fontSize: 17, fontWeight: 800, lineHeight: 1.15 }}>{latestArchetype}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0 8px", flexWrap: "wrap" }}>
+                      <span style={{ color: "#9696b4", fontSize: 12 }}>Latest score</span>
                       {heroDelta != null ? <DeltaBadge value={heroDelta} withLabel /> : <span style={{ color: "#7a7a96", fontSize: 12 }}>your first report</span>}
                     </div>
                     {series.length > 1 && <Sparkline data={series} />}
