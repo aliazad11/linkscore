@@ -53,6 +53,9 @@
       "maxDuration": 300
     }
   },
+  "crons": [
+    { "path": "/api/send-reminders", "schedule": "0 9 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
