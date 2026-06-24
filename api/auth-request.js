@@ -22,8 +22,13 @@ export default async function handler(req, res) {
   const email = String((req.body && req.body.email) || "").trim().toLowerCase();
   if (!validEmail(email)) return res.status(400).json({ error: "A valid email is required" });
 
+  // Optional post-login destination (e.g. the /plan/:id they were viewing). Only a safe
+  // relative path is accepted — no scheme, no protocol-relative // — so it can't be an open redirect.
+  const rawNext = (req.body && typeof req.body.next === "string") ? req.body.next : "";
+  const next = /^\/[A-Za-z0-9/_-]*$/.test(rawNext) ? rawNext : "";
+
   try {
-    const token = signToken({ email, purpose: "login" }, 900); // 15 minutes
+    const token = signToken({ email, purpose: "login", next }, 900); // 15 minutes
     const link = `${SITE}/api/auth-verify?token=${encodeURIComponent(token)}`;
     await fetch("https://api.resend.com/emails", {
       method: "POST",

@@ -25,5 +25,7 @@ export default async function handler(req, res) {
   } catch (e) {
     return redirect(res, "/?login=error");
   }
-  return redirect(res, "/?account=1");
+  // Back to where they were (e.g. the /plan/:id they tried to view), if it's a safe relative path.
+  const next = (typeof payload.next === "string" && /^\/[A-Za-z0-9/_-]*$/.test(payload.next)) ? payload.next : "/?account=1";
+  return redirect(res, next);
 }
