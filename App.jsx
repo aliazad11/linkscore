@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { HOME_CSS, homeHtml } from "./home.js";
 import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
@@ -1384,6 +1385,48 @@ function ToolkitItem({ label, text, preview }) {
   );
 }
 
+// Post writer: paste a rough draft -> a LinkedIn-ready post in the user's own voice (editable).
+// Calls /api/polish-post (signed-in only). The output is a normal textarea so they can tweak it.
+function PostWriter() {
+  const { locale } = useLocale();
+  const [draft, setDraft] = useState("");
+  const [out, setOut] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [copied, setCopied] = useState(false);
+  const ta = { width: "100%", background: "#08080e", border: "1px solid #20202f", borderRadius: 12, color: "#f5f5fc", fontSize: 14, padding: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.55, boxSizing: "border-box" };
+  const run = async () => {
+    if (draft.trim().length < 15) { setErr("Write a few more words first."); return; }
+    setErr(""); setLoading(true); setOut("");
+    try {
+      const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: draft.trim(), locale }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.post) setErr((d && d.error) || "Something went wrong. Try again.");
+      else setOut(d.post);
+    } catch (e) { setErr("Something went wrong. Try again."); }
+    setLoading(false);
+  };
+  const copy = () => { copyText(out).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {}); };
+  return (
+    <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
+      <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Post writer</p>
+      <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12, lineHeight: 1.5 }}>Paste a rough draft or a few bullet points. We will shape it into a LinkedIn-ready post in your own voice. Edit it however you like before posting.</p>
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Paste your rough draft here..." rows={5} style={ta} />
+      {err && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 8 }}>{err}</p>}
+      <button onClick={run} disabled={loading} className="primary-btn" style={{ marginTop: 12, opacity: loading ? 0.7 : 1 }}>{loading ? "Writing..." : (out ? "Rewrite again" : "Write my post")}</button>
+      {out && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <p style={{ color: "#9696b4", fontSize: 11.5, letterSpacing: 1, textTransform: "uppercase" }}>Your post (editable)</p>
+            <button onClick={copy} style={{ background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "6px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
+          </div>
+          <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Social sign-in buttons + "or" divider, shared by both sign-in forms. Each is a plain link to a
 // server-side start endpoint (which builds the provider's consent URL and signs a CSRF state).
 function OAuthButtons({ next }) {
@@ -2208,15 +2251,16 @@ export default function App() {
               </div>
             )}
 
-            {myAssets && (myAssets.headlineRewrite || (myAssets.hooks && myAssets.hooks.length) || myAssets.aboutRewrite) && (
+            {myAssets && (myAssets.headlineRewrite || myAssets.aboutRewrite) && (
               <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
                 <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Your toolkit</p>
                 <p style={{ color: "#7a7a96", fontSize: 12 }}>Your ready-to-paste copy from your latest report.</p>
                 {myAssets.headlineRewrite && <ToolkitItem label="Headline" text={myAssets.headlineRewrite} />}
                 {myAssets.aboutRewrite && <ToolkitItem label="About" text={myAssets.aboutRewrite} preview />}
-                {(myAssets.hooks || []).map((h, i) => <ToolkitItem key={i} label={"Post hook " + (i + 1)} text={h} />)}
               </div>
             )}
+
+            {plans.length > 0 && <PostWriter />}
 
             {earnedCards.length > 0 && (
               <div style={{ marginBottom: 22 }}>
@@ -2295,13 +2339,14 @@ export default function App() {
             )}
           </>
         )}
-        {openCard && (
+        {openCard && typeof document !== "undefined" && createPortal(
           <div onClick={() => setOpenCard(null)} style={{ position: "fixed", inset: 0, background: "rgba(4,4,8,0.82)", zIndex: 1000, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "28px 16px", overflowY: "auto" }}>
             <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, position: "relative" }}>
               <button onClick={() => setOpenCard(null)} aria-label="Close" style={{ position: "absolute", top: -4, right: 0, zIndex: 2, background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 15 }}>✕</button>
               <ShareCardSection cohort={openCard.cohort} score={openCard.score} name={openCard.firstName} />
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </Layout>
