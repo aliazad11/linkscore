@@ -839,6 +839,15 @@ function Footer() {
   );
 }
 
+// Featured blog posts for the dashboard. Mirrors web/lib/posts.js (separate Vercel project, so it
+// can't be imported here) - update when new articles ship. Links + images resolve via the /blog
+// and /*.jpg rewrites in vercel.json.
+const FEATURED_POSTS = [
+  { slug: "creative-linkedin-tactics-that-kill-your-authority", title: "5 “Creative” LinkedIn Tactics That Quietly Kill Your Authority", image: "/creative-tactics.jpg", excerpt: "These tactics work for reach but quietly cost you trust. The line between the real and the bait version of each." },
+  { slug: "linkedin-golden-hour", title: "The LinkedIn Golden Hour That Gets Your Posts Seen", image: "/golden-hour.jpg", excerpt: "Most dead posts are not bad, they are badly timed. How the golden hour works and how to find yours." },
+  { slug: "linkedin-headline-formula", title: "The LinkedIn Headline Formula That Gets You Found", image: "/headline-formula.jpg", excerpt: "Your headline is the most-read line on your profile. A simple formula that makes it searchable and clear." },
+];
+
 function Layout({ children }) {
   return (
     <div style={{ minHeight:"100vh", background:"#08080e", display:"flex", alignItems:"center", justifyContent:"center", padding:"24px 16px", position:"relative", fontFamily:"'DM Sans',sans-serif" }}>
@@ -1429,6 +1438,7 @@ export default function App() {
   const [signinSent, setSigninSent] = useState(false);
   const [acctEmail, setAcctEmail] = useState(undefined); // undefined=checking, null=signed out, string=signed in
   const [myPlans, setMyPlans] = useState(null);
+  const [myMoves, setMyMoves] = useState([]);
   const [showAllReports, setShowAllReports] = useState(false);
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
@@ -1643,6 +1653,7 @@ export default function App() {
           const pr = await fetch("/api/my-plans", { method: "POST" });
           const pd = await pr.json().catch(() => ({}));
           setMyPlans((pd && pd.plans) || []);
+          setMyMoves((pd && pd.latestMoves) || []);
         }
       } catch (e) { setAcctEmail(null); }
     })();
@@ -2048,6 +2059,25 @@ export default function App() {
     const REPORTS_CAP = 12;
     const history = plans.slice(1); // the latest report is the hero; the list shows only older ones
     const shownHistory = showAllReports ? history : history.slice(0, REPORTS_CAP);
+    // Progress stats (client-side from the lean plan list).
+    const checkIns = plans.length;
+    const bestScore = plans.length ? Math.max(...plans.map((p) => p.score || 0)) : 0;
+    const ymOf = (iso) => { try { const d = new Date(iso); return isNaN(d.getTime()) ? null : (d.getUTCFullYear() + "-" + d.getUTCMonth()); } catch (e) { return null; } };
+    const monthsSet = new Set(plans.map((p) => ymOf(p.createdAt)).filter(Boolean));
+    let streak = 0;
+    if (latest && latest.createdAt) {
+      const d0 = new Date(latest.createdAt);
+      if (!isNaN(d0.getTime())) { let y = d0.getUTCFullYear(), m = d0.getUTCMonth(); while (monthsSet.has(y + "-" + m)) { streak++; m--; if (m < 0) { m = 11; y--; } } }
+    }
+    const stats = [{ n: checkIns, l: checkIns === 1 ? "check-in" : "check-ins" }, { n: bestScore, l: "best score" }];
+    if (streak >= 2) stats.push({ n: streak, l: "month streak" });
+    // Earned cards: the unique share-card art across all the user's reports.
+    const seenCards = new Set();
+    const earnedCards = [];
+    for (const p of plans) {
+      const cid = cardIdFor(p.cohort, p.score);
+      if (cid && !seenCards.has(cid)) { const img = cardImagePath(p.cohort, p.score, locale, p.firstName); if (img) { seenCards.add(cid); earnedCards.push({ id: cid, img }); } }
+    }
     const deletePlan = async (id) => {
       if (!window.confirm("Delete this report? This cannot be undone.")) return;
       try { await fetch("/api/delete-plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId: id }) }); } catch (e) {}
@@ -2088,6 +2118,40 @@ export default function App() {
               </div>
             ) : null}
 
+            {plans.length > 0 && (
+              <div style={{ display: "flex", gap: 10, marginBottom: 22 }}>
+                {stats.map((st, i) => (
+                  <div key={i} style={{ flex: 1, background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 12, padding: "12px 8px", textAlign: "center" }}>
+                    <p style={{ color: "#c8a96e", fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{st.n}</p>
+                    <p style={{ color: "#7a7a96", fontSize: 11, marginTop: 4 }}>{st.l}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {myMoves && myMoves.length > 0 && (
+              <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
+                <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 12 }}>Your next moves</p>
+                {myMoves.map((mv, i) => (
+                  <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < myMoves.length - 1 ? 11 : 0 }}>
+                    <span style={{ flexShrink: 0, width: 20, height: 20, borderRadius: "50%", border: "1.5px solid #c8a96e", color: "#c8a96e", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>{i + 1}</span>
+                    <p style={{ color: "#c8c8dd", fontSize: 13.5, lineHeight: 1.5 }}>{mv}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {earnedCards.length > 0 && (
+              <div style={{ marginBottom: 22 }}>
+                <p style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Your earned cards</p>
+                <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
+                  {earnedCards.map((c) => (
+                    <img key={c.id} src={c.img} alt="" loading="lazy" style={{ width: 150, height: 84, objectFit: "cover", objectPosition: "center 32%", borderRadius: 10, border: "1px solid #20202f", flexShrink: 0 }} />
+                  ))}
+                </div>
+              </div>
+            )}
+
             {!latest && (
               <>
                 <h2 style={{ ...s.h1, fontSize: 22, marginBottom: 14 }}>Your account</h2>
@@ -2111,6 +2175,19 @@ export default function App() {
               <p style={{ color: "#9696b4", fontSize: 13.5, lineHeight: 1.55, marginBottom: 14 }}>Book a 1:1 strategy session and we will turn your score into a plan you can act on, together.</p>
               <span style={{ display: "inline-block", background: "linear-gradient(135deg,#c8a96e,#a07840)", color: "#08080e", fontWeight: 700, fontSize: 14, padding: "11px 20px", borderRadius: 10 }}>Book a session →</span>
             </a>
+
+            <div style={{ marginTop: 26 }}>
+              <p style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>From the blog</p>
+              {FEATURED_POSTS.slice(0, 3).map((post) => (
+                <a key={post.slug} href={`/blog/${post.slug}`} style={{ display: "flex", gap: 12, alignItems: "center", background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 12, padding: 10, marginBottom: 10, textDecoration: "none" }}>
+                  <img src={post.image} alt="" loading="lazy" style={{ width: 64, height: 48, objectFit: "cover", borderRadius: 8, flexShrink: 0, background: "#16162a" }} />
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ color: "#f5f5fc", fontSize: 13.5, fontWeight: 600, lineHeight: 1.3, marginBottom: 3 }}>{post.title}</p>
+                    <p style={{ color: "#7a7a96", fontSize: 12, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{post.excerpt}</p>
+                  </div>
+                </a>
+              ))}
+            </div>
 
             <div style={{ marginTop: 26, paddingTop: 16, borderTop: "1px solid #16162a", display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center" }}>
               <span style={{ color: "#7a7a96", fontSize: 12 }}>Signed in as {acctEmail}</span>

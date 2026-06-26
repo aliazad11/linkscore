@@ -34,7 +34,12 @@ export default async function handler(req, res) {
         createdAt: row.created_at || null,
       };
     });
-    return res.status(200).json({ email: session.email, plans });
+    // Top fixes from the newest report, surfaced as the dashboard's "next moves" checklist.
+    const top = rows && rows[0] && rows[0].plan_data;
+    const latestMoves = (top && Array.isArray(top.profile_fixes))
+      ? top.profile_fixes.filter((x) => typeof x === "string" && x.trim()).slice(0, 3)
+      : [];
+    return res.status(200).json({ email: session.email, plans, latestMoves });
   } catch (e) {
     console.error("[my-plans] " + (e && e.message));
     return res.status(500).json({ error: "Lookup failed" });
