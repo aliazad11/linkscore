@@ -1468,6 +1468,9 @@ function PostWriter() {
   const [copied, setCopied] = useState(false);
   const [linkInfo, setLinkInfo] = useState(null); // { firstComment, linkNote } when the draft had a link
   const [copiedComment, setCopiedComment] = useState(false);
+  const [refineInstr, setRefineInstr] = useState("");
+  const [refining, setRefining] = useState(false);
+  const [refineErr, setRefineErr] = useState("");
   const ta = { width: "100%", background: "#08080e", border: "1px solid #20202f", borderRadius: 12, color: "#f5f5fc", fontSize: 14, padding: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.55, boxSizing: "border-box" };
   const onFiles = async (e) => {
     const files = [...(e.target.files || [])].filter((f) => f.type.startsWith("image/"));
@@ -1487,6 +1490,18 @@ function PostWriter() {
   };
   const copy = () => { copyText(out).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {}); };
   const copyComment = () => { if (!linkInfo) return; copyText(linkInfo.firstComment).then(() => { setCopiedComment(true); setTimeout(() => setCopiedComment(false), 1800); }).catch(() => {}); };
+  const applyRefine = async () => {
+    const instruction = refineInstr.trim();
+    if (instruction.length < 2) { setRefineErr("Tell me what to change."); return; }
+    setRefining(true); setRefineErr("");
+    try {
+      const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "refine", current: out, instruction, locale }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.post) setRefineErr((d && d.error) || "Could not apply the edit. Try again.");
+      else { setOut(d.post); setRefineInstr(""); }
+    } catch (e) { setRefineErr("Could not apply the edit. Try again."); }
+    setRefining(false);
+  };
   return (
     <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
       <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Post writer</p>
@@ -1530,6 +1545,14 @@ function PostWriter() {
               </div>
             </div>
           )}
+          <div style={{ marginTop: 14, borderTop: "1px solid #1a1a2e", paddingTop: 14 }}>
+            <p style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>Want a change? Tell me what to fix and I will keep your voice. For example "make the intro punchier" or "drop the third paragraph".</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input value={refineInstr} onChange={(e) => setRefineInstr(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !refining) applyRefine(); }} placeholder="e.g. shorten the opening line" style={{ flex: 1, minWidth: 0, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, color: "#f5f5fc", fontSize: 13.5, padding: "10px 12px", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }} />
+              <button onClick={applyRefine} disabled={refining} style={{ background: "transparent", border: "1px solid #2a2a3e", color: "#c8a96e", borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, opacity: refining ? 0.6 : 1 }}>{refining ? "Editing..." : "Apply edit"}</button>
+            </div>
+            {refineErr && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 8 }}>{refineErr}</p>}
+          </div>
         </div>
       )}
     </div>

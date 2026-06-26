@@ -110,6 +110,21 @@ TEXT:
   return (out || "").trim() || null;
 }
 
+// Refine mode: apply ONE targeted edit the user asked for, with the voice and structure LOCKED.
+function refinePrompt(current, instruction, langName, locale) {
+  return `Here is a finished LinkedIn post, written in a specific person's authentic voice:
+"""${current}"""
+
+The user wants this change:
+"""${instruction}"""
+
+Apply ONLY their requested change. Keep EVERYTHING else identical: the same voice, tone, rhythm and structure, the same strong hook in the first ~210 characters, the same facts, the same emoji and hashtag habit. Do NOT rewrite parts they did not mention. Do NOT make it more generic, more corporate or more "LinkedIn influencer". Do NOT invent any new fact, name, number or link unless the user explicitly gives it in their request. Do NOT add a url to the body (links belong in the first comment). No markdown, no [bracket] placeholders. Write in ${langName}.${locale === "en" ? " American English, no Oxford comma, no em dashes." : ""}
+
+If their request would break the voice or push it generic (for example "make it more corporate", "add hype"), make the smallest change that honors the spirit of the request while keeping their voice.
+
+Output ONLY the full edited post, no preamble, no quotes, no commentary.`;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   const s = readSession(req);
@@ -117,10 +132,29 @@ export default async function handler(req, res) {
   const key = process.env.ANTHROPIC_KEY;
   if (!key) return res.status(500).json({ error: "Server not configured" });
 
-  const draft = String((req.body && req.body.draft) || "").slice(0, 5000).trim();
-  if (draft.length < 15) return res.status(400).json({ error: "Write a few more words first" });
   const locale = (req.body && typeof req.body.locale === "string") ? req.body.locale : "en";
   const langName = LANG[locale] || "English";
+
+  // Interactive refine: the user tells us what to change in an existing post, we apply just that.
+  if (req.body && req.body.mode === "refine") {
+    const current = String((req.body && req.body.current) || "").slice(0, 8000).trim();
+    const instruction = String((req.body && req.body.instruction) || "").slice(0, 1000).trim();
+    if (current.length < 20) return res.status(400).json({ error: "Nothing to edit yet." });
+    if (instruction.length < 2) return res.status(400).json({ error: "Tell us what to change." });
+    try {
+      const edited = await callClaude(key, "You are an expert LinkedIn editor. Apply ONLY the user's requested change and output ONLY the edited post text.", refinePrompt(current, instruction, langName, locale), 1400);
+      if (!edited) return res.status(502).json({ error: "Could not apply the edit. Try again." });
+      const post = stripUrls(stripMarkdown(edited)).replace(/\n{3,}/g, "\n\n").trim();
+      if (!post) return res.status(502).json({ error: "Could not apply the edit. Try again." });
+      return res.status(200).json({ post });
+    } catch (e) {
+      console.error("[polish-post:refine] " + (e && e.message));
+      return res.status(500).json({ error: "Could not apply the edit. Try again." });
+    }
+  }
+
+  const draft = String((req.body && req.body.draft) || "").slice(0, 5000).trim();
+  if (draft.length < 15) return res.status(400).json({ error: "Write a few more words first" });
   const rawSamples = Array.isArray(req.body && req.body.samples) ? req.body.samples : [];
   const samples = rawSamples
     .filter((x) => x && typeof x.data === "string" && x.data.length > 100 && /^image\/(png|jpe?g|webp|gif)$/.test(x.media_type || ""))
