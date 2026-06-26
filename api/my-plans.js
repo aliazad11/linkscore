@@ -39,7 +39,15 @@ export default async function handler(req, res) {
     const latestMoves = (top && Array.isArray(top.profile_fixes))
       ? top.profile_fixes.filter((x) => typeof x === "string" && x.trim()).slice(0, 3)
       : [];
-    return res.status(200).json({ email: session.email, plans, latestMoves });
+    // Reusable assets from the newest report for the dashboard "your toolkit" + identity blurb.
+    const str = (v) => (typeof v === "string" && v.trim() ? v.trim() : "");
+    const latestAssets = top ? {
+      headlineRewrite: str(top.headline_rewrite),
+      aboutRewrite: str(top.about_rewrite),
+      hooks: Array.isArray(top.post_hooks) ? top.post_hooks.filter((h) => typeof h === "string" && h.trim()).slice(0, 3) : [],
+      closingMessage: str(top.closing_message),
+    } : null;
+    return res.status(200).json({ email: session.email, plans, latestMoves, latestAssets });
   } catch (e) {
     console.error("[my-plans] " + (e && e.message));
     return res.status(500).json({ error: "Lookup failed" });
