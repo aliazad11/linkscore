@@ -884,15 +884,41 @@ function LangSwitcher() {
   );
 }
 
+// The app-screen header. The logo is always a real link to the landing page (fixes the old
+// preventDefault/stay-in-app behavior), and a menu mirrors the marketing nav so the app screens
+// are not "naked". `onHome` is accepted but ignored - every call site already passes it.
 function Logo({ onHome }) {
+  const { t, locale } = useLocale();
+  const [menu, setMenu] = useState(false);
+  const loginLabel = ({ en:"Log in", de:"Anmelden", fr:"Connexion", es:"Entrar", pt:"Entrar", nl:"Inloggen", it:"Accedi" })[locale] || "Log in";
+  const item = { display:"block", padding:"9px 12px", borderRadius:8, color:"#c8c8dd", textDecoration:"none", fontSize:14, fontWeight:500, whiteSpace:"nowrap" };
   return (
-    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24 }}>
-      <a href="/" aria-label="Back to home" title="Back to home"
-        onClick={e=>{ if (onHome) { e.preventDefault(); onHome(); } }}
-        style={{ display:"inline-flex", cursor:"pointer" }}>
-        <img src={LOGO_URL} alt="Linkedscore" style={{ height:38, objectFit:"contain" }} />
+    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, gap:10 }}>
+      <a href="/" aria-label="LinkedScore home" title="Home" style={{ display:"inline-flex", flexShrink:0 }}>
+        <img src={LOGO_URL} alt="Linkedscore" style={{ height:36, objectFit:"contain" }} />
       </a>
-      <LangSwitcher />
+      <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
+        <div style={{ position:"relative" }}>
+          <button onClick={()=>setMenu(m=>!m)} aria-label="Menu" aria-haspopup="true" aria-expanded={menu}
+            style={{ display:"flex", alignItems:"center", border:"1px solid #c8a96e55", borderRadius:9, padding:"7px 9px", background:"transparent", color:"#c8a96e", cursor:"pointer" }}>
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+          {menu && (
+            <>
+              <div onClick={()=>setMenu(false)} style={{ position:"fixed", inset:0, zIndex:40 }} />
+              <div role="menu" style={{ position:"absolute", right:0, top:"calc(100% + 6px)", width:190, background:"#0d0d18", border:"1px solid #20202f", borderRadius:12, padding:6, boxShadow:"0 16px 40px rgba(0,0,0,0.5)", zIndex:50 }}>
+                <a href="/#how" style={item}>{t("nav_how")}</a>
+                <a href="/#get" style={item}>{t("nav_what")}</a>
+                <a href="/about.html" style={item}>{t("nav_about")}</a>
+                <a href="/faq.html" style={item}>{t("nav_faq")}</a>
+                <a href="/blog" style={item}>{t("nav_blog")}</a>
+                <a href="/account" style={{ ...item, color:"#c8a96e", fontWeight:600, borderTop:"1px solid #1a1a2e", marginTop:4, paddingTop:11 }}>{loginLabel}</a>
+              </div>
+            </>
+          )}
+        </div>
+        <LangSwitcher />
+      </div>
     </div>
   );
 }
@@ -2077,6 +2103,14 @@ export default function App() {
             {history.length > REPORTS_CAP && !showAllReports && (
               <button onClick={() => setShowAllReports(true)} style={{ display: "block", width: "100%", background: "transparent", border: "1px solid #20202f", color: "#9696b4", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontSize: 13, marginTop: 2 }}>Show all {history.length} earlier reports</button>
             )}
+
+            {/* Upsell: book a 1:1 with Ali (Strategy Session) */}
+            <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star" target="_blank" rel="noopener" style={{ display: "block", marginTop: 26, background: "linear-gradient(135deg,#16110a,#0d0d18)", border: "1px solid #3a2e16", borderRadius: 16, padding: "20px", textDecoration: "none" }}>
+              <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.4, textTransform: "uppercase", marginBottom: 7 }}>Work with Ali</p>
+              <p style={{ color: "#f5f5fc", fontSize: 16.5, fontWeight: 700, marginBottom: 5 }}>Want an expert to do it with you?</p>
+              <p style={{ color: "#9696b4", fontSize: 13.5, lineHeight: 1.55, marginBottom: 14 }}>Book a 1:1 strategy session and we will turn your score into a plan you can act on, together.</p>
+              <span style={{ display: "inline-block", background: "linear-gradient(135deg,#c8a96e,#a07840)", color: "#08080e", fontWeight: 700, fontSize: 14, padding: "11px 20px", borderRadius: 10 }}>Book a session →</span>
+            </a>
 
             <div style={{ marginTop: 26, paddingTop: 16, borderTop: "1px solid #16162a", display: "flex", flexWrap: "wrap", gap: "8px 16px", alignItems: "center" }}>
               <span style={{ color: "#7a7a96", fontSize: 12 }}>Signed in as {acctEmail}</span>
