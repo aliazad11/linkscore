@@ -782,7 +782,7 @@ ${schema}`;
 
 const GLOBAL_CSS = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #08080e; }
+  body { background: #08080e; font-family: 'DM Sans', system-ui, sans-serif; }
   *:focus-visible { outline: 2px solid #c8a96e; outline-offset: 2px; border-radius: 4px; }
   .skip-link { position:absolute; left:8px; top:-52px; z-index:1000; background:#c8a96e; color:#0a0a0f; padding:9px 16px; border-radius:8px; font-family:'DM Sans',sans-serif; font-weight:700; font-size:14px; text-decoration:none; transition:top 0.15s ease; }
   .skip-link:focus { top:8px; }
