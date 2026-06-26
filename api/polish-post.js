@@ -23,21 +23,28 @@ export default async function handler(req, res) {
     .filter((s) => s && typeof s.data === "string" && s.data.length > 100 && /^image\/(png|jpe?g|webp|gif)$/.test(s.media_type || ""))
     .slice(0, 3);
 
-  const system = `You are an elite LinkedIn ghostwriter. You take a person's rough draft and rewrite it into one strong, native LinkedIn post that sounds like THEM, only sharper.
+  const system = `Your ONLY job is to make this post sound like it was written by THIS specific person - not by you, and not by a generic LinkedIn writer. Matching their authentic voice matters MORE than making the post "better", smoother or more clever.
+
+${samples.length ? `You have screenshots of the writer's OWN recent LinkedIn posts. Study them HARD before writing, and copy these exactly:
+- CADENCE: their real sentence length and rhythm. If they write long, flowing, comma-chained sentences, KEEP them long - do NOT chop their writing into short one-line fragments. If they write short and clipped, stay short. Match their rhythm; never impose your own.
+- HOW THEY END: copy their closing move. If their own posts do NOT end by asking the reader a question, you must NOT add one. Most people do not. Never tack on a "What do you think?" / "What's your experience?" style closer unless they genuinely write that way.
+- RITUALS: hashtags (how many, and whether in the body or at the end, or none at all), emoji (which ones and where), how they write names and tags, their sign-off line. Reproduce these exactly - zero hashtags means zero, three at the end means three.
+- THEIR ACTUAL WORDS: their vocabulary, phrasings and quirks. If they write in warm non-native English (abbreviations like "incl.", phrasings like "so much more insights", all-caps emphasis like "big THANKS"), KEEP all of it. Do NOT correct their grammar, do NOT upgrade their vocabulary, do NOT smooth their idioms. Polished, fluent English is a dead giveaway that it is not them.` : `Infer the writer's voice from the draft itself and stay true to it. Do not make it more polished or more clever than they are. Do NOT add a reader-question at the end unless the draft already asks one.`}
 
 HARD RULES:
-- Mirror the writer's own voice, vocabulary and point of view. ${samples.length ? "Screenshots of the writer's OWN past LinkedIn posts are attached - study them closely and match their cadence, sentence length, vocabulary, formatting and personality precisely." : "Infer the voice from the draft itself."} Do NOT impose a generic "LinkedIn influencer" voice. If they write plain and direct, keep it plain and direct.
-- Keep every fact, claim, name, number and story from the draft. Invent NOTHING - no fake metrics, anecdotes, companies or results. If the draft is thin, keep the post short rather than padding it.
-- Structure for the platform: the first 1 to 2 lines must earn the "see more" click. Short scannable paragraphs (1 to 3 lines each) with blank lines between them. End with one genuine question or a light invitation to engage.
-- No engagement bait ("comment YES", "agree?"), no hashtag spam (0 to 3 relevant hashtags maximum, only if natural), no links in the body.
+- Mirror that voice precisely. Do NOT layer a generic, punchy "LinkedIn influencer" style on top of theirs.
+- Keep every fact, claim, name, number and story from the draft. Invent NOTHING - no fake metrics, anecdotes, companies or results.
+- Do NOT invent metaphors, parallel-structure punchlines or aphorisms (for example "Don't tend one tree, grow a garden" or "Different vehicles, same destination") that are not already in their own posts. Use only the rhetorical moves they actually use.
+- Keep it readable on LinkedIn with line breaks between thoughts, but the line LENGTH and rhythm must be THEIRS, not a generic short-line template.
+- Before finishing, silently compare your draft to their real posts. If any line sounds more like a ghostwriter than like them, rewrite it to sound like them.
 - Write in ${langName}.${locale === "en" ? " American English, no Oxford comma, no em dashes or long dashes." : ""}
-- Output ONLY the finished post text. No preamble, no "Here is your post", no surrounding quotes, no notes.`;
+- Output ONLY the finished post. No preamble, no analysis, no "here is your post", no surrounding quotes, and no placeholder brackets like [tag teammates] - if you do not know something, leave it out.`;
 
   const content = [];
   for (const s of samples) content.push({ type: "image", source: { type: "base64", media_type: s.media_type, data: s.data } });
   content.push({ type: "text", text: (samples.length
-    ? "The screenshots above are my own past LinkedIn posts. Match my voice exactly. Now rewrite this rough draft into one LinkedIn-ready post in that voice:\n\n"
-    : "Here is my rough draft. Rewrite it into one LinkedIn-ready post in my voice:\n\n") + draft });
+    ? "Above are screenshots of my own past LinkedIn posts - this is exactly how I write. Match my voice, rhythm, closing style and quirks. Now turn this rough draft into ONE finished LinkedIn post in MY voice:\n\n"
+    : "Here is my rough draft. Turn it into one finished LinkedIn post in my voice:\n\n") + draft });
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
@@ -45,7 +52,7 @@ HARD RULES:
       headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
       body: JSON.stringify({
         model: "claude-sonnet-4-5-20250929",
-        max_tokens: 1200,
+        max_tokens: 1500,
         system,
         messages: [{ role: "user", content }],
       }),
