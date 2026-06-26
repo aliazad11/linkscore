@@ -1466,6 +1466,8 @@ function PostWriter() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
+  const [linkInfo, setLinkInfo] = useState(null); // { firstComment, linkNote } when the draft had a link
+  const [copiedComment, setCopiedComment] = useState(false);
   const ta = { width: "100%", background: "#08080e", border: "1px solid #20202f", borderRadius: 12, color: "#f5f5fc", fontSize: 14, padding: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.55, boxSizing: "border-box" };
   const onFiles = async (e) => {
     const files = [...(e.target.files || [])].filter((f) => f.type.startsWith("image/"));
@@ -1474,20 +1476,21 @@ function PostWriter() {
   };
   const run = async () => {
     if (draft.trim().length < 15) { setErr("Write a few more words first."); return; }
-    setErr(""); setLoading(true); setOut("");
+    setErr(""); setLoading(true); setOut(""); setLinkInfo(null);
     try {
       const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: draft.trim(), locale, samples: samples.map((s) => ({ data: s.data, media_type: s.media_type })) }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.post) setErr((d && d.error) || "Something went wrong. Try again.");
-      else setOut(d.post);
+      else { setOut(d.post); if (d.firstComment) setLinkInfo({ firstComment: d.firstComment, linkNote: d.linkNote || "" }); }
     } catch (e) { setErr("Something went wrong. Try again."); }
     setLoading(false);
   };
   const copy = () => { copyText(out).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {}); };
+  const copyComment = () => { if (!linkInfo) return; copyText(linkInfo.firstComment).then(() => { setCopiedComment(true); setTimeout(() => setCopiedComment(false), 1800); }).catch(() => {}); };
   return (
     <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
       <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Post writer</p>
-      <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12, lineHeight: 1.5 }}>Paste a rough draft or a few bullet points. We will shape it into a LinkedIn-ready post in your own voice. Edit it however you like before posting.</p>
+      <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12, lineHeight: 1.5 }}>Paste a rough draft or a few bullet points. We will shape it into a scroll-stopping post in your own voice, with a strong hook, a clear story and a clean close. Edit it however you like before posting.</p>
       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Paste your rough draft here..." rows={5} style={ta} />
 
       <div style={{ marginTop: 12 }}>
@@ -1517,6 +1520,16 @@ function PostWriter() {
             <button onClick={copy} style={{ background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "6px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
           </div>
           <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />
+          {linkInfo && (
+            <div style={{ marginTop: 12, background: "#0f0f1a", border: "1px solid #20202f", borderRadius: 12, padding: 12 }}>
+              <p style={{ color: "#c8a96e", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Your link → first comment</p>
+              <p style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.5, marginBottom: 10 }}>{linkInfo.linkNote}</p>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <code style={{ flex: 1, minWidth: 0, color: "#cfcfe6", fontSize: 12.5, background: "#08080e", border: "1px solid #20202f", borderRadius: 8, padding: "8px 10px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{linkInfo.firstComment}</code>
+                <button onClick={copyComment} style={{ background: copiedComment ? "#16321f" : "transparent", border: "1px solid " + (copiedComment ? "#2e6a45" : "#2a2a3e"), color: copiedComment ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "8px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>{copiedComment ? "Copied" : "Copy link"}</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
