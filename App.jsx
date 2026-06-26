@@ -1385,21 +1385,61 @@ function ToolkitItem({ label, text, preview }) {
   );
 }
 
-// Post writer: paste a rough draft -> a LinkedIn-ready post in the user's own voice (editable).
-// Calls /api/polish-post (signed-in only). The output is a normal textarea so they can tweak it.
+// Reads an image file into a downscaled base64 JPEG part for Claude vision (voice samples).
+function readImageFile(file) {
+  return new Promise((resolve) => {
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = String(reader.result || "");
+        const m = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.+)$/);
+        if (!m) return resolve(null);
+        const fallback = { data: m[2], media_type: m[1], preview: dataUrl };
+        try {
+          const img = new Image();
+          const to = setTimeout(() => resolve(fallback), 4000);
+          img.onload = () => {
+            clearTimeout(to);
+            try {
+              let w = img.width, h = img.height; const max = 1100;
+              if (w > max || h > max) { const r = Math.min(max / w, max / h); w = Math.round(w * r); h = Math.round(h * r); }
+              const c = document.createElement("canvas"); c.width = w; c.height = h;
+              c.getContext("2d").drawImage(img, 0, 0, w, h);
+              const out = c.toDataURL("image/jpeg", 0.75);
+              resolve({ data: out.split(",")[1], media_type: "image/jpeg", preview: out });
+            } catch (e) { resolve(fallback); }
+          };
+          img.onerror = () => { clearTimeout(to); resolve(fallback); };
+          img.src = dataUrl;
+        } catch (e) { resolve(fallback); }
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    } catch (e) { resolve(null); }
+  });
+}
+
+// Post writer: paste a rough draft (+ optionally screenshots of your own posts so the model learns
+// your real voice) -> a LinkedIn-ready post. Calls /api/polish-post (signed-in only). Output editable.
 function PostWriter() {
   const { locale } = useLocale();
   const [draft, setDraft] = useState("");
+  const [samples, setSamples] = useState([]); // {data, media_type, preview}
   const [out, setOut] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState("");
   const [copied, setCopied] = useState(false);
   const ta = { width: "100%", background: "#08080e", border: "1px solid #20202f", borderRadius: 12, color: "#f5f5fc", fontSize: 14, padding: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.55, boxSizing: "border-box" };
+  const onFiles = async (e) => {
+    const files = [...(e.target.files || [])].filter((f) => f.type.startsWith("image/"));
+    for (const f of files) { const part = await readImageFile(f); if (part) setSamples((prev) => (prev.length < 3 ? [...prev, part] : prev)); }
+    e.target.value = "";
+  };
   const run = async () => {
     if (draft.trim().length < 15) { setErr("Write a few more words first."); return; }
     setErr(""); setLoading(true); setOut("");
     try {
-      const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: draft.trim(), locale }) });
+      const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: draft.trim(), locale, samples: samples.map((s) => ({ data: s.data, media_type: s.media_type })) }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.post) setErr((d && d.error) || "Something went wrong. Try again.");
       else setOut(d.post);
@@ -1412,8 +1452,27 @@ function PostWriter() {
       <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Post writer</p>
       <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12, lineHeight: 1.5 }}>Paste a rough draft or a few bullet points. We will shape it into a LinkedIn-ready post in your own voice. Edit it however you like before posting.</p>
       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Paste your rough draft here..." rows={5} style={ta} />
-      {err && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 8 }}>{err}</p>}
-      <button onClick={run} disabled={loading} className="primary-btn" style={{ marginTop: 12, opacity: loading ? 0.7 : 1 }}>{loading ? "Writing..." : (out ? "Rewrite again" : "Write my post")}</button>
+
+      <div style={{ marginTop: 12 }}>
+        <p style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>Optional, but it makes a big difference: add up to 3 screenshots of posts you wrote yourself, so we match your real voice.</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          {samples.map((s, i) => (
+            <div key={i} style={{ position: "relative" }}>
+              <img src={s.preview} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid #20202f", display: "block" }} />
+              <button onClick={() => setSamples((prev) => prev.filter((_, j) => j !== i))} aria-label="Remove" style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>✕</button>
+            </div>
+          ))}
+          {samples.length < 3 && (
+            <label style={{ width: 56, height: 56, borderRadius: 8, border: "1px dashed #3a3a52", color: "#9696b4", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 22, flexShrink: 0 }}>
+              +
+              <input type="file" accept="image/*" multiple onChange={onFiles} style={{ display: "none" }} />
+            </label>
+          )}
+        </div>
+      </div>
+
+      {err && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 10 }}>{err}</p>}
+      <button onClick={run} disabled={loading} className="primary-btn" style={{ marginTop: 14, opacity: loading ? 0.7 : 1 }}>{loading ? "Writing..." : (out ? "Rewrite again" : "Write my post")}</button>
       {out && (
         <div style={{ marginTop: 16 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
