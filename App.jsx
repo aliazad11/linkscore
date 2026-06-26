@@ -1385,6 +1385,43 @@ function ToolkitItem({ label, text, preview }) {
   );
 }
 
+// An earned share-card shown expanded in the Create tab: full image + the ready-to-paste caption
+// + copy/download inline (no longer hidden behind a click). Clicking still opens the full modal.
+function EarnedCardRow({ c, locale, onOpen }) {
+  const [copied, setCopied] = useState(false);
+  const [dl, setDl] = useState(false);
+  const nn = c.id;
+  const loc = (SHARE_I18N[locale] && SHARE_I18N[locale][nn]) ? locale : "en";
+  const gendered = GENDERED_LOCALES.indexOf(loc) !== -1;
+  const g = gendered ? guessGender(c.firstName) : "m";
+  const entry = (SHARE_I18N[loc][nn] && SHARE_I18N[loc][nn][g]) || (SHARE_I18N.en[nn] && SHARE_I18N.en[nn].m);
+  const caption = entry && entry.captions && entry.captions.length ? entry.captions[0] : "";
+  const btn = (on) => ({ background: on ? "#16321f" : "transparent", border: "1px solid " + (on ? "#2e6a45" : "#2a2a3e"), color: on ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "7px 13px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" });
+  const copyCap = () => { copyText(caption).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {}); };
+  const download = async () => {
+    try {
+      const res = await fetch(c.img); const blob = await res.blob(); const url = URL.createObjectURL(blob);
+      const a = document.createElement("a"); a.href = url; a.download = "linkedscore-card.jpg"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000); setDl(true); setTimeout(() => setDl(false), 1800);
+    } catch (e) { window.open(c.img, "_blank", "noopener"); }
+  };
+  return (
+    <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
+      <button onClick={() => onOpen(c)} title="Open full" style={{ display: "block", width: "100%", padding: 0, border: "none", cursor: "pointer", background: "transparent", lineHeight: 0 }}>
+        <img src={c.img} alt="" loading="lazy" style={{ width: "100%", height: 158, objectFit: "cover", objectPosition: "center 32%", display: "block" }} />
+      </button>
+      <div style={{ padding: 14 }}>
+        {caption && <p style={{ color: "#c8c8dd", fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap", marginBottom: 12, maxHeight: 110, overflow: "hidden" }}>{caption}</p>}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {caption && <button onClick={copyCap} style={btn(copied)}>{copied ? "Copied" : "Copy caption"}</button>}
+          <button onClick={download} style={btn(dl)}>{dl ? "Saved" : "Download"}</button>
+          <button onClick={() => onOpen(c)} style={{ background: "transparent", border: "1px solid #2a2a3e", color: "#9696b4", borderRadius: 8, padding: "7px 13px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>More options</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Reads an image file into a downscaled base64 JPEG part for Claude vision (voice samples).
 function readImageFile(file) {
   return new Promise((resolve) => {
@@ -1571,6 +1608,7 @@ export default function App() {
   const [showAllReports, setShowAllReports] = useState(false);
   const [openCard, setOpenCard] = useState(null); // earned-card share modal
   const [goalScore, setGoalScore] = useState(null);
+  const [accountTab, setAccountTab] = useState("overview"); // overview | create | reports
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
   const [specialNote, setSpecialNote] = useState("");
@@ -2235,6 +2273,16 @@ export default function App() {
           <p style={{ color:"#9696b4", textAlign:"center", marginTop:24 }}>Loading...</p>
         ) : acctEmail ? (
           <>
+            {plans.length > 0 && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+                {[["overview", "Overview"], ["create", "Create"], ["reports", "Reports"]].map(([k, labl]) => (
+                  <button key={k} className={"tab-pill" + (accountTab === k ? " active" : "")} onClick={() => setAccountTab(k)} style={{ flex: 1 }}>{labl}</button>
+                ))}
+              </div>
+            )}
+
+            {(accountTab === "overview" || plans.length === 0) && (
+              <>
             {latest ? (
               <div style={{ background: "linear-gradient(135deg,#101019,#0b0b14)", border: "1px solid #20202f", borderRadius: 18, padding: 22, marginBottom: 22 }}>
                 <p style={{ color: "#9696b4", fontSize: 12, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>Welcome back{latest.firstName ? ", " + latest.firstName : ""}</p>
@@ -2309,30 +2357,41 @@ export default function App() {
                 ))}
               </div>
             )}
-
-            {myAssets && (myAssets.headlineRewrite || myAssets.aboutRewrite) && (
-              <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
-                <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Your toolkit</p>
-                <p style={{ color: "#7a7a96", fontSize: 12 }}>Your ready-to-paste copy from your latest report.</p>
-                {myAssets.headlineRewrite && <ToolkitItem label="Headline" text={myAssets.headlineRewrite} />}
-                {myAssets.aboutRewrite && <ToolkitItem label="About" text={myAssets.aboutRewrite} preview />}
-              </div>
+              </>
             )}
 
-            {plans.length > 0 && <PostWriter />}
+            {accountTab === "create" && plans.length > 0 && (
+              <>
+            <PostWriter />
+
+            {myAssets && (myAssets.headlineRewrite || myAssets.aboutRewrite || myAssets.experienceRewrite || (myAssets.keywords && myAssets.keywords.length)) && (
+              <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
+                <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Your toolkit</p>
+                <p style={{ color: "#7a7a96", fontSize: 12 }}>Your ready-to-paste copy and keywords from your latest report.</p>
+                {myAssets.headlineRewrite && <ToolkitItem label="Headline" text={myAssets.headlineRewrite} />}
+                {myAssets.aboutRewrite && <ToolkitItem label="About" text={myAssets.aboutRewrite} preview />}
+                {myAssets.experienceRewrite && <ToolkitItem label="Experience" text={myAssets.experienceRewrite} preview />}
+                {myAssets.keywords && myAssets.keywords.length > 0 && (
+                  <div style={{ borderTop: "1px solid #16162a", paddingTop: 12, marginTop: 12 }}>
+                    <p style={{ color: "#7a7a96", fontSize: 10.5, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 }}>Keywords to add</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                      {myAssets.keywords.map((k, i) => (
+                        <span key={i} title={k.where ? k.where + (k.example ? " — " + k.example : "") : ""} style={{ background: "rgba(200,169,110,0.1)", border: "1px solid #c8a96e33", color: "#ecd6a3", borderRadius: 6, padding: "5px 10px", fontSize: 12.5, fontWeight: 600 }}>{k.keyword}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {earnedCards.length > 0 && (
               <div style={{ marginBottom: 22 }}>
                 <p style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>Your earned cards</p>
-                <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12 }}>Tap a card to enlarge, download or copy its caption.</p>
-                <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
-                  {earnedCards.map((c) => (
-                    <button key={c.id} onClick={() => setOpenCard(c)} title="Open and share" style={{ padding: 0, border: "1px solid #20202f", borderRadius: 10, overflow: "hidden", cursor: "pointer", background: "#0d0d18", flexShrink: 0, lineHeight: 0 }}>
-                      <img src={c.img} alt="" loading="lazy" style={{ width: 150, height: 84, objectFit: "cover", objectPosition: "center 32%", display: "block" }} />
-                    </button>
-                  ))}
-                </div>
+                <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12 }}>Post these on LinkedIn with the ready-made caption.</p>
+                {earnedCards.map((c) => <EarnedCardRow key={c.id} c={c} locale={locale} onOpen={setOpenCard} />)}
               </div>
+            )}
+              </>
             )}
 
             {!latest && (
@@ -2341,7 +2400,9 @@ export default function App() {
                 <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your free score</a> and it will be saved here.</p>
               </>
             )}
-            {history.length > 0 && <h3 style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>Earlier reports</h3>}
+            {accountTab === "reports" && plans.length > 0 && (
+              <>
+            {history.length > 0 ? <h3 style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 14 }}>Earlier reports</h3> : <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>Your latest report is on the Overview tab. Re-check your score to add more here.</p>}
             {shownHistory.map((p, i) => {
               const older = history[i + 1];
               const d = (older && older.score != null) ? p.score - older.score : null;
@@ -2349,6 +2410,8 @@ export default function App() {
             })}
             {history.length > REPORTS_CAP && !showAllReports && (
               <button onClick={() => setShowAllReports(true)} style={{ display: "block", width: "100%", background: "transparent", border: "1px solid #20202f", color: "#9696b4", borderRadius: 12, padding: "11px 0", cursor: "pointer", fontSize: 13, marginTop: 2 }}>Show all {history.length} earlier reports</button>
+            )}
+              </>
             )}
 
             {/* Upsell: book a 1:1 with Ali (Strategy Session) */}

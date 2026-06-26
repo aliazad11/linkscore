@@ -41,11 +41,15 @@ export default async function handler(req, res) {
       : [];
     // Reusable assets from the newest report for the dashboard "your toolkit" + identity blurb.
     const str = (v) => (typeof v === "string" && v.trim() ? v.trim() : "");
+    const kw = top && top.keyword_analysis && Array.isArray(top.keyword_analysis.missing) ? top.keyword_analysis.missing : [];
     const latestAssets = top ? {
       headlineRewrite: str(top.headline_rewrite),
       aboutRewrite: str(top.about_rewrite),
-      hooks: Array.isArray(top.post_hooks) ? top.post_hooks.filter((h) => typeof h === "string" && h.trim()).slice(0, 3) : [],
+      experienceRewrite: str(top.experience_rewrite),
       closingMessage: str(top.closing_message),
+      keywords: kw.filter((m) => m && typeof m.keyword === "string" && m.keyword.trim())
+        .slice(0, 6)
+        .map((m) => ({ keyword: m.keyword.trim(), where: str(m.where), example: str(m.example) })),
     } : null;
     return res.status(200).json({ email: session.email, plans, latestMoves, latestAssets });
   } catch (e) {
