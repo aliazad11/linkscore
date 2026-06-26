@@ -1358,6 +1358,32 @@ function displayArchetype(cohort, score, locale, name, raw) {
   return fixedArchetype(cohort, score, locale, name || "") || neutralizeArchetype(raw) || "Your LinkedIn report";
 }
 
+// Honest named tier for a score band - a label for the user's own score, not a fabricated
+// percentile or comparison against other users (we have no such distribution).
+function authorityLevel(score) {
+  if (score >= 88) return "Authority";
+  if (score >= 78) return "Established";
+  if (score >= 68) return "Ascending";
+  if (score >= 55) return "Building";
+  return "Emerging";
+}
+
+// One copy-ready asset row in the dashboard "your toolkit" (headline rewrite, About, a hook).
+function ToolkitItem({ label, text, preview }) {
+  const [copied, setCopied] = useState(false);
+  const shown = preview && text.length > 130 ? text.slice(0, 130).trim() + "…" : text;
+  const copy = () => { copyText(text).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {}); };
+  return (
+    <div style={{ borderTop: "1px solid #16162a", paddingTop: 11, marginTop: 11, display: "flex", gap: 10, alignItems: "flex-start" }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ color: "#7a7a96", fontSize: 10.5, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
+        <p style={{ color: "#c8c8dd", fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{shown}</p>
+      </div>
+      <button onClick={copy} style={{ flexShrink: 0, background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "6px 11px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
+    </div>
+  );
+}
+
 // Social sign-in buttons + "or" divider, shared by both sign-in forms. Each is a plain link to a
 // server-side start endpoint (which builds the provider's consent URL and signs a CSRF state).
 function OAuthButtons({ next }) {
@@ -1439,7 +1465,10 @@ export default function App() {
   const [acctEmail, setAcctEmail] = useState(undefined); // undefined=checking, null=signed out, string=signed in
   const [myPlans, setMyPlans] = useState(null);
   const [myMoves, setMyMoves] = useState([]);
+  const [myAssets, setMyAssets] = useState(null);
   const [showAllReports, setShowAllReports] = useState(false);
+  const [openCard, setOpenCard] = useState(null); // earned-card share modal
+  const [goalScore, setGoalScore] = useState(null);
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
   const [specialNote, setSpecialNote] = useState("");
@@ -1654,6 +1683,8 @@ export default function App() {
           const pd = await pr.json().catch(() => ({}));
           setMyPlans((pd && pd.plans) || []);
           setMyMoves((pd && pd.latestMoves) || []);
+          setMyAssets((pd && pd.latestAssets) || null);
+          try { const g = localStorage.getItem("ls_goal_" + em); if (g) setGoalScore(Number(g)); } catch (e) {}
         }
       } catch (e) { setAcctEmail(null); }
     })();
@@ -2076,8 +2107,11 @@ export default function App() {
     const earnedCards = [];
     for (const p of plans) {
       const cid = cardIdFor(p.cohort, p.score);
-      if (cid && !seenCards.has(cid)) { const img = cardImagePath(p.cohort, p.score, locale, p.firstName); if (img) { seenCards.add(cid); earnedCards.push({ id: cid, img }); } }
+      if (cid && !seenCards.has(cid)) { const img = cardImagePath(p.cohort, p.score, locale, p.firstName); if (img) { seenCards.add(cid); earnedCards.push({ id: cid, img, cohort: p.cohort, score: p.score, firstName: p.firstName }); } }
     }
+    const level = latest ? authorityLevel(latest.score) : null;
+    const setGoal = (g) => { try { localStorage.setItem("ls_goal_" + acctEmail, String(g)); } catch (e) {} setGoalScore(g); };
+    const clearGoal = () => { try { localStorage.removeItem("ls_goal_" + acctEmail); } catch (e) {} setGoalScore(null); };
     const deletePlan = async (id) => {
       if (!window.confirm("Delete this report? This cannot be undone.")) return;
       try { await fetch("/api/delete-plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ planId: id }) }); } catch (e) {}
@@ -2105,8 +2139,11 @@ export default function App() {
                 <a href={`/plan/${latest.planId}`} style={{ display: "flex", alignItems: "center", gap: 18, textDecoration: "none" }}>
                   <ScoreRing score={latest.score} size={108} />
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ color: "#c8a96e", fontSize: 17, fontWeight: 800, lineHeight: 1.15 }}>{latestArchetype}</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "4px 0 8px", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <p style={{ color: "#c8a96e", fontSize: 17, fontWeight: 800, lineHeight: 1.15 }}>{latestArchetype}</p>
+                      {level && <span style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: "#ecd6a3", border: "1px solid #c8a96e55", borderRadius: 6, padding: "2px 7px" }}>{level}</span>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "5px 0 8px", flexWrap: "wrap" }}>
                       <span style={{ color: "#9696b4", fontSize: 12 }}>Latest score</span>
                       {heroDelta != null ? <DeltaBadge value={heroDelta} withLabel /> : <span style={{ color: "#7a7a96", fontSize: 12 }}>your first report</span>}
                     </div>
@@ -2114,7 +2151,10 @@ export default function App() {
                     <span style={{ color: "#56566f", fontSize: 11, display: "block", marginTop: series.length > 1 ? 6 : 2 }}>View this report →</span>
                   </div>
                 </a>
-                <a href="/" className="primary-btn" style={{ display: "block", textAlign: "center", marginTop: 18, textDecoration: "none" }}>Re-check my score</a>
+                {myAssets && myAssets.closingMessage && (
+                  <p style={{ color: "#9696b4", fontSize: 13, lineHeight: 1.55, marginTop: 14, fontStyle: "italic" }}>{myAssets.closingMessage}</p>
+                )}
+                <a href="/" className="primary-btn" style={{ display: "block", textAlign: "center", marginTop: 16, textDecoration: "none" }}>Re-check my score</a>
               </div>
             ) : null}
 
@@ -2126,6 +2166,33 @@ export default function App() {
                     <p style={{ color: "#7a7a96", fontSize: 11, marginTop: 4 }}>{st.l}</p>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {plans.length > 0 && (
+              <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
+                {goalScore != null ? (
+                  <>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                      <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase" }}>Your goal</p>
+                      <span style={{ color: "#9696b4", fontSize: 13, fontWeight: 700 }}>{latest.score} <span style={{ color: "#56566f", fontWeight: 400 }}>/ {goalScore}</span></span>
+                    </div>
+                    <div style={{ height: 8, background: "#16162a", borderRadius: 99, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: Math.max(4, Math.min(100, Math.round((latest.score / goalScore) * 100))) + "%", background: "linear-gradient(90deg,#a07840,#ecd6a3)", borderRadius: 99 }} />
+                    </div>
+                    <p style={{ color: "#9696b4", fontSize: 12.5, marginTop: 10 }}>
+                      {latest.score >= goalScore ? "Goal reached. Time for a higher one." : (goalScore - latest.score) + " points to go."}
+                      {" · "}<button onClick={clearGoal} style={{ background: "transparent", border: "none", color: "#56566f", fontSize: 12, cursor: "pointer", textDecoration: "underline", padding: 0 }}>change</button>
+                    </p>
+                  </>
+                ) : (
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                    <p style={{ color: "#c8c8dd", fontSize: 13.5, flex: 1, minWidth: 150 }}>Set a target score and track your climb.</p>
+                    {[...new Set([Math.min(95, (latest.score || 0) + 5), Math.min(95, (latest.score || 0) + 10), 90])].filter((g) => g > (latest.score || 0)).slice(0, 3).map((g) => (
+                      <button key={g} onClick={() => setGoal(g)} style={{ background: "transparent", border: "1px solid #c8a96e55", color: "#c8a96e", borderRadius: 9, padding: "7px 13px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{g}</button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -2141,12 +2208,25 @@ export default function App() {
               </div>
             )}
 
+            {myAssets && (myAssets.headlineRewrite || (myAssets.hooks && myAssets.hooks.length) || myAssets.aboutRewrite) && (
+              <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 16, padding: 18, marginBottom: 22 }}>
+                <p style={{ color: "#c8a96e", fontSize: 11.5, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 3 }}>Your toolkit</p>
+                <p style={{ color: "#7a7a96", fontSize: 12 }}>Your ready-to-paste copy from your latest report.</p>
+                {myAssets.headlineRewrite && <ToolkitItem label="Headline" text={myAssets.headlineRewrite} />}
+                {myAssets.aboutRewrite && <ToolkitItem label="About" text={myAssets.aboutRewrite} preview />}
+                {(myAssets.hooks || []).map((h, i) => <ToolkitItem key={i} label={"Post hook " + (i + 1)} text={h} />)}
+              </div>
+            )}
+
             {earnedCards.length > 0 && (
               <div style={{ marginBottom: 22 }}>
-                <p style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Your earned cards</p>
+                <p style={{ color: "#9696b4", fontSize: 13, letterSpacing: 1, textTransform: "uppercase", marginBottom: 3 }}>Your earned cards</p>
+                <p style={{ color: "#7a7a96", fontSize: 12, marginBottom: 12 }}>Tap a card to enlarge, download or copy its caption.</p>
                 <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 4 }}>
                   {earnedCards.map((c) => (
-                    <img key={c.id} src={c.img} alt="" loading="lazy" style={{ width: 150, height: 84, objectFit: "cover", objectPosition: "center 32%", borderRadius: 10, border: "1px solid #20202f", flexShrink: 0 }} />
+                    <button key={c.id} onClick={() => setOpenCard(c)} title="Open and share" style={{ padding: 0, border: "1px solid #20202f", borderRadius: 10, overflow: "hidden", cursor: "pointer", background: "#0d0d18", flexShrink: 0, lineHeight: 0 }}>
+                      <img src={c.img} alt="" loading="lazy" style={{ width: 150, height: 84, objectFit: "cover", objectPosition: "center 32%", display: "block" }} />
+                    </button>
                   ))}
                 </div>
               </div>
@@ -2214,6 +2294,14 @@ export default function App() {
               </>
             )}
           </>
+        )}
+        {openCard && (
+          <div onClick={() => setOpenCard(null)} style={{ position: "fixed", inset: 0, background: "rgba(4,4,8,0.82)", zIndex: 1000, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "28px 16px", overflowY: "auto" }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, position: "relative" }}>
+              <button onClick={() => setOpenCard(null)} aria-label="Close" style={{ position: "absolute", top: -4, right: 0, zIndex: 2, background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 15 }}>✕</button>
+              <ShareCardSection cohort={openCard.cohort} score={openCard.score} name={openCard.firstName} />
+            </div>
+          </div>
         )}
       </div>
     </Layout>
