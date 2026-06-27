@@ -1456,6 +1456,48 @@ function readImageFile(file) {
   });
 }
 
+// Narrated steps shown while the engine works, so the ~15s wait reads as craft, not a blank spinner.
+const GEN_STEPS = ["Reading your voice", "Studying your best hooks", "Writing three versions", "Picking the one most like you", "Polishing the final post"];
+
+// Renders a post the way LinkedIn shows it in the feed: the hook (first ~210 chars) in full, then a
+// marked "the fold" line, then the rest dimmed, so the user SEES exactly what scrollers read before
+// clicking "see more". This is the LinkedIn-native moment a generic AI writer never gives them.
+function FoldedPost({ text }) {
+  const FOLD = 210;
+  const t = String(text || "");
+  let cut = t.length;
+  if (t.length > FOLD) { const sp = t.lastIndexOf(" ", FOLD); cut = sp > 140 ? sp : FOLD; }
+  const hook = t.slice(0, cut).trim();
+  const rest = t.slice(cut).trim();
+  return (
+    <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#dfe3e8", flexShrink: 0 }} />
+        <div>
+          <div style={{ fontSize: 13.5, fontWeight: 600, color: "#1d2226", lineHeight: 1.2 }}>You</div>
+          <div style={{ fontSize: 11.5, color: "#5e6670" }}>Your headline · Now</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 13.5, lineHeight: 1.5, color: "#1d2226", whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+        {hook}
+        {rest && (
+          <>
+            <span style={{ color: "#5e6670" }}>… </span>
+            <span style={{ color: "#0a66c2", fontWeight: 600 }}>see more</span>
+            <div style={{ position: "relative", borderTop: "1px dashed #c8a96e", margin: "13px 0 9px" }}>
+              <span style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#fff", padding: "0 8px", fontSize: 9.5, letterSpacing: 0.6, color: "#9c763c", textTransform: "uppercase", whiteSpace: "nowrap" }}>The fold</span>
+            </div>
+            <span style={{ color: "#1d2226", opacity: 0.45, whiteSpace: "pre-wrap" }}>{rest}</span>
+          </>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 9, borderTop: "1px solid #e6e9ec", color: "#5e6670", fontSize: 12, fontWeight: 600 }}>
+        <span>Like</span><span>Comment</span><span>Repost</span><span>Send</span>
+      </div>
+    </div>
+  );
+}
+
 // Post writer: paste a rough draft (+ optionally screenshots of your own posts so the model learns
 // your real voice) -> a LinkedIn-ready post. Calls /api/polish-post (signed-in only). Output editable.
 function PostWriter() {
@@ -1471,6 +1513,15 @@ function PostWriter() {
   const [refineInstr, setRefineInstr] = useState("");
   const [refining, setRefining] = useState(false);
   const [refineErr, setRefineErr] = useState("");
+  const [phaseIdx, setPhaseIdx] = useState(0);
+  const [view, setView] = useState("preview"); // "preview" | "edit"
+  useEffect(() => {
+    if (!loading) return;
+    setPhaseIdx(0);
+    const id = setInterval(() => setPhaseIdx((i) => Math.min(i + 1, GEN_STEPS.length - 1)), 2600);
+    return () => clearInterval(id);
+  }, [loading]);
+  const pill = (active) => ({ background: active ? "#16162a" : "transparent", border: "1px solid " + (active ? "#2a2a3e" : "transparent"), color: active ? "#ecd6a3" : "#7a7a96", borderRadius: 8, padding: "5px 14px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" });
   const ta = { width: "100%", background: "#08080e", border: "1px solid #20202f", borderRadius: 12, color: "#f5f5fc", fontSize: 14, padding: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.55, boxSizing: "border-box" };
   const onFiles = async (e) => {
     const files = [...(e.target.files || [])].filter((f) => f.type.startsWith("image/"));
@@ -1479,7 +1530,7 @@ function PostWriter() {
   };
   const run = async () => {
     if (draft.trim().length < 15) { setErr("Write a few more words first."); return; }
-    setErr(""); setLoading(true); setOut(""); setLinkInfo(null);
+    setErr(""); setLoading(true); setOut(""); setLinkInfo(null); setView("preview");
     try {
       const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: draft.trim(), locale, samples: samples.map((s) => ({ data: s.data, media_type: s.media_type })) }) });
       const d = await r.json().catch(() => ({}));
@@ -1527,14 +1578,29 @@ function PostWriter() {
       </div>
 
       {err && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 10 }}>{err}</p>}
-      <button onClick={run} disabled={loading} className="primary-btn" style={{ marginTop: 14, opacity: loading ? 0.7 : 1 }}>{loading ? "Writing..." : (out ? "Rewrite again" : "Write my post")}</button>
+      <button onClick={run} disabled={loading} className="primary-btn" style={{ marginTop: 14, opacity: loading ? 0.7 : 1 }}>{loading ? "Writing your post…" : (out ? "Rewrite again" : "Write my post")}</button>
+      {loading && (
+        <div style={{ marginTop: 14, background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 14, padding: 16 }}>
+          {GEN_STEPS.map((s, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0", opacity: i <= phaseIdx ? 1 : 0.4, transition: "opacity .35s" }}>
+              <span style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#08080e", background: i < phaseIdx ? "#56c08a" : "transparent", border: "1.5px solid " + (i < phaseIdx ? "#56c08a" : i === phaseIdx ? "#c8a96e" : "#2a2a3e"), animation: i === phaseIdx ? "dotPulse 1.2s infinite" : "none" }}>{i < phaseIdx ? "✓" : ""}</span>
+              <span style={{ color: i === phaseIdx ? "#ecd6a3" : i < phaseIdx ? "#7a7a96" : "#56566f", fontSize: 13, fontWeight: i === phaseIdx ? 600 : 400, transition: "color .35s" }}>{s}{i === phaseIdx ? "…" : ""}</span>
+            </div>
+          ))}
+        </div>
+      )}
       {out && (
         <div style={{ marginTop: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <p style={{ color: "#9696b4", fontSize: 11.5, letterSpacing: 1, textTransform: "uppercase" }}>Your post (editable)</p>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <div style={{ display: "flex", gap: 4, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, padding: 3 }}>
+              <button onClick={() => setView("preview")} style={pill(view === "preview")}>Preview</button>
+              <button onClick={() => setView("edit")} style={pill(view === "edit")}>Edit</button>
+            </div>
             <button onClick={copy} style={{ background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "6px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
           </div>
-          <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />
+          {view === "preview"
+            ? <FoldedPost text={out} />
+            : <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />}
           {linkInfo && (
             <div style={{ marginTop: 12, background: "#0f0f1a", border: "1px solid #20202f", borderRadius: 12, padding: 12 }}>
               <p style={{ color: "#c8a96e", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Your link → first comment</p>
