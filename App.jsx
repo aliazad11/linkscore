@@ -1637,9 +1637,17 @@ function PostWriter() {
             </div>
           )}
           <div style={{ marginTop: 14, borderTop: "1px solid #1a1a2e", paddingTop: 14 }}>
-            <p style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>Want a change? Tell me what to fix and I will keep your voice. For example "make the intro punchier" or "drop the third paragraph".</p>
+            <p style={{ color: "#c8a96e", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 7 }}>Edit with AI</p>
+            <div style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.6, marginBottom: 10 }}>
+              Tell me what to change, in plain words:
+              <div style={{ marginTop: 5 }}>
+                <div style={{ marginBottom: 3 }}><span style={{ color: "#ecd6a3", fontWeight: 600 }}>Use your own words</span> — write "change the opening to: ..." and I keep your wording exactly.</div>
+                <div><span style={{ color: "#ecd6a3", fontWeight: 600 }}>Change the style</span> — "make the intro punchier", "shorter", "warmer" or "drop the third paragraph".</div>
+              </div>
+              <div style={{ color: "#56566f", fontSize: 11, marginTop: 7 }}>Prefer to type it yourself? Switch to the Edit tab above, your text stays untouched.</div>
+            </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <input value={refineInstr} onChange={(e) => setRefineInstr(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !refining) applyRefine(); }} placeholder="e.g. shorten the opening line" style={{ flex: 1, minWidth: 0, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, color: "#f5f5fc", fontSize: 13.5, padding: "10px 12px", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }} />
+              <input value={refineInstr} onChange={(e) => setRefineInstr(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !refining) applyRefine(); }} placeholder='e.g. "make it punchier" or "change the opening to: ..."' style={{ flex: 1, minWidth: 0, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, color: "#f5f5fc", fontSize: 13.5, padding: "10px 12px", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }} />
               <button onClick={applyRefine} disabled={refining} style={{ background: "transparent", border: "1px solid #2a2a3e", color: "#c8a96e", borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, opacity: refining ? 0.6 : 1 }}>{refining ? "Editing..." : "Apply edit"}</button>
             </div>
             {refineErr && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 8 }}>{refineErr}</p>}
