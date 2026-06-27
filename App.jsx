@@ -1641,8 +1641,8 @@ function PostWriter() {
             <div style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.6, marginBottom: 10 }}>
               Tell me what to change, in plain words:
               <div style={{ marginTop: 5 }}>
-                <div style={{ marginBottom: 3 }}><span style={{ color: "#ecd6a3", fontWeight: 600 }}>Use your own words</span> — write "change the opening to: ..." and I keep your wording exactly.</div>
-                <div><span style={{ color: "#ecd6a3", fontWeight: 600 }}>Change the style</span> — "make the intro punchier", "shorter", "warmer" or "drop the third paragraph".</div>
+                <div style={{ marginBottom: 3 }}><span style={{ color: "#ecd6a3", fontWeight: 600 }}>Use your own words.</span> Write "change the opening to: ..." and I keep your wording exactly.</div>
+                <div><span style={{ color: "#ecd6a3", fontWeight: 600 }}>Change the style.</span> Try "make the intro punchier", "shorter", "warmer" or "drop the third paragraph".</div>
               </div>
               <div style={{ color: "#56566f", fontSize: 11, marginTop: 7 }}>Prefer to type it yourself? Switch to the Edit tab above, your text stays untouched.</div>
             </div>
