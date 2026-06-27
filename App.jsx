@@ -1459,18 +1459,30 @@ function readImageFile(file) {
 // Narrated steps shown while the engine works, so the ~15s wait reads as craft, not a blank spinner.
 const GEN_STEPS = ["Reading your voice", "Studying your best hooks", "Writing three versions", "Picking the one most like you", "Polishing the final post"];
 
-// Renders a post the way LinkedIn shows it in the feed: the hook (first ~210 chars) in full, then a
-// marked "the fold" line, then the rest dimmed, so the user SEES exactly what scrollers read before
-// clicking "see more". This is the LinkedIn-native moment a generic AI writer never gives them.
-function FoldedPost({ text }) {
-  const FOLD = 210;
+// LinkedIn truncates the feed preview at the EARLIER of a character cap or ~3 lines (a line break ends
+// a line). Mobile (~140 chars) is tighter than desktop (~210) and is where most people read, so the
+// fold can land well before 210 chars if the hook has early line breaks. We model both and default mobile.
+function linkedInFoldIndex(text, cap, charsPerLine, maxLines) {
+  let lines = 1, col = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (i >= cap) return i;
+    if (text[i] === "\n") { lines++; col = 0; if (lines > maxLines) return i; continue; }
+    col++;
+    if (col >= charsPerLine) { lines++; col = 0; if (lines > maxLines) return i; }
+  }
+  return text.length;
+}
+// Renders a post the way LinkedIn shows it in the feed: the hook (what shows before "see more") in full,
+// then a marked "the fold" line, then the rest dimmed, so the user SEES what scrollers read first.
+function FoldedPost({ text, device }) {
   const t = String(text || "");
-  let cut = t.length;
-  if (t.length > FOLD) { const sp = t.lastIndexOf(" ", FOLD); cut = sp > 140 ? sp : FOLD; }
-  const hook = t.slice(0, cut).trim();
-  const rest = t.slice(cut).trim();
+  const cfg = device === "desktop" ? { cap: 210, cpl: 70 } : { cap: 140, cpl: 42 };
+  let cut = linkedInFoldIndex(t, cfg.cap, cfg.cpl, 3);
+  if (cut < t.length && t[cut] !== "\n" && t[cut] !== " ") { const sp = t.lastIndexOf(" ", cut); if (sp > cut - 20 && sp > 0) cut = sp; }
+  const hook = t.slice(0, cut).replace(/\s+$/, "");
+  const rest = t.slice(cut).replace(/^\s+/, "");
   return (
-    <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.35)" }}>
+    <div style={{ background: "#fff", borderRadius: 10, padding: "14px 16px", boxShadow: "0 1px 4px rgba(0,0,0,0.35)", maxWidth: device === "desktop" ? "none" : 340, margin: device === "desktop" ? 0 : "0 auto" }}>
       <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
         <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#dfe3e8", flexShrink: 0 }} />
         <div>
@@ -1515,6 +1527,7 @@ function PostWriter() {
   const [refineErr, setRefineErr] = useState("");
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [view, setView] = useState("preview"); // "preview" | "edit"
+  const [device, setDevice] = useState("mobile"); // which fold to show in preview
   useEffect(() => {
     if (!loading) return;
     setPhaseIdx(0);
@@ -1598,9 +1611,21 @@ function PostWriter() {
             </div>
             <button onClick={copy} style={{ background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "6px 13px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
           </div>
-          {view === "preview"
-            ? <FoldedPost text={out} />
-            : <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />}
+          {view === "preview" ? (
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 9 }}>
+                <span style={{ color: "#7a7a96", fontSize: 11 }}>Preview on</span>
+                <div style={{ display: "flex", gap: 4, background: "#08080e", border: "1px solid #20202f", borderRadius: 9, padding: 2 }}>
+                  <button onClick={() => setDevice("mobile")} style={{ ...pill(device === "mobile"), padding: "4px 11px", fontSize: 11.5 }}>Mobile</button>
+                  <button onClick={() => setDevice("desktop")} style={{ ...pill(device === "desktop"), padding: "4px 11px", fontSize: 11.5 }}>Desktop</button>
+                </div>
+                {device === "mobile" && <span style={{ color: "#56566f", fontSize: 10.5 }}>what most people see</span>}
+              </div>
+              <FoldedPost text={out} device={device} />
+            </div>
+          ) : (
+            <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />
+          )}
           {linkInfo && (
             <div style={{ marginTop: 12, background: "#0f0f1a", border: "1px solid #20202f", borderRadius: 12, padding: 12 }}>
               <p style={{ color: "#c8a96e", fontSize: 11, letterSpacing: 1, textTransform: "uppercase", marginBottom: 6 }}>Your link → first comment</p>

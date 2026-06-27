@@ -77,7 +77,7 @@ function writePrompt(v, draft, langName, take, hasLink, locale) {
   return `${voice}You are this person's trusted LinkedIn adviser. Turn the rough draft below into ONE scroll-stopping, engagement-optimized LinkedIn post, written 100% in THEIR voice: their vocabulary, rhythm, warmth or coolness, emoji and hashtag habits. If their real posts are plain, messy, broken or emoji-heavy, KEEP that texture, never sanitize them into clean generic influencer copy.
 
 SHAPE, follow exactly:
-1. HOOK: the first 210 characters (everything shown before the "see more" fold) must stop the scroll and earn the click. A sharp, specific first line. No throat-clearing, no "I'm excited to share", no "I wanted to talk about".
+1. HOOK: the first 1 to 2 short lines (about 140 characters) are ALL most people see on mobile before the "see more" fold. Those first 1 to 2 lines must stop the scroll and earn the click ON THEIR OWN. Put the most arresting, specific idea in the very first line. NEVER bury the hook below a line break, and no throat-clearing ("I'm excited to share", "I wanted to talk about").
 2. BODY: tell it as a STORY, a moment, a tension, a turn or a lesson, in short scannable paragraphs, in their voice.
 3. OUTRO: close in their voice, ending with a light question or invitation (only if that fits how they actually write).
 APPROACH FOR THIS VERSION: ${take}
@@ -118,7 +118,7 @@ function refinePrompt(current, instruction, langName, locale) {
 The user wants this change:
 """${instruction}"""
 
-Apply ONLY their requested change. Keep EVERYTHING else identical: the same voice, tone, rhythm and structure, the same strong hook in the first ~210 characters, the same facts, the same emoji and hashtag habit. Do NOT rewrite parts they did not mention. Do NOT make it more generic, more corporate or more "LinkedIn influencer". Do NOT invent any new fact, name, number or link unless the user explicitly gives it in their request. Do NOT add a url to the body (links belong in the first comment). No markdown, no [bracket] placeholders. Write in ${langName}.${locale === "en" ? " American English, no Oxford comma, no em dashes." : ""}
+Apply ONLY their requested change. Keep EVERYTHING else identical: the same voice, tone, rhythm and structure, the same strong hook in the first 1 to 2 lines (~140 characters, the mobile "see more" fold), the same facts, the same emoji and hashtag habit. Do NOT rewrite parts they did not mention. Do NOT make it more generic, more corporate or more "LinkedIn influencer". Do NOT invent any new fact, name, number or link unless the user explicitly gives it in their request. Do NOT add a url to the body (links belong in the first comment). No markdown, no [bracket] placeholders. Write in ${langName}.${locale === "en" ? " American English, no Oxford comma, no em dashes." : ""}
 
 If their request would break the voice or push it generic (for example "make it more corporate", "add hype"), make the smallest change that honors the spirit of the request while keeping their voice.
 
@@ -189,7 +189,7 @@ export default async function handler(req, res) {
       const sel = parseJson(await callClaude(
         key,
         "You are a JSON API. Output ONLY a raw JSON object.",
-        `${ref}Below are ${cands.length} candidate LinkedIn posts written from the same draft. Pick the ONE that is BOTH (a) the most scroll-stopping, a strong specific hook in the first ~210 characters, a real story, a clean close, AND (b) the most authentically in THIS person's own voice, not a generic LinkedIn-influencer voice. If their real posts are messy or emoji-heavy, prefer the candidate that keeps that texture over a cleaner one. Return ONLY {"bestIndex":N} where N is 1 to ${cands.length}.\n\n${candBlock}`,
+        `${ref}Below are ${cands.length} candidate LinkedIn posts written from the same draft. Pick the ONE that is BOTH (a) the most scroll-stopping, a strong specific hook in the first 1 to 2 lines (~140 characters, what mobile shows before "see more"), a real story, a clean close, AND (b) the most authentically in THIS person's own voice, not a generic LinkedIn-influencer voice. If their real posts are messy or emoji-heavy, prefer the candidate that keeps that texture over a cleaner one. Return ONLY {"bestIndex":N} where N is 1 to ${cands.length}.\n\n${candBlock}`,
         150
       ));
       const idx = sel && Number.isFinite(sel.bestIndex) ? Math.min(Math.max(1, Math.round(sel.bestIndex)), cands.length) - 1 : 0;
