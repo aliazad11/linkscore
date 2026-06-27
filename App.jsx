@@ -1528,6 +1528,8 @@ function PostWriter() {
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [view, setView] = useState("preview"); // "preview" | "edit"
   const [device, setDevice] = useState("mobile"); // which fold to show in preview
+  const [versions, setVersions] = useState([]); // all candidate posts, our pick first
+  const [activeVer, setActiveVer] = useState(0);
   useEffect(() => {
     if (!loading) return;
     setPhaseIdx(0);
@@ -1543,12 +1545,19 @@ function PostWriter() {
   };
   const run = async () => {
     if (draft.trim().length < 15) { setErr("Write a few more words first."); return; }
-    setErr(""); setLoading(true); setOut(""); setLinkInfo(null); setView("preview");
+    setErr(""); setLoading(true); setOut(""); setLinkInfo(null); setView("preview"); setVersions([]); setActiveVer(0);
     try {
       const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ draft: draft.trim(), locale, samples: samples.map((s) => ({ data: s.data, media_type: s.media_type })) }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.post) setErr((d && d.error) || "Something went wrong. Try again.");
-      else { setOut(d.post); if (d.firstComment) setLinkInfo({ firstComment: d.firstComment, linkNote: d.linkNote || "" }); }
+      else {
+        const pick = Number.isInteger(d.selectedIndex) ? d.selectedIndex : 0;
+        const ordered = (Array.isArray(d.versions) && d.versions.length > 1)
+          ? [d.versions[pick], ...d.versions.filter((_, i) => i !== pick)]
+          : [d.post];
+        setVersions(ordered); setActiveVer(0); setOut(ordered[0]);
+        if (d.firstComment) setLinkInfo({ firstComment: d.firstComment, linkNote: d.linkNote || "" });
+      }
     } catch (e) { setErr("Something went wrong. Try again."); }
     setLoading(false);
   };
@@ -1604,6 +1613,17 @@ function PostWriter() {
       )}
       {out && (
         <div style={{ marginTop: 16 }}>
+          {versions.length > 1 && (
+            <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }}>
+              {versions.map((v, i) => (
+                <button key={i} onClick={() => { setActiveVer(i); setOut(v); setView("preview"); }} style={{ ...pill(activeVer === i), display: "flex", alignItems: "center", gap: 5 }}>
+                  {i === 0 && <span style={{ color: activeVer === 0 ? "#c8a96e" : "#7a7a96" }}>★</span>}
+                  {i === 0 ? "Our pick" : `Version ${i + 1}`}
+                </button>
+              ))}
+              <span style={{ color: "#56566f", fontSize: 11, marginLeft: 2 }}>{activeVer === 0 ? "the one most like you" : "another take, pick what you prefer"}</span>
+            </div>
+          )}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <div style={{ display: "flex", gap: 4, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, padding: 3 }}>
               <button onClick={() => setView("preview")} style={pill(view === "preview")}>Preview</button>

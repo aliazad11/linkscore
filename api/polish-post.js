@@ -180,7 +180,7 @@ export default async function handler(req, res) {
     if (!cands.length) return res.status(502).json({ error: "Could not write the post. Try again." });
 
     // 3) Selector picks the most engaging AND most-them.
-    let post = cands[0];
+    let post = cands[0], selectedIdx = 0;
     if (cands.length > 1) {
       const ref = voice
         ? `This person's REAL posts:\n${(voice.examples || []).map((e) => `- ${String(e).slice(0, 600)}`).join("\n")}\n\nTheir signature moves:\n${(voice.signatures || []).map((x) => `- ${x}`).join("\n")}\n\n`
@@ -192,11 +192,12 @@ export default async function handler(req, res) {
         `${ref}Below are ${cands.length} candidate LinkedIn posts written from the same draft. Pick the ONE that is BOTH (a) the most scroll-stopping, a strong specific hook in the first 1 to 2 lines (~140 characters, what mobile shows before "see more"), a real story, a clean close, AND (b) the most authentically in THIS person's own voice, not a generic LinkedIn-influencer voice. If their real posts are messy or emoji-heavy, prefer the candidate that keeps that texture over a cleaner one. Return ONLY {"bestIndex":N} where N is 1 to ${cands.length}.\n\n${candBlock}`,
         150
       ));
-      const idx = sel && Number.isFinite(sel.bestIndex) ? Math.min(Math.max(1, Math.round(sel.bestIndex)), cands.length) - 1 : 0;
-      post = cands[idx];
+      selectedIdx = sel && Number.isFinite(sel.bestIndex) ? Math.min(Math.max(1, Math.round(sel.bestIndex)), cands.length) - 1 : 0;
+      post = cands[selectedIdx];
     }
 
     const body = { post, introChars: introChars(post) };
+    if (cands.length > 1) { body.versions = cands; body.selectedIndex = selectedIdx; }
     if (hasLink) {
       body.firstComment = link;
       body.linkNote = "I kept your link out of the post on purpose. LinkedIn shows posts that have a link in the body to fewer people. Post this, then paste your link as the very first comment, you keep your full reach and readers still get straight to it.";
