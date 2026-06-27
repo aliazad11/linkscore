@@ -26,6 +26,45 @@ function validMessages(messages) {
   return true;
 }
 
+// Fact-check pass: re-ground every claim in the rewrite/hook copy against the SAME source (profile PDF
+// + post screenshots already in `messages`). The 20-persona engine test found ~6 fabrications/plan
+// (invented tenure "30 years", metrics "603 reactions", scope "global P&L") that prompt-only guards
+// leak; a separate verification pass catches them. Best-effort: any failure leaves the plan unchanged.
+async function scrubFabrications(messages, plan, apiKey, signal) {
+  const fields = {};
+  for (const k of ["headline_rewrite", "about_rewrite", "experience_rewrite", "urgency", "closing_message"]) {
+    if (typeof plan[k] === "string" && plan[k].trim()) fields[k] = plan[k];
+  }
+  if (Array.isArray(plan.post_hooks) && plan.post_hooks.length) fields.post_hooks = plan.post_hooks;
+  if (!Object.keys(fields).length) return plan;
+  const instruction = `The profile and post screenshots above are the ONLY source of truth. Below is copy that was written from them. Fact-check it HARD and return a corrected version. Be AGGRESSIVE: when any fact is not clearly and verbatim in the source, delete it or replace it with generic phrasing. When in doubt, cut it. A user must never paste a number, year, credential or claim that is not in their own profile.\n- Every number, year, count, metric, percentage, product name, company, school, person, place, degree and job title in the copy MUST appear in that source. Delete or generalize anything that does not.\n- NEVER state a number of years of experience or expertise (for example "30 years", "15 years") unless that exact phrase is in the profile. A date range or a tenure badge is NOT permission to state a year count.\n- Never claim scope words (global, worldwide, P&L, founded, led) the source does not state.\n- If a role has no description in the source, its copy may only restate title and dates, never invented achievements.\n- Keep the person's voice, tone and structure identical. Only remove or generalize unverifiable facts; change nothing already grounded.\nReturn ONLY a raw JSON object with exactly these keys: ${JSON.stringify(Object.keys(fields))}.\n\nCOPY TO FACT-CHECK:\n${JSON.stringify(fields)}`;
+  try {
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-5-20250929",
+        max_tokens: 3000,
+        system: "You are a strict fact-checker and JSON API. Output ONLY a raw JSON object. Start with { end with }.",
+        messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }, { role: "assistant", content: "{" }],
+      }),
+      signal,
+    });
+    if (!r.ok) return plan;
+    const d = await r.json().catch(() => null);
+    let raw = "{" + ((d && d.content && d.content[0] && d.content[0].text) || "");
+    const end = raw.lastIndexOf("}");
+    if (end === -1) return plan;
+    let fixed;
+    try { fixed = JSON.parse(raw.slice(0, end + 1)); } catch { return plan; }
+    for (const k of Object.keys(fields)) {
+      if (k === "post_hooks") { if (Array.isArray(fixed.post_hooks) && fixed.post_hooks.length) plan.post_hooks = fixed.post_hooks; }
+      else if (typeof fixed[k] === "string" && fixed[k].trim()) plan[k] = fixed[k];
+    }
+    return plan;
+  } catch (e) { return plan; }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -97,6 +136,12 @@ export default async function handler(req, res) {
 
     let plan;
     try { plan = JSON.parse(out); } catch (e) { return res.status(502).json({ error: "Malformed plan" }); }
+
+    // Fact-check pass (best-effort, own timeout): strip fabricated facts from the rewrite/hook copy.
+    const c2 = new AbortController();
+    const t2 = setTimeout(() => c2.abort(), 120000);
+    try { plan = await scrubFabrications(messages, plan, process.env.ANTHROPIC_KEY, c2.signal); } catch (e) { /* leave plan as-is */ }
+    clearTimeout(t2);
 
     const ins = await fetch(SUPABASE_URL + "/rest/v1/gated_plans", {
       method: "POST",
