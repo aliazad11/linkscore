@@ -114,8 +114,6 @@ export default async function handler(req, res) {
   const timeout = setTimeout(() => controller.abort(), 290000);
 
   try {
-    const messagesWithPrefill = [...messages, { role: "assistant", content: "{" }];
-
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -124,10 +122,12 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250929",
+        model: "claude-opus-4-8",
         max_tokens: 8000,
+        // Opus 4.8 rejects a trailing assistant-message prefill (400), so we no longer prefill "{".
+        // The system prompt plus the lenient JSON-span parse below handle output shape.
         system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.",
-        messages: messagesWithPrefill,
+        messages,
       }),
       signal: controller.signal,
     });
@@ -146,11 +146,12 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    let raw = "{" + ((data.content && data.content[0] && data.content[0].text) || "");
-    const end = raw.lastIndexOf("}");
-    if (end === -1) return res.status(502).json({ error: "Malformed plan" });
+    const txt = (data.content && data.content[0] && data.content[0].text) || "";
+    const start = txt.indexOf("{");
+    const end = txt.lastIndexOf("}");
+    if (start === -1 || end === -1 || end < start) return res.status(502).json({ error: "Malformed plan" });
 
-    let s = raw.slice(0, end + 1);
+    let s = txt.slice(start, end + 1);
     let cleaned = "";
     for (let i = 0; i < s.length; i++) {
       const cc = s.charCodeAt(i);
