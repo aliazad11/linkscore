@@ -123,7 +123,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-opus-4-8",
-        max_tokens: 8000,
+        max_tokens: 16000,
         // Opus 4.8 rejects a trailing assistant-message prefill (400), so we no longer prefill "{".
         // The system prompt plus the lenient JSON-span parse below handle output shape.
         system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.",
@@ -149,7 +149,7 @@ export default async function handler(req, res) {
     const txt = (data.content && data.content[0] && data.content[0].text) || "";
     const start = txt.indexOf("{");
     const end = txt.lastIndexOf("}");
-    if (start === -1 || end === -1 || end < start) return res.status(502).json({ error: "Malformed plan" });
+    if (start === -1 || end === -1 || end < start) { console.error("[gen] no-json stop=" + data.stop_reason + " outlen=" + txt.length); return res.status(502).json({ error: "Malformed plan" }); }
 
     let s = txt.slice(start, end + 1);
     let cleaned = "";
@@ -168,7 +168,7 @@ export default async function handler(req, res) {
     }
 
     let plan;
-    try { plan = JSON.parse(out); } catch (e) { return res.status(502).json({ error: "Malformed plan" }); }
+    try { plan = JSON.parse(out); } catch (e) { console.error("[gen] parse-fail stop=" + data.stop_reason + " outlen=" + txt.length + " tail=" + JSON.stringify(txt.slice(-180))); return res.status(502).json({ error: "Malformed plan" }); }
 
     // Fact-check pass (best-effort, own timeout): strip fabricated facts from the rewrite/hook copy.
     const c2 = new AbortController();
