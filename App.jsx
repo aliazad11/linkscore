@@ -558,7 +558,7 @@ function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = tr
     // Engagement-metric numbers are misread off screenshots and read as verified analytics; strip plan-wide.
     out = out
       .replace(/\b\d[\d,]*\s*[-–]\s*\d[\d,]*\s*(reactions?|comments?|reposts?|likes?|views?|impressions?|followers?)\b/gi, "strong $1")
-      .replace(/\b\d[\d,.]*\s*[KkMm]\+?\s*(followers?|connections?|subscribers?)\b/gi, "your existing $1")
+      .replace(/\b\d[\d,.]*\s*[KkMm](?:\+|[-\s]?plus)?\s*(followers?|connections?|subscribers?)\b/gi, "your existing $1")
       .replace(/\baudience of\s+\d[\d,.]*\s*[KkMm]?\+?\b/gi, "audience")
       .replace(/\b\d[\d,]*\+?\s*(reactions?|comments?|reposts?|likes?|views?|impressions?|followers?)\b/gi, "strong $1");
     if (noDash) {
@@ -699,7 +699,7 @@ function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = tr
   // tl_analysis (urgency, closing, growth tactics, networking) so a bare count never reads as data.
   const stripMetrics = (s) => typeof s !== "string" ? s : s
     .replace(/\b\d[\d,]*\s*[-–]\s*\d[\d,]*\s*(reactions?|comments?|reposts?|likes?|views?|impressions?|followers?)\b/gi, "strong $1")
-    .replace(/\b\d[\d,.]*\s*[KkMm]\+?\s*(followers?|connections?|subscribers?)\b/gi, "your existing $1")
+    .replace(/\b\d[\d,.]*\s*[KkMm](?:\+|[-\s]?plus)?\s*(followers?|connections?|subscribers?)\b/gi, "your existing $1")
     .replace(/\baudience of\s+\d[\d,.]*\s*[KkMm]?\+?\b/gi, "audience")
     .replace(/\b\d[\d,]*\+?\s*(reactions?|comments?|reposts?|likes?|views?|impressions?|followers?)\b/gi, "strong $1");
   plan.urgency = stripMetrics(plan.urgency);
