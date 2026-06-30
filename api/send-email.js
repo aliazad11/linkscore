@@ -64,6 +64,17 @@ export default async function handler(req) {
       it: "IL TUO POST LINKEDIN, COPIALO E INCOLLALO CON L'IMMAGINE SOPRA",
     };
     const shareCopyLabel = SHARE_COPY[lang] || SHARE_COPY.en;
+    // Draft caveat shown under the hooks: these are AI drafts, verify specifics before posting.
+    const DRAFT_CAVEAT = {
+      en: "Check any names, numbers or stories against your real profile before you post.",
+      de: "Prüfe Namen, Zahlen oder Geschichten an deinem echten Profil, bevor du postest.",
+      fr: "Vérifiez les noms, chiffres ou anecdotes avec votre vrai profil avant de publier.",
+      es: "Verifica los nombres, cifras o historias con tu perfil real antes de publicar.",
+      pt: "Confira nomes, números ou histórias no seu perfil real antes de publicar.",
+      nl: "Controleer namen, cijfers of verhalen met je echte profiel voordat je plaatst.",
+      it: "Controlla nomi, numeri o storie sul tuo profilo reale prima di pubblicare.",
+    };
+    const draftCaveat = DRAFT_CAVEAT[lang] || DRAFT_CAVEAT.en;
 
     if (!validEmail(email)) {
       return new Response(JSON.stringify({ error: 'A valid email is required' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
@@ -149,6 +160,7 @@ export default async function handler(req) {
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
       <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.post_hooks}</p>
       <ul style="list-style:none;padding:0;margin:0;">${hooks}</ul>
+      <p style="color:#6a6a8a;font-size:12px;line-height:1.5;margin:14px 0 0;"><span style="color:#c8a96e;">&#10003;</span> ${draftCaveat}</p>
     </div>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:32px;">
       <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.critical_rules}</p>
