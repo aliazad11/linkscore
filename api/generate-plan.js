@@ -175,13 +175,15 @@ export default async function handler(req, res) {
     try { plan = await scrubFabrications(messages, plan, process.env.ANTHROPIC_KEY, c2.signal); } catch (e) { /* leave plan as-is */ }
     clearTimeout(t2);
 
-    // voice_fingerprint is the generation-time voice anchor: a STYLE description (their register +
-    // signature habits + emoji/hashtag/rhythm), never their post content. Persist it ONLY when it
-    // was derived from the user's OWN post screenshots (images present), so the Post Writer can reuse
-    // their tone of voice without making them re-upload. Otherwise drop it (never store/surface it).
-    const hadPostImages = Array.isArray(messages) && messages.some((m) => Array.isArray(m.content) && m.content.some((c) => c && c.type === "image"));
-    const voiceFingerprint = (hadPostImages && plan && typeof plan.voice_fingerprint === "string" && plan.voice_fingerprint.trim())
-      ? plan.voice_fingerprint.trim().slice(0, 1200) : null;
+    // voice_fingerprint is the generation-time voice anchor: a PORTABLE VOICE CARD (register + hook
+    // shape + sign-off + emoji/hashtag pattern + tics + cadence), never their post content and never a
+    // company/product name to reuse. Persist it ONLY when it was derived from the user's OWN post
+    // screenshots (images present), so the Post Writer can reuse their tone without making them
+    // re-upload. GUARD: when there is no authored voice (reshares only / no consistent voice) the model
+    // emits the sentinel "NO AUTHORED VOICE" - never store that, so we never claim a voice we don't have.
+    const NO_VOICE = /no authored voice|only reshares|no consistent (authored )?voice|no clear (authored )?voice|cannot determine a voice/i;
+    const rawVf = (hadPostImages && plan && typeof plan.voice_fingerprint === "string") ? plan.voice_fingerprint.trim() : "";
+    const voiceFingerprint = (rawVf && rawVf.length >= 20 && !NO_VOICE.test(rawVf)) ? rawVf.slice(0, 1500) : null;
     if (plan && typeof plan === "object") delete plan.voice_fingerprint;
 
     const ins = await fetch(SUPABASE_URL + "/rest/v1/gated_plans", {

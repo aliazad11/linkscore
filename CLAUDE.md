@@ -107,7 +107,7 @@ AI scoring engine; PDF profile analysis; post screenshot analysis; smart onboard
 ---
 
 ## 6. Model policy
-- **Deployed (production analysis): `claude-sonnet-4-5-20250929`** in `api/generate-plan.js`. (Decide whether to bump to Sonnet 4.6.)
+- **Deployed (production analysis): `claude-sonnet-4-5-20250929`** in `api/generate-plan.js`. Opus 4.8 was evaluated 2026-06-30 (won a blind quality A/B 32-8) but REJECTED for prod: a live preview test caught that Opus 4.8 rejects the JSON assistant-prefill (400) and truncates the plan at `max_tokens: 8000`, and Ali judged the hardened-Sonnet output better. Staying on Sonnet 4.5 (creator/`polish-post` too). If ever revisited: remove the prefill + set `max_tokens` >= 16000.
 - **Development (this Code work): Opus 4.8.** Haiku 4.5 only for cheap bulk pre-processing.
 
 ---

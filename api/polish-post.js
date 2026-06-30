@@ -93,7 +93,7 @@ const TAKES = [
 function writePrompt(v, draft, langName, take, hasLink, locale) {
   let voice;
   if (typeof v === "string" && v.trim()) {
-    voice = `THE WRITER'S VOICE, saved from their earlier LinkedScore analysis of their OWN posts. Match it exactly:\n${v.trim()}\nReproduce this register and these habits. If it mentions emoji, hashtags, exclamation marks, gratitude phrasing, short or long sentences, or imperfect or non-native English, your post must carry those too. Do NOT make it more polished, more confident, or more like a generic LinkedIn influencer than this describes.\n\n`;
+    voice = `THE WRITER'S PORTABLE VOICE CARD, saved from the analysis of their OWN posts. Match it for STYLE only:\n${v.trim()}\nReproduce their REGISTER, their HOOK SHAPE, their SIGN-OFF style, their EMOJI and HASHTAG PATTERN, and their TICS. If the card shows emoji, hashtags, exclamation marks, gratitude phrasing, or imperfect or non-native English, your post must carry those too.\nHARD RULE: the card describes HOW they write, not WHAT they write about. NEVER import a company, employer, product, client, event, place, or specific hashtag word from the card into this post. This post is ONLY about the rough draft's topic. Do NOT make it more polished, more confident, or more like a generic LinkedIn influencer than the card describes.\n\n`;
   } else if (v) {
     voice = voiceBlock(v) + "\n\n";
   } else {
