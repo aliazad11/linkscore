@@ -107,18 +107,32 @@ SHAPE, follow exactly:
 3. OUTRO: close in their voice, ending with a light question or invitation (only if that fits how they actually write).
 APPROACH FOR THIS VERSION: ${take}
 ${hasLink ? `LINK RULE: do NOT put the link or ANY url in the post. The link will go in the first comment, which protects the post's reach. You may add a short natural pointer like "link in the comments" only if it fits their voice.` : ""}
-RULES: keep every fact from the draft, invent nothing (no fake metrics, names, dates), no [bracket] placeholders, no markdown characters. Write in ${langName}.${locale === "en" ? " American English, no Oxford comma, no em dashes or long dashes unless their own posts use them." : ""} Output ONLY the finished post text, no preamble, no quotes, no notes.
+RULES: keep every fact from the draft, invent nothing (no fake metrics, names, dates), NO invented scenes, quotes, client lines or events the draft does not contain, no [bracket] placeholders, no markdown characters. Match their real hashtag habit from the voice card (the same count and the same branded-vs-generic, lowercase-vs-uppercase pattern), never bolt on generic English tags if their card shows fewer, branded or lowercase ones. Write in ${langName}.${locale === "en" ? " American English, no Oxford comma, no em dashes or long dashes unless their own posts use them." : ""} Output ONLY the finished post text, no preamble, no quotes, no notes.
 
 ROUGH DRAFT (use only for the subject and facts, it has no voice of its own):
 """${draft}"""`;
 }
 
-function cleanCandidate(t, v) {
-  let p = stripMarkdown(String(t || ""));
+// Strip leaked scaffolding: a leading meta/reasoning preamble, standalone "---" rules, and a trailing
+// "Note for you:/P.S." coaching block the model sometimes appends. A user pastes this verbatim, so any
+// of these is publish-fatal.
+function stripScaffold(t) {
+  let lines = String(t || "").split("\n");
+  const META = /^(the skill\b|here(?:'s| is| are)\b|note( for| to)?\b|i'?ll write\b|i will write\b|sure[,!]|okay[,!]|below is\b|as requested\b|voice card\b|this (?:post|skill)\b)/i;
+  while (lines.length && (!lines[0].trim() || /^[-*_]{2,}$/.test(lines[0].trim()) || META.test(lines[0].trim()))) lines.shift();
+  let s = lines.join("\n").replace(/^\s*[-*_]{3,}\s*$/gm, ""); // drop standalone horizontal rules anywhere
+  s = s.replace(/\n+\s*(?:note(?: for you| to the poster)?|p\.?\s?s\.?)\s*:.*$/is, ""); // trailing coaching note
+  return s.replace(/\n{3,}/g, "\n\n").trim();
+}
+function cleanCandidate(t, v, locale) {
+  let p = stripScaffold(stripMarkdown(String(t || "")));
   p = stripUrls(p);
+  p = p.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#0?39;|&apos;/g, "'");
   const structured = v && typeof v === "object"; // a string fingerprint has no examples to judge habits, so don't strip
   if (structured && !usesEmoji(v)) p = stripEmoji(p);
   if (structured && !usesHash(v)) p = stripHash(p);
+  // House style for English output: no em/long dashes, no Oxford comma (matches the analyzer's finalizePlan).
+  if (locale === "en") p = p.replace(/\s*[—―]\s*/g, ", ").replace(/,(\s+(?:and|or)\b)/gi, "$1");
   return p.replace(/\n{3,}/g, "\n\n").trim();
 }
 
@@ -204,7 +218,7 @@ export default async function handler(req, res) {
     const raw = await Promise.all(TAKES.slice(0, N).map((take) =>
       callClaude(key, "You are an expert LinkedIn ghostwriter and the user's trusted adviser. Output ONLY the finished post text, no preamble.", writePrompt(voice, facts, langName, take, hasLink, locale), 1300)
     ));
-    const cands = raw.map((t) => cleanCandidate(t, voice)).filter((p) => p && p.length > 30);
+    const cands = raw.map((t) => cleanCandidate(t, voice, locale)).filter((p) => p && p.length > 30);
     if (!cands.length) return res.status(502).json({ error: "Could not write the post. Try again." });
 
     // 3) Selector picks the most engaging AND most-them.
