@@ -1625,6 +1625,12 @@ function PostWriter() {
   const [device, setDevice] = useState("mobile"); // which fold to show in preview
   const [versions, setVersions] = useState([]); // all candidate posts, our pick first
   const [activeVer, setActiveVer] = useState(0);
+  const [hasTone, setHasTone] = useState(false); // we already saved their tone fingerprint from a prior analysis with their own posts
+  useEffect(() => {
+    let on = true;
+    fetch("/api/me").then((r) => r.json()).then((d) => { if (on && d && d.hasTone) setHasTone(true); }).catch(() => {});
+    return () => { on = false; };
+  }, []);
   useEffect(() => {
     if (!loading) return;
     setPhaseIdx(0);
@@ -1677,7 +1683,7 @@ function PostWriter() {
       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Paste your rough draft here..." rows={5} style={ta} />
 
       <div style={{ marginTop: 12 }}>
-        <p style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>Optional, but it makes a big difference: add up to 3 screenshots of posts you wrote yourself, so we match your real voice.</p>
+        <p style={{ color: "#9696b4", fontSize: 12, lineHeight: 1.5, marginBottom: 8 }}>{hasTone ? "✓ We already learned how you write from your profile analysis, so this is in your voice. Add a couple of your posts only if you want an even tighter match." : "Optional, but it makes a big difference: if you have not shown us how you write yet, add up to 3 screenshots of posts you wrote yourself, so we match your real voice."}</p>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
           {samples.map((s, i) => (
             <div key={i} style={{ position: "relative" }}>

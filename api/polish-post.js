@@ -10,6 +10,24 @@ export const config = { maxDuration: 60 };
 const MODEL = "claude-sonnet-4-5-20250929";
 const LANG = { en: "English", de: "German", fr: "French", es: "Spanish", pt: "Portuguese", nl: "Dutch", it: "Italian" };
 const N = 3; // candidates per post (best-of-N kills the catastrophic single-draw miss)
+const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
+
+// Reuse the tone-of-voice fingerprint we saved from this user's profile analysis (their OWN posts),
+// so a signed-in user who already uploaded posts in the questionnaire is not asked to re-upload.
+// Returns a short STYLE description string (register + habits, never their post content), or null.
+async function fetchSavedTone(email) {
+  try {
+    const key = process.env.SUPABASE_SERVICE_KEY;
+    if (!key || !email) return null;
+    const r = await fetch(SUPABASE_URL + "/rest/v1/gated_plans?email=eq." + encodeURIComponent(email) + "&voice_fingerprint=not.is.null&select=voice_fingerprint&order=created_at.desc&limit=1", {
+      headers: { "apikey": key, "Authorization": "Bearer " + key },
+    });
+    if (!r.ok) return null;
+    const rows = await r.json().catch(() => []);
+    const vf = rows && rows[0] && rows[0].voice_fingerprint;
+    return (typeof vf === "string" && vf.trim()) ? vf.trim() : null;
+  } catch (e) { return null; }
+}
 
 // ---- deterministic helpers --------------------------------------------------
 const EMOJI_TEST = /\p{Extended_Pictographic}/u;
@@ -73,7 +91,14 @@ const TAKES = [
 ];
 
 function writePrompt(v, draft, langName, take, hasLink, locale) {
-  const voice = v ? voiceBlock(v) + "\n\n" : "Infer the writer's voice from the rough draft below and stay true to it. Do not make it more polished or more like a generic LinkedIn influencer than they are.\n\n";
+  let voice;
+  if (typeof v === "string" && v.trim()) {
+    voice = `THE WRITER'S VOICE, saved from their earlier LinkedScore analysis of their OWN posts. Match it exactly:\n${v.trim()}\nReproduce this register and these habits. If it mentions emoji, hashtags, exclamation marks, gratitude phrasing, short or long sentences, or imperfect or non-native English, your post must carry those too. Do NOT make it more polished, more confident, or more like a generic LinkedIn influencer than this describes.\n\n`;
+  } else if (v) {
+    voice = voiceBlock(v) + "\n\n";
+  } else {
+    voice = "Infer the writer's voice from the rough draft below and stay true to it. Do not make it more polished or more like a generic LinkedIn influencer than they are.\n\n";
+  }
   return `${voice}You are this person's trusted LinkedIn adviser. Turn the rough draft below into ONE scroll-stopping, engagement-optimized LinkedIn post, written 100% in THEIR voice: their vocabulary, rhythm, warmth or coolness, emoji and hashtag habits. If their real posts are plain, messy, broken or emoji-heavy, KEEP that texture, never sanitize them into clean generic influencer copy.
 
 SHAPE, follow exactly:
@@ -91,8 +116,9 @@ ROUGH DRAFT (use only for the subject and facts, it has no voice of its own):
 function cleanCandidate(t, v) {
   let p = stripMarkdown(String(t || ""));
   p = stripUrls(p);
-  if (v && !usesEmoji(v)) p = stripEmoji(p);
-  if (v && !usesHash(v)) p = stripHash(p);
+  const structured = v && typeof v === "object"; // a string fingerprint has no examples to judge habits, so don't strip
+  if (structured && !usesEmoji(v)) p = stripEmoji(p);
+  if (structured && !usesHash(v)) p = stripHash(p);
   return p.replace(/\n{3,}/g, "\n\n").trim();
 }
 
@@ -166,10 +192,12 @@ export default async function handler(req, res) {
   try {
     // 1) Voice profile (optional) + a neutral fact brief, in parallel. The brief lets the engine
     //    REBUILD from facts in their voice instead of restyling whatever they pasted.
-    const [voice, brief] = await Promise.all([
+    const [scanned, brief, savedTone] = await Promise.all([
       samples.length ? scanVoice(key, samples) : Promise.resolve(null),
       extractFacts(key, draft),
+      (!samples.length && s.email) ? fetchSavedTone(s.email) : Promise.resolve(null),
     ]);
+    const voice = scanned || savedTone || null; // uploaded posts win; else reuse their saved tone fingerprint
     const facts = brief || draft;
 
     // 2) Best-of-N candidates, generated in parallel.
@@ -182,7 +210,9 @@ export default async function handler(req, res) {
     // 3) Selector picks the most engaging AND most-them.
     let post = cands[0], selectedIdx = 0;
     if (cands.length > 1) {
-      const ref = voice
+      const ref = (typeof voice === "string" && voice.trim())
+        ? `This person's voice, saved from their earlier analysis: ${voice.trim()}\n\n`
+        : voice
         ? `This person's REAL posts:\n${(voice.examples || []).map((e) => `- ${String(e).slice(0, 600)}`).join("\n")}\n\nTheir signature moves:\n${(voice.signatures || []).map((x) => `- ${x}`).join("\n")}\n\n`
         : "";
       const candBlock = cands.map((c, i) => `=== CANDIDATE ${i + 1} ===\n${c}`).join("\n\n");
