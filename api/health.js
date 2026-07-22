@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     anthropic: !!process.env.ANTHROPIC_KEY,
     supabase: !!process.env.SUPABASE_SERVICE_KEY,
     auth: !!process.env.AUTH_SECRET,
-    resend: !!process.env.RESEND_API_KEY,
+    resend: !!(process.env.RESEND_KEY || process.env.VITE_RESEND_KEY),
   };
   let db = false;
   if (env.supabase) {
