@@ -13,7 +13,8 @@ const HREFLANG = LANDING_LOCALES
   .join('') + `    <link rel="alternate" hreflang="x-default" href="${ORIGIN}/" />\n`
 
 // English source strings that get swapped for localized copies in each page's <head>.
-const EN_TITLE = 'Linkedscore — LinkedIn Growth Plan'
+// Must match index.html's <title> exactly — the locale swap is a literal string replace.
+const EN_TITLE = 'LinkedScore | LinkedIn Growth Plan'
 const EN_DESC = 'Get your free LinkedIn Score and a personalized AI growth plan: profile rewrites, post hooks and a 30-day roadmap built for your goal.'
 const EN_DESC_SHORT = 'Get your free LinkedIn Score and a personalized AI growth plan.'
 
