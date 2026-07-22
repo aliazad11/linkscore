@@ -21,6 +21,9 @@ export function CookieConsent() {
 
   const decide = (analyticsOptIn) => {
     setConsent({ analytics: analyticsOptIn, ts: Date.now() });
+    // Anonymous decision beacon (no cookies, no PII): opt-in-gated analytics can't
+    // see its own denominator, so this one log line is how we know the accept rate.
+    try { navigator.sendBeacon && navigator.sendBeacon("/api/log-consent?c=" + (analyticsOptIn ? "accept" : "reject")); } catch (e) {}
     if (analyticsOptIn) initAnalytics();
     setOpen(false); setCustom(false);
   };
