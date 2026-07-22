@@ -453,31 +453,31 @@ export const HOME_STRINGS = {
 
 export const HOME_META = {
   "en": {
-    "title": "LinkedScore |LinkedIn Growth Plan",
+    "title": "LinkedScore | LinkedIn Growth Plan",
     "description": "Get your free LinkedIn Score and a personalized AI growth plan: profile rewrites, post hooks and a 30-day roadmap built for your goal."
   },
   "de": {
-    "title": "LinkedScore |Dein LinkedIn-Score & KI-Plan",
+    "title": "LinkedScore | Dein LinkedIn-Score & KI-Plan",
     "description": "Hol dir deinen kostenlosen LinkedIn-Score und einen persönlichen KI-Wachstumsplan: Profil-Rewrites, Post-Hooks und eine 30-Tage-Roadmap für dein Ziel."
   },
   "fr": {
-    "title": "LinkedScore |Votre score et plan LinkedIn par IA",
+    "title": "LinkedScore | Votre score et plan LinkedIn par IA",
     "description": "Obtenez votre score LinkedIn gratuit et un plan de croissance personnalisé par IA : profil réécrit, accroches de posts et feuille de route sur 30 jours."
   },
   "es": {
-    "title": "LinkedScore |Plan de crecimiento en LinkedIn",
+    "title": "LinkedScore | Plan de crecimiento en LinkedIn",
     "description": "Consigue gratis tu puntuación de LinkedIn y un plan de crecimiento con IA: mejoras de perfil, ganchos para posts y una hoja de ruta de 30 días."
   },
   "pt": {
-    "title": "LinkedScore |Plano de Crescimento no LinkedIn",
+    "title": "LinkedScore | Plano de Crescimento no LinkedIn",
     "description": "Descobre a tua pontuação do LinkedIn grátis e um plano de crescimento com IA: reescritas do perfil do LinkedIn, ganchos e roteiro de 30 dias."
   },
   "nl": {
-    "title": "LinkedScore |Jouw LinkedIn-groeiplan met AI",
+    "title": "LinkedScore | Jouw LinkedIn-groeiplan met AI",
     "description": "Ontvang gratis je LinkedIn-score en een persoonlijk AI-groeiplan: herschreven profiel, sterke post-hooks en een routekaart van 30 dagen voor jouw doel."
   },
   "it": {
-    "title": "LinkedScore |Piano di crescita su LinkedIn con IA",
+    "title": "LinkedScore | Piano di crescita su LinkedIn con IA",
     "description": "Scopri il tuo punteggio LinkedIn gratis e un piano di crescita personalizzato con IA: profilo riscritto, hook per i post e una roadmap di 30 giorni su misura."
   }
 };

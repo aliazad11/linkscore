@@ -1,6 +1,15 @@
 // Persists the user + generated plan using the service key, so the browser
 // never writes to the users/plans tables directly. Returns the new plan id
 // for the shareable /plan/UUID link.
+//
+// OWNER: the plans row is keyed by email, and that email is what the dashboard
+// (my-plans) and the /plan/:id owner gate (load-plan) match against the session
+// cookie. A signed-in user may type a different email at the unlock gate (an
+// alias, a typo), which used to orphan the report from their account — so when
+// a valid session exists, the SESSION email owns the row. The typed email still
+// gets the report by mail and still lands in the users lead table.
+import { readSession } from "./_auth.js";
+
 export const config = { maxDuration: 15 };
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
@@ -33,6 +42,8 @@ export default async function handler(req, res) {
   if (!validEmail(email)) return res.status(400).json({ error: "A valid email is required" });
   if (!body.plan_data || typeof body.plan_data !== "object") return res.status(400).json({ error: "Missing plan" });
   const cleanEmail = email.trim().toLowerCase();
+  const session = readSession(req);
+  const ownerEmail = (session && session.purpose === "session" && session.email) ? session.email : cleanEmail;
 
   const headers = {
     "apikey": SERVICE_KEY,
@@ -57,7 +68,7 @@ export default async function handler(req, res) {
       method: "POST",
       headers: { ...headers, "Prefer": "return=representation" },
       body: JSON.stringify({
-        email: cleanEmail,
+        email: ownerEmail,
         first_name: str(body.first_name, 120),
         plan_data: body.plan_data,
         cohort: str(body.cohort, 80),

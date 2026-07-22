@@ -1057,7 +1057,7 @@ function Logo({ onHome }) {
   return (
     <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:24, gap:10 }}>
       <a href="/" aria-label="LinkedScore home" title="Home" style={{ display:"inline-flex", flexShrink:0 }}>
-        <img src={LOGO_URL} alt="Linkedscore" style={{ height:36, objectFit:"contain" }} />
+        <img src={LOGO_URL} alt="LinkedScore" style={{ height:36, objectFit:"contain" }} />
       </a>
       <div style={{ display:"flex", alignItems:"center", gap:10, flexShrink:0 }}>
         <div style={{ position:"relative" }}>
@@ -1947,6 +1947,15 @@ export default function App() {
   const [revChannelShare, setRevChannelShare] = useState("0.3");
   const postRefs = [useRef(null), useRef(null), useRef(null)];
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Signed-in users get the unlock gate prefilled with their account email, so the
+    // saved report lands in their dashboard (save-plan keys the row by session email
+    // anyway; the prefill keeps what they see consistent with where the report goes).
+    let on = true;
+    fetch("/api/me").then((r) => r.json()).then((d) => { if (on && d && d.email) setEmail((prev) => prev || d.email); }).catch(() => {});
+    return () => { on = false; };
+  }, []);
 
   useEffect(() => {
     // Check if URL has a plan ID e.g. linkedscore.app/plan/UUID
