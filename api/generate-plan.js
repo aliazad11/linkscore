@@ -183,11 +183,12 @@ export default async function handler(req, res) {
     // re-upload. GUARD: when there is no authored voice (reshares only / no consistent voice) the model
     // emits the sentinel "NO AUTHORED VOICE" - never store that, so we never claim a voice we don't have.
     const NO_VOICE = /no authored voice|only reshares|no consistent (authored )?voice|no clear (authored )?voice|cannot determine a voice/i;
+    const hadPostImages = Array.isArray(messages) && messages.some((m) => m && Array.isArray(m.content) && m.content.some((c) => c && c.type === "image"));
     const rawVf = (hadPostImages && plan && typeof plan.voice_fingerprint === "string") ? plan.voice_fingerprint.trim() : "";
     const voiceFingerprint = (rawVf && rawVf.length >= 20 && !NO_VOICE.test(rawVf)) ? rawVf.slice(0, 1500) : null;
     if (plan && typeof plan === "object") delete plan.voice_fingerprint;
 
-    const ins = await fetch(SUPABASE_URL + "/rest/v1/gated_plans", {
+    const insertPlan = (body) => fetch(SUPABASE_URL + "/rest/v1/gated_plans", {
       method: "POST",
       headers: {
         "apikey": SERVICE_KEY,
@@ -195,8 +196,17 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         "Prefer": "return=representation",
       },
-      body: JSON.stringify(voiceFingerprint ? { plan_data: plan, voice_fingerprint: voiceFingerprint } : { plan_data: plan }),
+      body: JSON.stringify(body),
     });
+    let ins = await insertPlan(voiceFingerprint ? { plan_data: plan, voice_fingerprint: voiceFingerprint } : { plan_data: plan });
+    if (!ins.ok && voiceFingerprint) {
+      // Resilience: if the voice_fingerprint column is missing (migration not applied) or the
+      // insert fails for any reason tied to it, retry WITHOUT the column. Losing the saved tone
+      // is acceptable; failing the user's whole analysis is not.
+      const e1 = await ins.text().catch(() => "");
+      console.error("[gated_plans insert with voice_fingerprint] " + ins.status + " " + e1 + " — retrying without it");
+      ins = await insertPlan({ plan_data: plan });
+    }
     if (!ins.ok) {
       const e = await ins.text().catch(() => "");
       console.error("[gated_plans insert] " + ins.status + " " + e);
