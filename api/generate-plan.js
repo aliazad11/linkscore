@@ -1,39 +1,9 @@
 export const config = { maxDuration: 300 };
 
-import crypto from "crypto";
 import { verifyToken, allowedOrigin } from "./_auth.js";
+import { durableRateOk, hashKey } from "./_ratelimit.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
-
-// Durable rate limit: 8 generations per hashed IP per hour, backed by the gen_requests
-// table so the limit survives lambda cold starts (the in-memory limiter below resets per
-// instance). IPs are stored only as salted SHA-256 hashes. Fail-open by design: if the
-// table doesn't exist yet or Supabase hiccups, we fall back to the in-memory limiter
-// rather than block real users.
-async function durableRateOk(ip, serviceKey) {
-  try {
-    const ipHash = crypto.createHash("sha256").update(ip + "|" + (process.env.AUTH_SECRET || "ls")).digest("hex").slice(0, 32);
-    const headers = { "apikey": serviceKey, "Authorization": "Bearer " + serviceKey, "Content-Type": "application/json" };
-    const since = new Date(Date.now() - 3600000).toISOString();
-    const q = await fetch(SUPABASE_URL + "/rest/v1/gen_requests?ip_hash=eq." + ipHash + "&created_at=gte." + encodeURIComponent(since) + "&select=count", {
-      headers: { ...headers, "Prefer": "count=exact", "Range": "0-0" },
-      signal: AbortSignal.timeout(4000),
-    });
-    if (!q.ok) return true;
-    const cr = q.headers.get("content-range");
-    const n = cr ? parseInt(cr.split("/")[1]) : 0;
-    if (Number.isFinite(n) && n >= 8) return false;
-    fetch(SUPABASE_URL + "/rest/v1/gen_requests", {
-      method: "POST",
-      headers: { ...headers, "Prefer": "return=minimal" },
-      body: JSON.stringify({ ip_hash: ipHash }),
-      signal: AbortSignal.timeout(4000),
-    }).catch(() => {});
-    return true;
-  } catch (e) {
-    return true;
-  }
-}
 
 const hits = new Map();
 function rateOk(ip) {
@@ -224,8 +194,11 @@ export default async function handler(req, res) {
   if (process.env.AUTH_SECRET) {
     const tok = req.headers["x-funnel-token"];
     const payload = (typeof tok === "string" && tok) ? verifyToken(tok) : null;
-    if (!payload || payload.purpose !== "funnel") {
-      console.error("[generate-plan] rejected: missing or invalid funnel token (ip=" + ip + ")");
+    // Tokens are bound to the requester's hashed IP at issue time, so a minted token
+    // cannot be farmed out to other machines. A stale/foreign token 403s; the client
+    // auto-refetches one token and retries, so real users never notice.
+    if (!payload || payload.purpose !== "funnel" || payload.iph !== hashKey(ip).slice(0, 16)) {
+      console.error("[generate-plan] rejected: missing, invalid or IP-mismatched funnel token (ip=" + ip + ")");
       return res.status(403).json({ error: "Your session expired. Please refresh the page and try again." });
     }
   } else {
@@ -238,8 +211,43 @@ export default async function handler(req, res) {
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: "Server not configured" });
 
-  if (!(await durableRateOk(ip, SERVICE_KEY))) {
+  if (!(await durableRateOk(ip, 8, SERVICE_KEY, "generate-plan"))) {
     return res.status(429).json({ error: "You've reached the hourly analysis limit. Please try again later." });
+  }
+
+  // Idempotency: the client persists one request key per funnel run. A refresh during
+  // the 2-3 minute wait used to orphan a PAID completed generation server-side and
+  // bill a second one; now the same key returns the already-generated plan instantly.
+  const rawKey = req.headers["x-request-key"];
+  const reqKey = (typeof rawKey === "string" && /^[a-zA-Z0-9-]{8,64}$/.test(rawKey)) ? rawKey : null;
+  if (reqKey) {
+    try {
+      const dup = await fetch(SUPABASE_URL + "/rest/v1/gated_plans?plan_data-%3E%3E_reqkey=eq." + encodeURIComponent(reqKey) + "&select=id,plan_data&limit=1", {
+        headers: { "apikey": SERVICE_KEY, "Authorization": "Bearer " + SERVICE_KEY },
+        signal: AbortSignal.timeout(4000),
+      });
+      if (dup.ok) {
+        const rows = await dup.json().catch(() => []);
+        if (Array.isArray(rows) && rows.length && rows[0].id) {
+          console.log("[generate-plan] idempotent replay for request key (no regeneration billed)");
+          let teaser = null;
+          try {
+            const pd = rows[0].plan_data || {};
+            const ps = pd.profile_scores || {};
+            const ssi = pd.ssi_plan || {};
+            const tl = pd.thought_leader || {};
+            teaser = {
+              archetype: typeof pd.archetype === "string" ? pd.archetype : null,
+              profileOverall: Number(ps.overall) || null,
+              ssiTotal: (ssi.available && Number(ssi.total)) ? Number(ssi.total) : null,
+              tlAvailable: !!tl.available,
+              tlScore: tl.available ? (Number(tl.score) || 0) : null,
+            };
+          } catch (e) { teaser = null; }
+          return res.status(200).json({ planId: rows[0].id, ready: true, teaser });
+        }
+      }
+    } catch (e) { /* replay check is best-effort; fall through to generate */ }
   }
 
   const controller = new AbortController();
@@ -364,6 +372,9 @@ export default async function handler(req, res) {
     const rawVf = (hadPostImages && plan && typeof plan.voice_fingerprint === "string") ? plan.voice_fingerprint.trim() : "";
     const voiceFingerprint = (rawVf && rawVf.length >= 20 && !NO_VOICE.test(rawVf)) ? rawVf.slice(0, 1500) : null;
     if (plan && typeof plan === "object") delete plan.voice_fingerprint;
+    // Tag the stored plan with the run's request key so a refreshed client replays
+    // this result instead of paying for a second generation (see idempotency above).
+    if (reqKey && plan && typeof plan === "object") plan._reqkey = reqKey;
 
     // 8s cap per insert: in the tightest recovery path (~291s elapsed) a hung Supabase call
     // must fail into the clean 500 below, not push the invocation into Vercel's 300s hard-kill.

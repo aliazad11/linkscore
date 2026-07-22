@@ -3,6 +3,7 @@
 // (rate-limited + origin-checked) per run instead of curl-ing the engine directly.
 // The token carries no user data — just purpose + expiry, HMAC-signed with AUTH_SECRET.
 import { signToken, allowedOrigin } from "./_auth.js";
+import { hashKey } from "./_ratelimit.js";
 
 export const config = { maxDuration: 10 };
 
@@ -21,7 +22,9 @@ export default async function handler(req, res) {
   if (!rateOk(ip)) return res.status(429).json({ error: "Too many requests" });
   if (!allowedOrigin(req.headers.origin || "")) return res.status(403).json({ error: "Forbidden" });
   try {
-    return res.status(200).json({ token: signToken({ purpose: "funnel" }, 7200) });
+    // iph binds the token to the requester's hashed IP: generate-plan rejects the
+    // token from any other IP, so minted tokens can't be farmed to other machines.
+    return res.status(200).json({ token: signToken({ purpose: "funnel", iph: hashKey(ip).slice(0, 16) }, 7200) });
   } catch (e) {
     // AUTH_SECRET missing: fail open so the funnel never breaks on a config gap —
     // generate-plan also skips verification in that case (and logs it).

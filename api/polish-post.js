@@ -4,6 +4,18 @@
 // pick the most engaging AND most-them. If the draft has a link, we return it as a ready first comment
 // plus a plain-English note on why it goes there. Signed-in only (paid LLM calls). Node runtime.
 import { readSession, allowedOrigin } from "./_auth.js";
+import { durableRateOk } from "./_ratelimit.js";
+
+// In-memory backstop (per lambda instance) under the durable per-account cap below:
+// a free magic-link account must not be a scriptable proxy onto our Anthropic key.
+const ppHits = new Map();
+function ppBurstOk(email) {
+  const now = Date.now();
+  const arr = (ppHits.get(email) || []).filter((t) => now - t < 60000);
+  arr.push(now);
+  ppHits.set(email, arr);
+  return arr.length <= 5;
+}
 
 export const config = { maxDuration: 60 };
 
@@ -170,6 +182,11 @@ export default async function handler(req, res) {
   if (!allowedOrigin(req.headers.origin || "")) return res.status(403).json({ error: "Forbidden" });
   const s = readSession(req);
   if (!s || s.purpose !== "session" || !s.email) return res.status(401).json({ error: "Sign in to use the post writer" });
+  if (!ppBurstOk(s.email)) return res.status(429).json({ error: "Too many requests. Please wait a minute." });
+  const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+  if (SERVICE_KEY && !(await durableRateOk("pp:" + s.email, 20, SERVICE_KEY, "polish-post"))) {
+    return res.status(429).json({ error: "You've reached the hourly limit for the post writer. Please try again later." });
+  }
   const key = process.env.ANTHROPIC_KEY;
   if (!key) return res.status(500).json({ error: "Server not configured" });
 
