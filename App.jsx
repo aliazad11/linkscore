@@ -1839,6 +1839,10 @@ function PostWriter() {
 // Social sign-in buttons + "or" divider, shared by both sign-in forms. Each is a plain link to a
 // server-side start endpoint (which builds the provider's consent URL and signs a CSRF state).
 function OAuthButtons({ next }) {
+  // The Google OAuth app is not registered yet, so the button would error on click.
+  // Magic-link sign-in carries launch; re-enable by removing this return once the
+  // OAuth app exists and the env vars are set.
+  return null;
   const n = encodeURIComponent(next || "/account");
   const btn = { display: "flex", alignItems: "center", justifyContent: "center", gap: 10, width: "100%", padding: "11px 0", borderRadius: 12, border: "1px solid #20202f", background: "#0f0f1a", color: "#f5f5fc", fontSize: 14, fontWeight: 600, textDecoration: "none", marginBottom: 10 };
   return (
@@ -2100,6 +2104,37 @@ export default function App() {
     setSavedProgress(null);
     setPhase(snap.target);
   };
+
+  // DEV ONLY: ?mockplan=1 renders the report UI instantly with a canned plan (no funnel, no API
+  // call), so report-level UI like the session offer card can be reviewed without generating a
+  // report. import.meta.env.DEV is false in the production build, so this never ships.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    if (!/[?&]mockplan=1\b/.test(window.location.search)) return;
+    const MOCK = {
+      score: 68, archetype: "The Almost-Heard", headline: "A real voice with real reach that your profile is still hiding.",
+      headline_rewrite: "Social Media Lead | Building executive voices on LinkedIn | 3.5M+ impressions of thought leadership",
+      about_rewrite: "I build LinkedIn presences that get seen. Over the last decade I have turned quiet experts into recognized voices, from award-winning campaigns to an executive program that reached millions. If your work is better than your visibility, that gap is exactly what I fix.",
+      experience_rewrite: "Leads corporate social media strategy, building the executive thought-leadership program and growing organic reach across every channel.",
+      urgency: "Your posts already resonate. The profile framing them is two rewrites away from matching their quality.",
+      profile_scores: { headline: 55, about: 62, experience: 70, overall: 68 },
+      profile_fixes: ["Add a Featured section pinning your two strongest posts so visitors see proof before they scroll.", "Claim the custom URL so your profile link is clean in a bio or email signature.", "Reorder Skills so your top three match what you want to be found for."],
+      keyword_analysis: { target: "Executives searching for a LinkedIn strategist", present: ["LinkedIn strategy", "social media", "thought leadership"], missing: [{ keyword: "personal branding", where: "headline", example: "Weave it into the first line of your headline." }, { keyword: "executive communications", where: "About", example: "Name it in your second About sentence." }] },
+      content_strategy: { post_frequency: "One to two strong original posts per month.", best_posting_times: "Publish when your audience is active and learn the pattern from your own analytics.", content_mix: "Your voice: direct, warm, story-first. Mix personal stories with practical teardowns.", hook_formula: "Put the surprising claim in the first line, inside 140 characters.", content_types: "Text stories, the occasional document post, your face in the frame." },
+      post_hooks: ["Most LinkedIn advice is written for algorithms. People follow people.", "The best post I ever wrote took ten minutes. The worst took three hours.", "What would you post if nobody from work could see it?"],
+      content_calendar: [{ week: "Week 1", type: "POST", topic: "The story behind your biggest lesson this year", hook: "The plan was perfect. Reality disagreed.", action: "Publish in the morning and reply to every comment in the first hour." }, { week: "Week 2", type: "ENGAGEMENT", topic: "Be present without publishing", hook: null, action: "Comment thoughtfully on posts from voices in your niche." }, { week: "Week 3", type: "POST", topic: "A practical teardown your audience can use today", hook: "Three lines decide whether anyone reads your post.", action: "Publish and pin the best reader question as a comment." }, { week: "Week 4", type: "ENGAGEMENT", type2: null, topic: "Grow the room", hook: null, action: "Connect with people who engaged with your posts this month." }],
+      critical_rules: ["Post no more than twice a month. Quality beats quantity.", "Never edit a post after publishing.", "Never reshare. Comment and like instead.", "Tag anyone you mention in a post.", "Use only 3 to 5 targeted hashtags.", "End every post with a clear CTA."],
+      growth_tactics: ["Turn your strongest post into a document version to reach a second audience.", "Invite three people you respect to comment on your next post before you publish it.", "Move your best one-liner into your headline.", "Ask one past colleague for a recommendation this month."],
+      networking: { mode: "engagement", headline: "Show up where your future audience already reads.", targets: [{ who: "Larger voices in your niche", action: "Leave one substantive comment on their next post." }, { who: "Peers one step ahead of you", action: "Start a genuine conversation about their latest work." }, { who: "People who engaged with your posts", action: "Send a short, warm connection note." }], connection_message: "Hi, I have been following the conversation in this space and would really value connecting and learning from your perspective.", follow_up_message: "Thanks for connecting. I would love to hear what you are focused on right now." },
+      closing_message: "You are closer than you think. The voice is there, the plan is here, and the next post is yours.",
+      thought_leader: { available: true, score: 63, hook_score: 58, engagement_score: 66, voice_score: 72, structure_score: 56, analysis: "A real, warm voice with proven engagement, held back by soft openers.", improvements: ["Front-load the punch of each post inside the first 140 characters.", "Close every post with one clear question.", "Show your face in one post per month."] },
+      ssi_plan: { available: false },
+    };
+    setUserData({ firstName: "Ali", lastName: "Azad", age: "35", jobTitle: "Social Media Lead", linkedinUrl: "" });
+    setCohort("Thought Leader");
+    setPlan(finalizePlan(MOCK, null, "en", true, true));
+    setPhase("result");
+  }, []);
 
   // E18 funnel instrumentation: a step event on every phase change (so PostHog can chart the
   // full drop-off), a distinct paywall_viewed (the core gate->unlock conversion metric), and a
