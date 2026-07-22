@@ -26,6 +26,82 @@ function validMessages(messages) {
   return true;
 }
 
+// Repairs truncated or bracket-imbalanced JSON from the model. A generation cut mid-string
+// (max_tokens, or a rare malformed emission) leaves unbalanced brackets that JSON.parse
+// rejects outright — before this, that meant a 502 and the user had to regenerate. The scan
+// is string/escape-aware: it records every structural comma and open bracket as a safe cut
+// point with the closer suffix needed there, then tries the full text first and walks cut
+// points backwards until one parses. Returns the parsed value or null; never throws.
+function parseWithRepair(s) {
+  try { return JSON.parse(s); } catch (e) { /* fall through to repair */ }
+  const stack = [];
+  const cuts = [];
+  let inStr = false, esc = false;
+  const closers = () => stack.map((c) => (c === "{" ? "}" : "]")).reverse().join("");
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === "\\") esc = true;
+      else if (ch === '"') inStr = false;
+      continue;
+    }
+    if (ch === '"') inStr = true;
+    else if (ch === "{" || ch === "[") { stack.push(ch); cuts.push({ pos: i + 1, suffix: closers() }); }
+    else if (ch === "}" || ch === "]") stack.pop();
+    else if (ch === ",") cuts.push({ pos: i, suffix: closers() });
+  }
+  // Full-text candidate — ONLY when the cut landed outside a string. Closing an open
+  // string would ship a mid-word amputated fragment as a field value ("...cut their clos"),
+  // which no downstream layer can detect; the walk-back below instead drops the dangling
+  // fragment cleanly at the last structural comma.
+  // Also skip it when the text ends mid-number: unlike strings, a number prefix is still
+  // valid JSON ("total": 64 cut after the 6 parses as 6), so closing here would serve a
+  // silently wrong value. The walk-back drops the dangling pair at a structural boundary.
+  if (!inStr && !/[0-9.+\-eE]$/.test(s.trimEnd())) {
+    try { return JSON.parse(s + closers()); } catch (e) { /* try earlier cut points */ }
+  }
+  for (let i = cuts.length - 1, tries = 0; i >= 0 && tries < 60; i--, tries++) {
+    const c = cuts[i];
+    try { return JSON.parse(s.slice(0, c.pos) + c.suffix); } catch (e) { /* keep walking back */ }
+  }
+  return null;
+}
+
+// Completeness gate for a parsed candidate plan. The buildPrompt schema is one constant —
+// every key below is requested on every cohort — so a missing key means damaged output,
+// not a variant. Serving a partial plan is worse than retrying: finalizePlan does NOT
+// synthesize missing sections (empty Overview quote card, five blank Content cards) and
+// absent thought_leader/ssi_plan mislock tabs against data the user actually provided.
+// Returns the first missing field name (for telemetry) or null when the plan is complete.
+const REQUIRED_PLAN_FIELDS = [
+  ["score", (p) => p.score !== undefined],
+  ["archetype", (p) => typeof p.archetype === "string" && !!p.archetype],
+  ["headline_rewrite", (p) => typeof p.headline_rewrite === "string" && !!p.headline_rewrite],
+  ["about_rewrite", (p) => typeof p.about_rewrite === "string" && !!p.about_rewrite],
+  ["content_strategy", (p) => !!p.content_strategy && typeof p.content_strategy === "object"],
+  ["post_hooks", (p) => Array.isArray(p.post_hooks) && p.post_hooks.length > 0],
+  ["content_calendar", (p) => Array.isArray(p.content_calendar) && p.content_calendar.length > 0],
+  ["networking", (p) => !!p.networking && typeof p.networking === "object"],
+  ["closing_message", (p) => typeof p.closing_message === "string" && !!p.closing_message],
+  // The last two schema keys are where tail truncation lands, so object-ness alone is not
+  // enough: a repaired {available:true} stub would UNLOCK the tab and render it empty.
+  // When available is explicitly false the section stays locked and needs no content;
+  // when it claims true, the fields the tab renders must actually be there.
+  ["thought_leader", (p) => !!p.thought_leader && typeof p.thought_leader === "object" &&
+    (p.thought_leader.available === false || (Number.isFinite(Number(p.thought_leader.score)) &&
+      typeof p.thought_leader.analysis === "string" && Array.isArray(p.thought_leader.improvements) && p.thought_leader.improvements.length > 0))],
+  ["ssi_plan", (p) => !!p.ssi_plan && typeof p.ssi_plan === "object" &&
+    (p.ssi_plan.available === false || (Number.isFinite(Number(p.ssi_plan.total)) &&
+      Array.isArray(p.ssi_plan.pillars) && p.ssi_plan.pillars.length === 4 &&
+      p.ssi_plan.pillars.every((pl) => pl && typeof pl === "object" && pl.name && pl.advice)))],
+];
+function missingPlanField(p) {
+  if (!p || typeof p !== "object" || Array.isArray(p)) return "root";
+  for (const [name, ok] of REQUIRED_PLAN_FIELDS) { if (!ok(p)) return name; }
+  return null;
+}
+
 // Fact-check pass: re-ground every claim in the rewrite/hook copy against the SAME source (profile PDF
 // + post screenshots already in `messages`). The 20-persona engine test found ~6 fabrications/plan
 // (invented tenure "30 years", metrics "603 reactions", scope "global P&L") that prompt-only guards
@@ -61,19 +137,22 @@ async function scrubFabrications(messages, plan, apiKey, signal) {
       headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
       body: JSON.stringify({
         model: "claude-sonnet-4-5-20250929",
-        max_tokens: 8000,
+        // Must fit the ENTIRE fact-checked field set back out. At 8000 a long plan's scrub
+        // output truncated, failed to parse, and silently returned the UNSCRUBBED plan —
+        // quietly disabling the anti-fabrication pass exactly on the biggest reports.
+        max_tokens: 16000,
         system: "You are a strict fact-checker and JSON API. Output ONLY a raw JSON object. Start with { end with }.",
         messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }, { role: "assistant", content: "{" }],
       }),
       signal,
     });
-    if (!r.ok) return plan;
+    if (!r.ok) { console.error("[scrub] http " + r.status + " — serving unscrubbed plan"); return plan; }
     const d = await r.json().catch(() => null);
     let raw = "{" + ((d && d.content && d.content[0] && d.content[0].text) || "");
     const end = raw.lastIndexOf("}");
-    if (end === -1) return plan;
+    if (end === -1) { console.error("[scrub] no JSON in output (stop_reason=" + (d && d.stop_reason) + ") — serving unscrubbed plan"); return plan; }
     let fixed;
-    try { fixed = JSON.parse(raw.slice(0, end + 1)); } catch { return plan; }
+    try { fixed = JSON.parse(raw.slice(0, end + 1)); } catch { console.error("[scrub] unparseable output (stop_reason=" + (d && d.stop_reason) + " len=" + raw.length + ") — serving unscrubbed plan"); return plan; }
     for (const k of Object.keys(fields)) {
       if (k === "post_hooks") { if (Array.isArray(fixed.post_hooks) && fixed.post_hooks.length) plan.post_hooks = fixed.post_hooks; }
       else if (k === "growth_tactics") { if (Array.isArray(fixed.growth_tactics) && fixed.growth_tactics.length) plan.growth_tactics = fixed.growth_tactics; }
@@ -95,7 +174,7 @@ async function scrubFabrications(messages, plan, apiKey, signal) {
       else if (typeof fixed[k] === "string" && fixed[k].trim()) plan[k] = fixed[k];
     }
     return plan;
-  } catch (e) { return plan; }
+  } catch (e) { console.error("[scrub] " + ((e && e.name) || "error") + ": " + ((e && e.message) || "") + " — serving unscrubbed plan"); return plan; }
 }
 
 export default async function handler(req, res) {
@@ -116,65 +195,111 @@ export default async function handler(req, res) {
 
   try {
     const messagesWithPrefill = [...messages, { role: "assistant", content: "{" }];
+    const started = Date.now();
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_KEY,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250929",
-        max_tokens: 16000,
-        system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.",
-        messages: messagesWithPrefill,
-      }),
-      signal: controller.signal,
-    });
+    // Up to 2 generation attempts. A single stochastic bad sample (truncated or invalid JSON)
+    // used to 502 as "Malformed plan" and force the user to click regenerate — which costs the
+    // same tokens as retrying here, minus the broken experience. HTTP-level errors (429/5xx)
+    // still return immediately: retrying a capacity error would double-bill for nothing.
+    let plan = null;
+    for (let attempt = 1; attempt <= 2 && !plan; attempt++) {
+      // No headroom for a second full generation near the 290s abort — bail to the error.
+      // 140s keeps the worst case (gen 2 to ~290s + skipped scrub + insert) inside
+      // Vercel's maxDuration 300 so the platform never hard-kills a recovered plan.
+      if (attempt > 1 && Date.now() - started > 140000) break;
+
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.ANTHROPIC_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5-20250929",
+          max_tokens: 24000,
+          system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.",
+          messages: messagesWithPrefill,
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        clearTimeout(timeout);
+        const err = await response.json().catch(() => ({}));
+        console.error("[anthropic] " + response.status + " " + ((err && err.error && err.error.message) || ""));
+        if (response.status === 429 || response.status === 529) {
+          return res.status(429).json({ error: "We're at capacity right now. Please try again in a minute." });
+        }
+        if (response.status >= 500) {
+          return res.status(502).json({ error: "The analysis service had a hiccup. Please try again." });
+        }
+        return res.status(502).json({ error: "Analysis failed. Please try again." });
+      }
+
+      const data = await response.json();
+      const raw = "{" + ((data.content && data.content[0] && data.content[0].text) || "");
+
+      // Control chars become spaces (invalid inside JSON strings anyway), then strip
+      // trailing commas before } or ] — the two cheap fixes that never break valid JSON.
+      let cleaned = "";
+      for (let i = 0; i < raw.length; i++) {
+        const cc = raw.charCodeAt(i);
+        cleaned += (cc < 32 || (cc >= 127 && cc <= 159)) ? " " : raw[i];
+      }
+      let out = "";
+      for (let i = 0; i < cleaned.length; i++) {
+        if (cleaned[i] === ",") {
+          let j = i + 1;
+          while (j < cleaned.length && cleaned[j] === " ") j++;
+          if (cleaned[j] === "}" || cleaned[j] === "]") continue;
+        }
+        out += cleaned[i];
+      }
+
+      // Fast path: parse up to the last closing brace (the intact-output case), then
+      // the repair path for truncated/imbalanced output. BOTH candidates go through the
+      // same completeness gate: a partial plan is never served — a valid-JSON-but-wrong-
+      // shape emission (e.g. a prefill-wrapped refusal) and a tail-lossy repair both
+      // count as failures so the retry can re-roll them, and after the final attempt we
+      // return the honest error instead of storing a report with broken sections.
+      let candidate = null;
+      let parseErr = "no closing brace";
+      const end = out.lastIndexOf("}");
+      if (end !== -1) {
+        try { candidate = JSON.parse(out.slice(0, end + 1)); parseErr = ""; } catch (e) { parseErr = e && e.message; }
+      }
+      let repaired = false;
+      if (!candidate) {
+        candidate = parseWithRepair(out);
+        repaired = !!candidate;
+      }
+      const missing = missingPlanField(candidate);
+      if (!missing) {
+        plan = candidate;
+        if (repaired) console.error("[generate-plan] repaired JSON accepted: attempt=" + attempt + " stop_reason=" + data.stop_reason + " len=" + raw.length);
+      } else {
+        console.error("[generate-plan] unusable output: attempt=" + attempt + " stop_reason=" + data.stop_reason + " len=" + raw.length + " missing=" + missing + (parseErr ? " parseErr=" + parseErr : ""));
+      }
+    }
     clearTimeout(timeout);
+    if (!plan) return res.status(502).json({ error: "The analysis came back incomplete. Please try again." });
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      console.error("[anthropic] " + response.status + " " + ((err && err.error && err.error.message) || ""));
-      if (response.status === 429 || response.status === 529) {
-        return res.status(429).json({ error: "We're at capacity right now. Please try again in a minute." });
-      }
-      if (response.status >= 500) {
-        return res.status(502).json({ error: "The analysis service had a hiccup. Please try again." });
-      }
-      return res.status(502).json({ error: "Analysis failed. Please try again." });
+    // Fact-check pass (best-effort, own timeout): strip fabricated facts from the rewrite/hook
+    // copy. The budget is clamped to the wall clock remaining before Vercel's maxDuration 300
+    // hard-kill — a retry that finished late must not let the scrub push the whole invocation
+    // past 300s and lose the recovered plan before the insert. Under ~15s of headroom the scrub
+    // is skipped outright (logged): an unscrubbed complete plan beats a platform timeout.
+    const elapsedBeforeScrub = Date.now() - started;
+    const scrubBudget = Math.min(150000, 280000 - elapsedBeforeScrub);
+    if (scrubBudget > 15000) {
+      const c2 = new AbortController();
+      const t2 = setTimeout(() => c2.abort(), scrubBudget);
+      try { plan = await scrubFabrications(messages, plan, process.env.ANTHROPIC_KEY, c2.signal); } catch (e) { /* leave plan as-is */ }
+      clearTimeout(t2);
+    } else {
+      console.error("[generate-plan] scrub skipped: only " + scrubBudget + "ms budget left after " + elapsedBeforeScrub + "ms");
     }
-
-    const data = await response.json();
-    let raw = "{" + ((data.content && data.content[0] && data.content[0].text) || "");
-    const end = raw.lastIndexOf("}");
-    if (end === -1) return res.status(502).json({ error: "Malformed plan" });
-
-    let s = raw.slice(0, end + 1);
-    let cleaned = "";
-    for (let i = 0; i < s.length; i++) {
-      const cc = s.charCodeAt(i);
-      cleaned += (cc < 32 || (cc >= 127 && cc <= 159)) ? " " : s[i];
-    }
-    let out = "";
-    for (let i = 0; i < cleaned.length; i++) {
-      if (cleaned[i] === ",") {
-        let j = i + 1;
-        while (j < cleaned.length && cleaned[j] === " ") j++;
-        if (cleaned[j] === "}" || cleaned[j] === "]") continue;
-      }
-      out += cleaned[i];
-    }
-
-    let plan;
-    try { plan = JSON.parse(out); } catch (e) { return res.status(502).json({ error: "Malformed plan" }); }
-
-    // Fact-check pass (best-effort, own timeout): strip fabricated facts from the rewrite/hook copy.
-    const c2 = new AbortController();
-    const t2 = setTimeout(() => c2.abort(), 120000);
-    try { plan = await scrubFabrications(messages, plan, process.env.ANTHROPIC_KEY, c2.signal); } catch (e) { /* leave plan as-is */ }
-    clearTimeout(t2);
 
     // voice_fingerprint is the generation-time voice anchor: a PORTABLE VOICE CARD (register + hook
     // shape + sign-off + emoji/hashtag pattern + tics + cadence), never their post content and never a
@@ -188,6 +313,8 @@ export default async function handler(req, res) {
     const voiceFingerprint = (rawVf && rawVf.length >= 20 && !NO_VOICE.test(rawVf)) ? rawVf.slice(0, 1500) : null;
     if (plan && typeof plan === "object") delete plan.voice_fingerprint;
 
+    // 8s cap per insert: in the tightest recovery path (~291s elapsed) a hung Supabase call
+    // must fail into the clean 500 below, not push the invocation into Vercel's 300s hard-kill.
     const insertPlan = (body) => fetch(SUPABASE_URL + "/rest/v1/gated_plans", {
       method: "POST",
       headers: {
@@ -197,6 +324,7 @@ export default async function handler(req, res) {
         "Prefer": "return=representation",
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(8000),
     });
     let ins = await insertPlan(voiceFingerprint ? { plan_data: plan, voice_fingerprint: voiceFingerprint } : { plan_data: plan });
     if (!ins.ok && voiceFingerprint) {

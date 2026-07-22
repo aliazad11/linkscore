@@ -2373,7 +2373,7 @@ export default function App() {
           const start = Date.now();
           const check = setInterval(() => {
             if (planRef.current) { clearInterval(check); resolve(planRef.current); }
-            else if (Date.now() - start > 120000) { clearInterval(check); reject(new Error("Analysis is taking longer than expected. Please try again.")); }
+            else if (Date.now() - start > 290000) { clearInterval(check); reject(new Error("Analysis is taking longer than expected. Please try again.")); }
           }, 300);
         });
       }
