@@ -1,6 +1,39 @@
 export const config = { maxDuration: 300 };
 
+import crypto from "crypto";
+import { verifyToken, allowedOrigin } from "./_auth.js";
+
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
+
+// Durable rate limit: 8 generations per hashed IP per hour, backed by the gen_requests
+// table so the limit survives lambda cold starts (the in-memory limiter below resets per
+// instance). IPs are stored only as salted SHA-256 hashes. Fail-open by design: if the
+// table doesn't exist yet or Supabase hiccups, we fall back to the in-memory limiter
+// rather than block real users.
+async function durableRateOk(ip, serviceKey) {
+  try {
+    const ipHash = crypto.createHash("sha256").update(ip + "|" + (process.env.AUTH_SECRET || "ls")).digest("hex").slice(0, 32);
+    const headers = { "apikey": serviceKey, "Authorization": "Bearer " + serviceKey, "Content-Type": "application/json" };
+    const since = new Date(Date.now() - 3600000).toISOString();
+    const q = await fetch(SUPABASE_URL + "/rest/v1/gen_requests?ip_hash=eq." + ipHash + "&created_at=gte." + encodeURIComponent(since) + "&select=count", {
+      headers: { ...headers, "Prefer": "count=exact", "Range": "0-0" },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!q.ok) return true;
+    const cr = q.headers.get("content-range");
+    const n = cr ? parseInt(cr.split("/")[1]) : 0;
+    if (Number.isFinite(n) && n >= 8) return false;
+    fetch(SUPABASE_URL + "/rest/v1/gen_requests", {
+      method: "POST",
+      headers: { ...headers, "Prefer": "return=minimal" },
+      body: JSON.stringify({ ip_hash: ipHash }),
+      signal: AbortSignal.timeout(4000),
+    }).catch(() => {});
+    return true;
+  } catch (e) {
+    return true;
+  }
+}
 
 const hits = new Map();
 function rateOk(ip) {
@@ -183,12 +216,31 @@ export default async function handler(req, res) {
   const fwd = req.headers["x-forwarded-for"] || "";
   const ip = (typeof fwd === "string" ? fwd.split(",")[0].trim() : "") || "unknown";
   if (!rateOk(ip)) return res.status(429).json({ error: "Too many requests. Please wait a minute and try again." });
+  if (!allowedOrigin(req.headers.origin || "")) return res.status(403).json({ error: "Forbidden" });
+
+  // The signed funnel token (issued by /api/funnel-token) closes the open-relay hole:
+  // each generation costs real Anthropic tokens, so callers must come through the funnel.
+  // Skipped only when AUTH_SECRET is not configured (fail-open, logged).
+  if (process.env.AUTH_SECRET) {
+    const tok = req.headers["x-funnel-token"];
+    const payload = (typeof tok === "string" && tok) ? verifyToken(tok) : null;
+    if (!payload || payload.purpose !== "funnel") {
+      console.error("[generate-plan] rejected: missing or invalid funnel token (ip=" + ip + ")");
+      return res.status(403).json({ error: "Your session expired. Please refresh the page and try again." });
+    }
+  } else {
+    console.error("[generate-plan] AUTH_SECRET not set - funnel token check skipped");
+  }
 
   const { messages } = req.body || {};
   if (!validMessages(messages)) return res.status(400).json({ error: "Missing messages" });
 
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: "Server not configured" });
+
+  if (!(await durableRateOk(ip, SERVICE_KEY))) {
+    return res.status(429).json({ error: "You've reached the hourly analysis limit. Please try again later." });
+  }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 290000);

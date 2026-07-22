@@ -20,10 +20,16 @@ export default async function handler(req, res) {
     });
     const countHeader = r.headers.get("content-range");
     const total = countHeader ? parseInt(countHeader.split("/")[1]) : NaN;
+    // Never fail green: a broken count must not render as "0 users" social proof.
+    // Consumers should hide the counter on anything but a 200 with a finite number.
+    if (!r.ok || !Number.isFinite(total)) {
+      console.error("[stats] count failed: http " + r.status);
+      return res.status(503).json({ users: null });
+    }
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-    return res.status(200).json({ users: Number.isFinite(total) ? total : 0 });
+    return res.status(200).json({ users: total });
   } catch (e) {
     console.error("[stats] " + (e && e.message));
-    return res.status(200).json({ users: 0 });
+    return res.status(503).json({ users: null });
   }
 }

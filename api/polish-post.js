@@ -3,7 +3,7 @@
 // generate N candidates (hook <=210 chars + story body + outro, link kept OUT of the post for reach) ->
 // pick the most engaging AND most-them. If the draft has a link, we return it as a ready first comment
 // plus a plain-English note on why it goes there. Signed-in only (paid LLM calls). Node runtime.
-import { readSession } from "./_auth.js";
+import { readSession, allowedOrigin } from "./_auth.js";
 
 export const config = { maxDuration: 60 };
 
@@ -167,6 +167,7 @@ Output ONLY the full edited post, no preamble, no quotes, no commentary.`;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+  if (!allowedOrigin(req.headers.origin || "")) return res.status(403).json({ error: "Forbidden" });
   const s = readSession(req);
   if (!s || s.purpose !== "session" || !s.email) return res.status(401).json({ error: "Sign in to use the post writer" });
   const key = process.env.ANTHROPIC_KEY;

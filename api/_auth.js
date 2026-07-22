@@ -56,3 +56,17 @@ export function readSession(req) {
   const m = String(raw).match(/(?:^|;\s*)ls_session=([^;]+)/);
   return m ? verifyToken(decodeURIComponent(m[1])) : null;
 }
+
+// Origin allow-list for the Anthropic-relay endpoints (generate-plan, polish-post,
+// funnel-token). Browsers send Origin on POSTs; a present-but-foreign Origin means a
+// cross-site caller and is rejected. An ABSENT Origin is allowed (some privacy setups
+// strip it) — the signed funnel token is the real gate; this is the cheap outer wall.
+export function allowedOrigin(origin) {
+  if (!origin) return true;
+  try {
+    const h = new URL(origin).hostname;
+    return h === "linkedscore.app" || h === "www.linkedscore.app" || h.endsWith(".vercel.app") || h === "localhost" || h === "127.0.0.1";
+  } catch (e) {
+    return false;
+  }
+}

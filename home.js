@@ -229,7 +229,7 @@ export function homeHtml(loc = "en") {
     <a href="/account">${loginLabel}</a>
     <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a><a href="/blog">${L.nav_blog}</a><a href="/account">${loginLabel}</a></div></details>
     ${langSwitcher(loc)}
-    <button class="btn btn-gold">${L.nav_cta}</button>
+    <a href="?start=1" class="btn btn-gold">${L.nav_cta}</a>
   </div>
 </div></nav>
 
@@ -243,7 +243,7 @@ export function homeHtml(loc = "en") {
       <li>${L.edge3}</li>
     </ul>
     <div class="cta-row reveal" style="transition-delay:.21s">
-      <button class="btn btn-gold btn-lg">${L.hero_cta}</button>
+      <a href="?start=1" class="btn btn-gold btn-lg">${L.hero_cta}</a>
       <a href="#get" class="btn btn-ghost btn-lg">${L.hero_cta2}</a>
     </div>
     <div class="proof reveal" style="transition-delay:.28s">
@@ -266,9 +266,9 @@ export function homeHtml(loc = "en") {
             <stop offset="0" stop-color="#e7cf9a"/><stop offset="1" stop-color="#9c763c"/>
           </linearGradient></defs>
           <circle id="arc" cx="70" cy="70" r="60" fill="none" stroke="url(#gg)" stroke-width="11" stroke-linecap="round"
-                  stroke-dasharray="377" stroke-dashoffset="377"/>
+                  stroke-dasharray="377" stroke-dashoffset="196"/>
         </svg>
-        <div class="num"><b id="score">0</b><span>${L.dash_outof}</span></div>
+        <div class="num"><b id="score">48</b><span>${L.dash_outof}</span></div>
       </div>
       <div class="gauge-note">
         <div class="h">${L.dash_note_h}</div>
@@ -327,7 +327,7 @@ export function homeHtml(loc = "en") {
 <section class="final"><div class="wrap">
   <h2>${L.final_h}</h2>
   <p>${L.final_p}</p>
-  <button class="btn btn-gold btn-lg">${L.hero_cta}</button>
+  <a href="?start=1" class="btn btn-gold btn-lg">${L.hero_cta}</a>
 </div></section>
 
 <footer><div class="wrap">
