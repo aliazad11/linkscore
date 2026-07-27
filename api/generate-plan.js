@@ -384,15 +384,22 @@ export default async function handler(req, res) {
     // Recompute the deterministic anchor server-side from the extracted profile text
     // (never a client-supplied number) and blend. hasDoc confirms a real profile was in
     // the request; a scanned/unsupported-language export measures null -> model-only.
+    // Best-effort and fully isolated: deterministic scoring is an ENHANCEMENT, so any
+    // failure inside it (a pathological export text, a regex edge) must fall back to the
+    // model-only score, never take down the whole report. The report is the product.
     if (hasDoc && profileTextForScore) {
-      const measured = measureProfile(profileTextForScore, nameCtx);
-      const det = measured ? detPayload(measured) : null;
-      if (det) {
-        const before = plan.score;
-        blendPlanScores(plan, det, { hadProfile: true });
-        console.log("[generate-plan] anchored=" + (plan._anchored === true) + " overall=" + plan.score + " (model " + before + ")");
-      } else {
-        console.log("[generate-plan] profile text present but unmeasurable - model-only score");
+      try {
+        const measured = measureProfile(profileTextForScore, nameCtx);
+        const det = measured ? detPayload(measured) : null;
+        if (det) {
+          const before = plan.score;
+          blendPlanScores(plan, det, { hadProfile: true });
+          console.log("[generate-plan] anchored=" + (plan._anchored === true) + " overall=" + plan.score + " (model " + before + ")");
+        } else {
+          console.log("[generate-plan] profile text present but unmeasurable - model-only score");
+        }
+      } catch (e) {
+        console.error("[generate-plan] scoring failed, serving model-only score: " + ((e && e.stack) || e));
       }
     }
 
