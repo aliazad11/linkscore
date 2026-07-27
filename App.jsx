@@ -7,6 +7,8 @@ import { track, identify } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
 import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
+import { measureProfile, measuredBlock } from "./scoring.js";
+import { extractPdfText } from "./pdftext.js";
 
 const LOGO_URL = logoAsset;
 
@@ -621,13 +623,19 @@ function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = tr
     if (Array.isArray(plan.thought_leader.improvements)) plan.thought_leader.improvements = plan.thought_leader.improvements.map(fixCH);
     plan.thought_leader.analysis = fixCadence(plan.thought_leader.analysis);
   }
+  // Scores arrive ALREADY anchored when a profile measurement existed: the server
+  // blends 0.6 x deterministic anchor + 0.4 x clamped model judgment before storing,
+  // so the gate teaser, this report, the email link and the dashboard all agree.
+  // plan._anchored also proves the run HAD a profile - the resume path loses the
+  // local pdfText, and without this the A8 cap would butcher a full-PDF report.
+  const effHadProfile = hadProfile || plan._anchored === true;
   const ps = plan.profile_scores || {};
   let overall = Number(ps.overall);
   if (!overall) { const h = Number(ps.headline) || 0, a = Number(ps.about) || 0, e = Number(ps.experience) || 0; overall = Math.round((h + a + e) / 3) || 50; }
   overall = Math.max(0, Math.min(100, overall));
   // A8 (2026-06-24): with no profile PDF and no posts, the score is only an estimate from
   // self-reported quiz answers; cap it so confident self-claims cannot inflate the headline.
-  if (!hadProfile) overall = Math.min(overall, 50);
+  if (!effHadProfile) { overall = Math.min(overall, 50); if (plan.profile_scores && typeof plan.profile_scores === "object") plan.profile_scores.overall = Math.min(Number(plan.profile_scores.overall) || overall, 50); }
   // A1 (2026-06-20): the LinkedIn Score is the objective profile read only. SSI is
   // self-reported and gameable, so it stays in its own SSI Analysis panel and no longer
   // moves the headline; recent posts have their own Thought Leader Score.
@@ -670,7 +678,7 @@ function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = tr
   // A8 prose backstop (English): the prompt forbids asserting an unseen profile is "strong",
   // but the model still slips it into urgency/closing. Deterministically hedge those claims
   // when no profile/posts were provided, so the copy never states unverified quality as fact.
-  if (!hadProfile && noDash) {
+  if (!effHadProfile && noDash) {
     const hedge = (s) => typeof s === "string"
       ? s.replace(/\b(your|the|a)\s+(profile|foundation|presence|positioning|content|brand|headline|about)\s+(is|looks|seems|appears)\s+(strong|solid|complete|completed|optimized|optimised|polished|good|great|excellent|impressive)\b/gi, "$1 $2 may be $4 (based on what you told us)")
       : s;
@@ -679,7 +687,7 @@ function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = tr
   }
   // A-answersOnly: the model sometimes writes a third, contradictory "score of NN" into urgency
   // or closing that disagrees with the capped plan.score; force any such reference to the real score.
-  if (!hadProfile) {
+  if (!effHadProfile) {
     const fixScoreRef = (s) => typeof s === "string" ? s
       .replace(/\b\d{1,3}\s*(?:\/|\s*out of\s*)\s*100\b/gi, plan.score + " out of 100")
       .replace(/\b(overall\s+)?score of\s+\d{1,3}\b/gi, "score of " + plan.score)
@@ -757,7 +765,7 @@ function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = tr
   return plan;
 }
 
-function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "", hasPdf = false, locale = "en") {
+function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort = null, specialNote = "", hasPdf = false, locale = "en", measured = null) {
   const langName = PROMPT_LANG[locale] || "English";
   const langDirective = locale && locale !== "en"
     ? `\nLANGUAGE, STRICT: Write EVERY string value in the output in ${langName}. This includes the archetype, headline, all rewrites (headline_rewrite, about_rewrite, experience_rewrite), profile_fixes, urgency, post_hooks, content_strategy, content_calendar, critical_rules, growth_tactics, networking (including the ready-to-paste connection and follow-up messages), closing_message, thought_leader analysis and improvements, and ssi_plan. The ready-to-paste LinkedIn copy MUST read as natural, native ${langName} that this person could publish as-is, not a translation. Keep the JSON keys and enum values (POST, ENGAGEMENT, WEAK, AVERAGE, STRONG) in English; only the human-readable values are in ${langName}. The "American English, no Oxford comma, no em dash" house style applies only when the language is English.\n`
@@ -839,6 +847,7 @@ DURABLE LINKEDIN PRINCIPLES (firm; always reflected in critical_rules):
 
 CURRENT ALGORITHM LAYER (volatile, present-day only, state as tendencies the user should verify): right now video reach is being boosted; document and carousel reach is moderate; polls are throttled after overuse. Lean on the durable principles above and use this layer only for the volatile specifics.
 
+${measuredBlock(measured)}
 PROFILE SCORING RULES, STRICT, CALIBRATE HONESTLY AND USE THE FULL RANGE:
 - The number must reflect real profile quality, it must not flatter. Keep the ADVICE constructive and encouraging, but make the SCORE accurate. Two profiles of clearly different quality MUST get clearly different scores; do not cluster everyone near 60.
 - Calibration bands for profile_scores.overall, use the whole 35 to 92 range:
@@ -1912,6 +1921,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
   const [pdfText, setPdfText] = useState("");
+
   const [planId, setPlanId] = useState(null);
   const [teaser, setTeaser] = useState(null); // {archetype, profileOverall, ssiTotal, tlAvailable, tlScore} for the email gate
   const [sharedView, setSharedView] = useState(false);
@@ -1928,6 +1938,8 @@ export default function App() {
   const [accountTab, setAccountTab] = useState("overview"); // overview | create | reports
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
+  const pdfPlainRef = useRef(""); // extracted PDF text for deterministic scoring; "" = no measurement
+  const pdfRunRef = useRef(0);   // upload generation token: stale extractions are discarded
   const [specialNote, setSpecialNote] = useState("");
   const [otherText, setOtherText] = useState("");
   const [multiSelected, setMultiSelected] = useState([]);
@@ -2085,6 +2097,8 @@ export default function App() {
   // Instead we surface an explicit "Continue your analysis" button on the
   // landing and only resume when they choose to. PDF/screenshots aren't saved.
   const [savedProgress, setSavedProgress] = useState(null);
+  const hadProfileSnapRef = useRef(false); // restored on resume: the run HAD a profile/posts even though pdfText/screenshots are gone
+  const hadPostsSnapRef = useRef(false);
   const [resumeDismissed, setResumeDismissed] = useState(false);
 
   useEffect(() => {
@@ -2105,6 +2119,8 @@ export default function App() {
   const resumeFunnel = () => {
     const snap = savedProgress;
     if (!snap) return;
+    hadProfileSnapRef.current = !!snap._hp;
+    hadPostsSnapRef.current = !!snap._hpost;
     if (snap.userData) setUserData(snap.userData);
     if (snap.cohort) setCohort(snap.cohort);
     if (snap.answers) setAnswers(snap.answers);
@@ -2210,6 +2226,8 @@ export default function App() {
       localStorage.setItem("ls_funnel_v1", JSON.stringify({
         ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
         revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
+        _hp: !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
+        _hpost: !noPostsYet && postScreenshots.filter(Boolean).length > 0,
       }));
     } catch (e) {}
   }, [phase, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId]);
@@ -2371,7 +2389,16 @@ export default function App() {
     // to what the user already posts. maxDuration is 300s server-side so the call has headroom.
 
     const profileText = (profile && !profile.startsWith("PDF_BASE64:")) ? profile : "";
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote, !!(profile && profile.startsWith("PDF_BASE64:")), locale) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
+    // Deterministic measurement: give a slow extraction a moment to finish (the user
+    // is heading into a 2-3 minute wait anyway), then measure. If extraction never
+    // produced text, the run is simply model-only - logged, never blocking.
+    const isPdfRun = !!(profile && profile.startsWith("PDF_BASE64:"));
+    if (isPdfRun && !pdfPlainRef.current) {
+      for (let w = 0; w < 14 && !pdfPlainRef.current; w++) await new Promise((r) => setTimeout(r, 500));
+      if (!pdfPlainRef.current) console.log("[scoring] extraction not ready, running model-only");
+    }
+    const measured = (isPdfRun && pdfPlainRef.current) ? measureProfile(pdfPlainRef.current, { firstName: user.firstName, lastName: user.lastName, jobTitle: user.jobTitle }) : null;
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote, isPdfRun, locale, measured) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
     // Prefix JSON
     messageContent.push({ type:"text", text:"Respond with only raw JSON starting with {" });
 
@@ -2395,7 +2422,7 @@ export default function App() {
     const callEngine = async (token) => fetch("/api/generate-plan", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "x-funnel-token": token, "x-request-key": reqKey },
-      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
+      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }], profileText: (isPdfRun && pdfPlainRef.current) ? pdfPlainRef.current : "", nameCtx: { firstName: user.firstName, lastName: user.lastName, jobTitle: user.jobTitle } }),
     });
     let res = await callEngine(await getToken());
     if (res.status === 403) res = await callEngine(await getToken());
@@ -2435,8 +2462,8 @@ export default function App() {
       if (!result) throw new Error("Could not load your plan. Please try again.");
       result.critical_rules = FOUNDER_RULES;
       const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
-      const hadPosts = !noPostsYet && postScreenshots.filter(Boolean).length > 0;
-      const hadProfile = !!(pdfText && pdfText.trim()) || hadPosts;
+      const hadPosts = (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadPostsSnapRef.current;
+      const hadProfile = !!(pdfText && pdfText.trim()) || hadPosts || hadProfileSnapRef.current;
       const finalized = finalizePlan(result, revInputs, locale, hadProfile, hadPosts);
       setPlan(finalized);
 
@@ -2508,12 +2535,22 @@ export default function App() {
     if (!file) return;
     if (file.type !== "application/pdf") { setPdfError("That file isn't a PDF. Export yours from LinkedIn via Resources → Save to PDF."); return; }
     // Truncating base64 corrupts the PDF, so reject oversized files instead
-    if (file.size > 3 * 1024 * 1024) { setPdfError("That PDF is over 3MB. LinkedIn profile exports are usually small, try re-exporting it."); setPdfName(""); setPdfText(""); return; }
+    if (file.size > 3 * 1024 * 1024) { setPdfError("That PDF is over 3MB. LinkedIn profile exports are usually small, try re-exporting it."); setPdfName(""); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; return; }
     setPdfError("");
     setPdfName(file.name);
+    // Deterministic scoring needs the plain text; extraction is async, lazy-loads
+    // pdf.js, reads the File directly (no base64 decode jank) and is token-guarded:
+    // a slower extraction from a PREVIOUS upload can never overwrite this one.
+    const run = ++pdfRunRef.current;
+    pdfPlainRef.current = "";
+    file.arrayBuffer()
+      .then((buf) => extractPdfText(new Uint8Array(buf)))
+      .then((t) => { if (pdfRunRef.current === run) pdfPlainRef.current = t || ""; })
+      .catch(() => { if (pdfRunRef.current === run) pdfPlainRef.current = ""; });
     const reader = new FileReader();
-    reader.onerror = () => { setPdfError("Couldn't read that file. Please try again."); setPdfName(""); setPdfText(""); };
+    reader.onerror = () => { setPdfError("Couldn't read that file. Please try again."); setPdfName(""); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; };
     reader.onload = (e) => {
+      if (pdfRunRef.current !== run) return; // a newer upload superseded this one
       const base64 = e.target.result.split(",")[1];
       setPdfText(`PDF_BASE64:${base64}`);
       track("pdf_uploaded");
@@ -2543,7 +2580,7 @@ export default function App() {
   // resets and "start over" keep the user on their localized route.
   const localeHome = locale === "en" ? "/" : "/" + locale + "/";
 
-  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   const progress = (currentQ/QUESTIONS.length)*100;
 
@@ -2742,7 +2779,7 @@ export default function App() {
                 ) : (
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <p style={{ color: "#c8c8dd", fontSize: 13.5, flex: 1, minWidth: 150 }}>Set a target score and track your climb.</p>
-                    {[...new Set([Math.min(95, (latest.score || 0) + 5), Math.min(95, (latest.score || 0) + 10), 90])].filter((g) => g > (latest.score || 0)).slice(0, 3).map((g) => (
+                    {[...new Set([Math.min(88, (latest.score || 0) + 5), Math.min(88, (latest.score || 0) + 10), Math.min(88, (latest.score || 0) + 20)])].filter((g) => g > (latest.score || 0)).slice(0, 3).map((g) => (
                       <button key={g} onClick={() => setGoal(g)} style={{ background: "transparent", border: "1px solid #c8a96e55", color: "#c8a96e", borderRadius: 9, padding: "7px 13px", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>{g}</button>
                     ))}
                   </div>
@@ -3313,7 +3350,7 @@ export default function App() {
     // Displayed LinkedIn Score = the objective profile read only (matches finalizePlan A1).
     // SSI is self-reported, so it no longer moves this number; it lives in the SSI Analysis tab.
     // A8: with no PDF and no posts the score is an estimate from self-reported answers; cap at 50.
-    const hadProfileGate = !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0);
+    const hadProfileGate = !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadProfileSnapRef.current;
     const gateScore = (teaser && teaser.profileOverall != null)
       ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(teaser.profileOverall)))
       : null;
