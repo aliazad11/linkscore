@@ -2,7 +2,6 @@ export const config = { maxDuration: 300 };
 
 import { verifyToken, allowedOrigin } from "./_auth.js";
 import { durableRateOk, hashKey } from "./_ratelimit.js";
-import { blendPlanScores, measureProfile, detPayload } from "../scoring.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 
@@ -208,18 +207,6 @@ export default async function handler(req, res) {
 
   const { messages } = req.body || {};
   if (!validMessages(messages)) return res.status(400).json({ error: "Missing messages" });
-  // Deterministic anchors measured client-side from the uploaded profile text.
-  // Blending happens HERE, before the plan is stored, so the gate teaser, the
-  // report, the emailed /plan/:id link and the dashboard all show the same score.
-  // Deterministic scoring is computed HERE from the profile text the client extracted,
-  // NOT from any client-supplied score - so a tampered score field cannot inflate the
-  // result. The text is used transiently for measurement and is never stored. nameCtx
-  // only locates the headline under the name line and checks goal alignment.
-  const rb = req.body || {};
-  const profileTextForScore = typeof rb.profileText === "string" ? rb.profileText.slice(0, 80000) : "";
-  const nc = (rb.nameCtx && typeof rb.nameCtx === "object") ? rb.nameCtx : {};
-  const cap = (v) => (typeof v === "string" ? v.slice(0, 120) : "");
-  const nameCtx = { firstName: cap(nc.firstName), lastName: cap(nc.lastName), jobTitle: cap(nc.jobTitle) };
 
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: "Server not configured" });
@@ -372,35 +359,6 @@ export default async function handler(req, res) {
       clearTimeout(t2);
     } else {
       console.error("[generate-plan] scrub skipped: only " + scrubBudget + "ms budget left after " + elapsedBeforeScrub + "ms");
-    }
-
-    // Anchor the score to the deterministic measurement. FORGE GUARD: only honor the
-    // client-supplied anchors when the request actually carried a profile document
-    // (hasDoc) - an answers-only run can not inflate its score - and blendPlanScores
-    // additionally rejects anchors that diverge wildly from the model's own read.
-    // _anchored is always server-controlled: strip anything the model (or a prompt-
-    // injected answer) emitted so it can never bypass the A8 no-profile cap client-side.
-    if (plan && typeof plan === "object") delete plan._anchored;
-    // Recompute the deterministic anchor server-side from the extracted profile text
-    // (never a client-supplied number) and blend. hasDoc confirms a real profile was in
-    // the request; a scanned/unsupported-language export measures null -> model-only.
-    // Best-effort and fully isolated: deterministic scoring is an ENHANCEMENT, so any
-    // failure inside it (a pathological export text, a regex edge) must fall back to the
-    // model-only score, never take down the whole report. The report is the product.
-    if (hasDoc && profileTextForScore) {
-      try {
-        const measured = measureProfile(profileTextForScore, nameCtx);
-        const det = measured ? detPayload(measured) : null;
-        if (det) {
-          const before = plan.score;
-          blendPlanScores(plan, det, { hadProfile: true });
-          console.log("[generate-plan] anchored=" + (plan._anchored === true) + " overall=" + plan.score + " (model " + before + ")");
-        } else {
-          console.log("[generate-plan] profile text present but unmeasurable - model-only score");
-        }
-      } catch (e) {
-        console.error("[generate-plan] scoring failed, serving model-only score: " + ((e && e.stack) || e));
-      }
     }
 
     // voice_fingerprint is the generation-time voice anchor: a PORTABLE VOICE CARD (register + hook
