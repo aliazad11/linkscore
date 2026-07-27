@@ -7,8 +7,18 @@ import { track, identify } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
 import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
-import { measureProfile, measuredBlock } from "./scoring.js";
+import { measureProfile, measuredBlock, blendPlanScores, detPayload } from "./scoring.js";
 import { extractPdfText } from "./pdftext.js";
+
+// Single-value blend for the email-gate score, mirroring blendPlanScores' math so the
+// gate teaser and the unlocked report agree (the teaser lacks sub-scores, so we blend
+// the model overall toward the provisional deterministic overall directly).
+function blendGateOverall(det, modelOverall) {
+  if (!det || !Number.isFinite(Number(det.provisionalOverall)) || !Number.isFinite(Number(modelOverall))) return modelOverall;
+  const a = Number(det.provisionalOverall), m = Number(modelOverall);
+  const clampedM = Math.max(a - 5, Math.min(a + 5, m));
+  return Math.max(35, Math.min(92, Math.round(0.6 * a + 0.4 * clampedM)));
+}
 
 const LOGO_URL = logoAsset;
 
@@ -520,8 +530,19 @@ function fmtMoney(n, code) {
   catch (e) { return (code || "") + " " + Math.round(n).toLocaleString(); }
 }
 
-function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = true) {
+function finalizePlan(plan, rev, locale = "en", hadProfile = true, hadPosts = true, measured = null) {
   if (!plan || typeof plan !== "object") return plan;
+  // Deterministic anchor blend (2026-07-27), CLIENT-SIDE. The score was noise before:
+  // identical input re-ran +-14 and an improved profile could score lower. Here the
+  // model's profile_scores are pulled 0.6 anchor / 0.4 model-clamped-to-anchor+-5, so
+  // identical input moves <=4 and real improvement must move the number. Runs in the
+  // browser (proven safe) - it can NEVER touch the generation path. Best-effort: any
+  // failure leaves the model-only score. blendPlanScores sets plan._anchored, which
+  // effHadProfile below relies on. The blended plan is what gets stored (save-plan ->
+  // plans table), so the report, dashboard and /plan/:id all show the same number.
+  if (measured && measured.det) {
+    try { blendPlanScores(plan, detPayload(measured), { hadProfile: true }); } catch (e) { /* model-only score */ }
+  }
   // House style: English copy carries no em/long dashes. The prompt already
   // forbids them; this is the deterministic backstop (#16) so a model slip
   // never reaches the user. Other locales keep their native typography.
@@ -1940,6 +1961,7 @@ export default function App() {
   const planRef = useRef(null);
   const pdfPlainRef = useRef(""); // extracted PDF text for deterministic scoring; "" = no measurement
   const pdfRunRef = useRef(0);   // upload generation token: stale extractions are discarded
+  const measuredRef = useRef(null); // deterministic measurement for the current run; blended CLIENT-side in finalizePlan (server stays out of scoring - it broke prod)
   const [specialNote, setSpecialNote] = useState("");
   const [otherText, setOtherText] = useState("");
   const [multiSelected, setMultiSelected] = useState([]);
@@ -2398,6 +2420,7 @@ export default function App() {
       if (!pdfPlainRef.current) console.log("[scoring] extraction not ready, running model-only");
     }
     const measured = (isPdfRun && pdfPlainRef.current) ? measureProfile(pdfPlainRef.current, { firstName: user.firstName, lastName: user.lastName, jobTitle: user.jobTitle }) : null;
+    measuredRef.current = measured; // used to blend the score client-side after the model returns
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote, isPdfRun, locale, measured) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
     // Prefix JSON
     messageContent.push({ type:"text", text:"Respond with only raw JSON starting with {" });
@@ -2422,7 +2445,7 @@ export default function App() {
     const callEngine = async (token) => fetch("/api/generate-plan", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "x-funnel-token": token, "x-request-key": reqKey },
-      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }], profileText: (isPdfRun && pdfPlainRef.current) ? pdfPlainRef.current : "", nameCtx: { firstName: user.firstName, lastName: user.lastName, jobTitle: user.jobTitle } }),
+      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
     });
     let res = await callEngine(await getToken());
     if (res.status === 403) res = await callEngine(await getToken());
@@ -2464,7 +2487,7 @@ export default function App() {
       const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
       const hadPosts = (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadPostsSnapRef.current;
       const hadProfile = !!(pdfText && pdfText.trim()) || hadPosts || hadProfileSnapRef.current;
-      const finalized = finalizePlan(result, revInputs, locale, hadProfile, hadPosts);
+      const finalized = finalizePlan(result, revInputs, locale, hadProfile, hadPosts, measuredRef.current);
       setPlan(finalized);
 
       // Persist user + plan via the server (service key), so the browser never
@@ -3351,8 +3374,13 @@ export default function App() {
     // SSI is self-reported, so it no longer moves this number; it lives in the SSI Analysis tab.
     // A8: with no PDF and no posts the score is an estimate from self-reported answers; cap at 50.
     const hadProfileGate = !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadProfileSnapRef.current;
-    const gateScore = (teaser && teaser.profileOverall != null)
-      ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(teaser.profileOverall)))
+    // Blend the gate teaser with the same deterministic anchor the report uses, so the
+    // number the user sees at the email gate matches the one inside the report.
+    const gateModelOverall = (teaser && teaser.profileOverall != null)
+      ? (measuredRef.current ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : teaser.profileOverall)
+      : null;
+    const gateScore = (gateModelOverall != null)
+      ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(gateModelOverall)))
       : null;
     return (
     <Layout>
