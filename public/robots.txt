@@ -3,3 +3,4 @@ Allow: /
 Disallow: /api/
 
 Sitemap: https://www.linkedscore.app/sitemap.xml
+Sitemap: https://www.linkedscore.app/blog-sitemap.xml

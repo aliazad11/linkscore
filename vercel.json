@@ -20,6 +20,10 @@
       "destination": "https://linkscore-web.vercel.app/_next/:path*"
     },
     {
+      "source": "/blog-sitemap.xml",
+      "destination": "https://linkscore-web.vercel.app/sitemap.xml"
+    },
+    {
       "source": "/:slug.:ext(png|jpg|jpeg|webp|avif|svg|gif)",
       "destination": "https://linkscore-web.vercel.app/:slug.:ext"
     },

@@ -96,7 +96,46 @@ title: "The LinkedIn Headline Formula That Gets You Found",
 date: "2026-06-01",
 image: "/headline-formula.jpg",
 excerpt: "Your headline is the most-read line on your profile. Here is a simple formula that makes it searchable and clear.",
-html: "<h2>Why your headline matters</h2><p>Your headline travels everywhere on LinkedIn: search results, the feed, comments and every connection request. It is the single most-read line you write, and a vague one wastes that reach.</p><h2>The formula</h2><p>Use this shape: who you help, the outcome you create, and one proof point or specialty. Keep it readable, not stuffed with buzzwords.</p><ul><li><strong>Who you help</strong>: name the audience in plain words.</li><li><strong>The outcome</strong>: the result they actually care about.</li><li><strong>Proof or niche</strong>: a number, a focus area or a signature method.</li></ul><h2>Three quick examples</h2><p>Helping B2B founders turn LinkedIn into pipeline. Building demand for life-science brands. Coaching managers to lead with clarity.</p><h2>Common mistakes</h2><p>Listing only a job title. Packing in five keywords. Writing for recruiters when the real audience is buyers. Pick one audience and speak to it.</p><p>Rewrite your headline today, read it out loud and ask one question: would the person you want to reach understand it in three seconds?</p>"
+html: `<p>Open any comment thread on LinkedIn. Under every name sits one line of text. That line follows you everywhere on the platform: search results, the feed, connection requests and every comment you leave. Most people fill it with their job title and move on. That is the most expensive default on LinkedIn.</p>
+<p>I run an executive LinkedIn program for a living. When I open a profile, the headline is where I start. Not because it is hard to fix. Because it is the highest-leverage line on the page, and almost everyone spends it on a title that says nothing.</p>
+<p>Here is the LinkedIn headline formula I use, how it changes by situation and the mistakes that quietly keep good people invisible.</p>
+<h2>What your headline actually does</h2>
+<p>Three jobs, all at once.</p>
+<p><strong>It gets you found.</strong> LinkedIn search leans hard on your headline. When a buyer types "fractional CFO SaaS" or a founder searches for "B2B content strategist," the words in that line help decide whether you appear at all. A headline that only says "Managing Director" will not show up for the searches that matter to you.</p>
+<p><strong>It gets you clicked.</strong> In search results and in the feed, people see three things: your name, your photo and your headline. That one line decides whether they open your profile or scroll past. Your About section, your experience, your recommendations, none of it gets read by someone your headline failed to stop.</p>
+<p><strong>It travels with your voice.</strong> Every comment you write carries your headline under your name. Leave a sharp comment under a big post and hundreds of people read that line without ever visiting your profile. If it says something vague, that vague line is the entire impression you left.</p>
+<h2>The LinkedIn headline formula</h2>
+<p>Who you help. The outcome you create. One piece of proof or a niche.</p>
+<p>That is the whole shape. In one line: <strong>I help [audience] get [outcome], [proof or specialty]</strong>. You do not need those exact words, and the order can flex. What cannot flex is the content: a reader must know who this is for, what it delivers and why they should believe you.</p>
+<ul>
+<li><strong>Who you help.</strong> Name the audience in the words they use for themselves. "Mid-market manufacturers," "seed-stage founders," "hospital procurement teams." If your audience would not use the phrase, neither should you.</li>
+<li><strong>The outcome.</strong> The result they would pay for, not the activity you perform. "Turn LinkedIn into pipeline" is an outcome. "Content marketing" is a chore.</li>
+<li><strong>Proof or niche.</strong> A real number you can stand behind, a focus area or a named method. One is enough. Zero is a claim, three is a brochure.</li>
+</ul>
+<h2>The formula by situation</h2>
+<p>The shape holds, the emphasis moves. Use these as fill-in templates, not scripts.</p>
+<p><strong>B2B executive:</strong> [Role] | Helping [industry] [outcome] | [credential or focus]. Keep the title, because peers and boards look for it, but never let it stand alone.</p>
+<p><strong>Founder:</strong> Building [what] for [audience] | [the traction or focus you can prove]. Your company name alone tells a stranger nothing. Say what it does and who it is for.</p>
+<p><strong>Consultant or coach:</strong> I help [audience] [outcome] | [method or proof]. You live and die by search here, so the words your clients actually type belong in the line.</p>
+<p><strong>Job seeker:</strong> [Function] specialized in [specialty] | [an outcome you have delivered]. Lead with the value you bring, not the fact that you are looking. And never open with "aspiring." You are not aspiring to your skills, you have them.</p>
+<h2>The mistakes that keep you invisible</h2>
+<p><strong>The job title default.</strong> "Senior Project Manager at Company" repeats what the experience section already says and wastes the most-read line on the page.</p>
+<p><strong>Buzzword soup.</strong> "Visionary | Innovator | Disruptor" describes nobody and gets searched by nobody. If a word could sit in anyone's headline, it is doing nothing in yours.</p>
+<p><strong>Keyword stuffing.</strong> Cramming five audiences and eight skills into 220 characters reads as desperate and speaks to no one. A headline that tries to catch everyone stops no one. Pick one audience and commit.</p>
+<p><strong>Writing for the wrong reader.</strong> A consultant whose headline courts recruiters. A job seeker whose headline sells to clients. Decide who moves your goal this year and write for that person only.</p>
+<p><strong>Clever over clear.</strong> Puns and inside jokes lose to plain words, because nobody searches for a pun. Save the wit for your posts, where it belongs.</p>
+<h2>Spending the 220 characters</h2>
+<p>LinkedIn gives you up to 220 characters, and you do not have to spend them all. More important than the budget is the order: in most places your headline appears, only the first stretch of it shows before the cut. Put the audience and the outcome at the front and the credentials after. If the visible part ends mid-credential, you lose little. If it ends before the reader learns who you help, you lose the click.</p>
+<h2>The three-second test</h2>
+<p>Rewrite the line, read it out loud and ask one question: would the person you want to reach understand what you do for them in three seconds? Then check it where it actually lives. Find one of your own recent comments and read the line under your name as a stranger would. That single glance is how most of LinkedIn will ever meet you.</p>
+<p>A strong headline also raises the return on everything else you do here. Your posts earn more profile visits when the line under your name gives people a reason to click, which is exactly when <a href="/blog/linkedin-golden-hour">the golden hour</a> starts paying you back. And it anchors you while you avoid <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">the tactics that buy reach at the cost of trust</a>.</p>
+<p>Not sure what your headline is telling people right now? LinkedScore reads your real profile, scores your headline and hands you a rewrite in your own voice. Or <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session and we will rewrite it together</a>.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>What is the LinkedIn headline formula?</strong><br />Who you help, the outcome you create and one piece of proof or a niche. In practice: I help [audience] get [outcome], [proof]. Plain words your audience would actually search for.</p>
+<p><strong>How long can a LinkedIn headline be?</strong><br />Up to 220 characters. You do not need them all. Put the audience and outcome first, because in most placements only the beginning shows before the line is cut off.</p>
+<p><strong>Should I put keywords in my LinkedIn headline?</strong><br />Yes, the ones your audience actually types, woven into a readable sentence. A keyword list is not a headline. One clear line beats eight stuffed terms.</p>
+<p><strong>Are emojis in a LinkedIn headline unprofessional?</strong><br />Depends on your field. One as a separator can work in casual industries. In conservative ones it costs more credibility than it adds. Either way it does nothing for search, so treat it as decoration, never substance.</p>
+<p><strong>How often should I change my LinkedIn headline?</strong><br />When your goal changes: new offer, new audience, new role target. Otherwise revisit it every couple of months and check it still matches what you want to be found for.</p>`
 }
 ];
 

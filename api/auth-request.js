@@ -37,14 +37,14 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${process.env.RESEND_KEY || process.env.VITE_RESEND_KEY}`,
       },
       body: JSON.stringify({
-        from: "Linkedscore <noreply@linkedscore.app>",
+        from: "LinkedScore <noreply@linkedscore.app>",
         reply_to: "a.azad@linkedscore.app",
         to: [email],
-        subject: "Your Linkedscore sign-in link",
+        subject: "Your LinkedScore sign-in link",
         html: `<div style="font-family:'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#08080e;color:#f5f5fc;">
           <p style="color:#c8a96e;font-weight:800;letter-spacing:2px;margin:0 0 16px;">LINKEDSCORE</p>
           <p style="line-height:1.6;">Click below to sign in and see your saved reports. This link expires in 15 minutes.</p>
-          <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:700;margin:8px 0;">Sign in to Linkedscore</a>
+          <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:700;margin:8px 0;">Sign in to LinkedScore</a>
           <p style="color:#6a6a8a;font-size:12px;margin-top:24px;line-height:1.6;">If you did not request this, you can safely ignore this email.</p>
         </div>`,
       }),
