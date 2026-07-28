@@ -27,7 +27,7 @@ export default function Article({ params }) {
     description: post.excerpt,
     url: SITE + "/blog/" + post.slug,
     author: { "@type": "Person", name: "Ali Azad", url: "https://www.linkedin.com/in/aliazad11/" },
-    publisher: { "@type": "Organization", name: "Linkedscore", logo: { "@type": "ImageObject", url: SITE + "/logo.png" } }
+    publisher: { "@type": "Organization", name: "LinkedScore", logo: { "@type": "ImageObject", url: SITE + "/logo.png" } }
   };
   if (post.image) { jsonLd.image = SITE + post.image; }
   return (
@@ -36,7 +36,7 @@ export default function Article({ params }) {
       <a className="back" href="/blog">Back to blog</a>
       <div className="hero">
         {post.image ? <img className="hero-img" src={post.image} alt={post.title} /> : null}
-        <p className="kicker">Linkedscore</p>
+        <p className="kicker">LinkedScore</p>
         <h1>{post.title}</h1>
         <p className="post-meta">{post.date}</p>
       </div>

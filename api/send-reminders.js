@@ -63,7 +63,7 @@ export default async function handler(req, res) {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": "Bearer " + (process.env.RESEND_KEY || process.env.VITE_RESEND_KEY) },
           body: JSON.stringify({
-            from: "Linkedscore <noreply@linkedscore.app>",
+            from: "LinkedScore <noreply@linkedscore.app>",
             reply_to: "a.azad@linkedscore.app",
             to: [c.email],
             subject: "Time to re-check your LinkedIn score",
