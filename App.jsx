@@ -817,7 +817,7 @@ function buildPrompt(userData, answers, profileText, screenshotCount = 0, cohort
 ${langDirective}
 USER:
 Cohort: ${cohort||"Professional"}
-Name: ${userData.firstName} ${userData.lastName} | Age: ${userData.age} | Title: ${userData.jobTitle}
+Name: ${userData.firstName} ${userData.lastName} | Title: ${userData.jobTitle}
 ${ssiText}
 Answers:
 ${answersText}
@@ -1929,7 +1929,7 @@ export default function App() {
     try { const p = window.location.pathname; if (/^\/account\/?$/.test(p) || /[?&]account=1\b/.test(window.location.search)) return "account"; return /^\/plan\/[a-f0-9-]{36}$/.test(p) ? "loading" : "intro"; }
     catch (e) { return "intro"; }
   });
-  const [userData, setUserData] = useState({ firstName:"", lastName:"", age:"", jobTitle:"", linkedinUrl:"" });
+  const [userData, setUserData] = useState({ firstName:"", lastName:"", jobTitle:"", linkedinUrl:"" });
   const [formErrors, setFormErrors] = useState({});
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -2191,7 +2191,7 @@ export default function App() {
       thought_leader: { available: true, score: 63, hook_score: 58, engagement_score: 66, voice_score: 72, structure_score: 56, analysis: "A real, warm voice with proven engagement, held back by soft openers.", improvements: ["Front-load the punch of each post inside the first 140 characters.", "Close every post with one clear question.", "Show your face in one post per month."] },
       ssi_plan: { available: false },
     };
-    setUserData({ firstName: "Ali", lastName: "Azad", age: "35", jobTitle: "Social Media Lead", linkedinUrl: "" });
+    setUserData({ firstName: "Ali", lastName: "Azad", jobTitle: "Social Media Lead", linkedinUrl: "" });
     setCohort("Thought Leader");
     setPlan(finalizePlan(MOCK, null, "en", true, true));
     setPhase("result");
@@ -2312,7 +2312,6 @@ export default function App() {
     const e = {};
     if (!userData.firstName.trim()) e.firstName = "Required";
     if (!userData.lastName.trim()) e.lastName = "Required";
-    if (!userData.age || isNaN(userData.age) || userData.age<16||userData.age>80) e.age = "Invalid";
     if (!userData.jobTitle.trim()) e.jobTitle = "Required";
     if (!userData.linkedinUrl.trim()||!userData.linkedinUrl.toLowerCase().includes("linkedin.com/in/")) e.linkedinUrl = "Enter your LinkedIn profile URL (linkedin.com/in/...)";
     setFormErrors(e);
@@ -2978,17 +2977,10 @@ export default function App() {
               </div>
             ))}
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"80px 1fr", gap:12 }}>
-            <div>
-              <label style={s.label}>{t("lbl_age")}</label>
-              <input className={`field-input${formErrors.age?" error":""}`} type="number" value={userData.age} onChange={e=>setUserData({...userData,age:e.target.value})} placeholder="28" />
-              {formErrors.age&&<p style={s.err}>{formErrors.age}</p>}
-            </div>
-            <div>
-              <label style={s.label}>{t("lbl_title")}</label>
-              <input className={`field-input${formErrors.jobTitle?" error":""}`} value={userData.jobTitle} onChange={e=>setUserData({...userData,jobTitle:e.target.value})} placeholder="Marketing Manager" />
-              {formErrors.jobTitle&&<p style={s.err}>{formErrors.jobTitle}</p>}
-            </div>
+          <div>
+            <label style={s.label}>{t("lbl_title")}</label>
+            <input className={`field-input${formErrors.jobTitle?" error":""}`} value={userData.jobTitle} onChange={e=>setUserData({...userData,jobTitle:e.target.value})} placeholder="Marketing Manager" />
+            {formErrors.jobTitle&&<p style={s.err}>{formErrors.jobTitle}</p>}
           </div>
           <div>
             <label style={s.label}>{t("lbl_linkedin")}</label>
