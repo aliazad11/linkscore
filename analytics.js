@@ -8,7 +8,9 @@ const _queue = [];
 // PostHog project token — write-only, public-safe key (fine to ship in client code).
 // Env var overrides it if you ever rotate. Region: EU Cloud.
 const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY || "phc_spF8qvv4nf2kqeURp9rUCccDZjRCReamUeHZMytVDk4y";
-const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || "https://eu.i.posthog.com";
+// Reverse proxy: events route through our own domain (vercel.json /ingest rewrites)
+// so ad blockers that blanket-block posthog.com domains don't drop the tracking.
+const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || "https://www.linkedscore.app/ingest";
 
 // ── Consent (GDPR) ──────────────────────────────────────────────────────────
 // Analytics (PostHog) is non-essential and stays off until the visitor opts in.
@@ -35,6 +37,7 @@ export function initAnalytics() {
     .then(({ default: posthog }) => {
       posthog.init(POSTHOG_KEY, {
         api_host: POSTHOG_HOST,
+        ui_host: "https://eu.posthog.com",
         capture_pageview: true,
         autocapture: true,
         disable_surveys: true,

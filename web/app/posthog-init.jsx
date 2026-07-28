@@ -17,7 +17,10 @@ export default function PostHogInit() {
         .then(({ default: posthog }) => {
           if (window.__ph_init) return;
           posthog.init(key, {
-            api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://eu.i.posthog.com",
+            // Reverse proxy through the canonical domain (vercel.json /ingest rewrites)
+            // so ad blockers don't drop tracking. ui_host keeps PostHog links working.
+            api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://www.linkedscore.app/ingest",
+            ui_host: "https://eu.posthog.com",
             capture_pageview: true,
             autocapture: true,
             disable_surveys: true,
