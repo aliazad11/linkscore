@@ -24,6 +24,14 @@
       "destination": "https://linkscore-web.vercel.app/sitemap.xml"
     },
     {
+      "source": "/ingest/static/:path*",
+      "destination": "https://eu-assets.i.posthog.com/static/:path*"
+    },
+    {
+      "source": "/ingest/:path*",
+      "destination": "https://eu.i.posthog.com/:path*"
+    },
+    {
       "source": "/:slug.:ext(png|jpg|jpeg|webp|avif|svg|gif)",
       "destination": "https://linkscore-web.vercel.app/:slug.:ext"
     },
