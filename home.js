@@ -143,6 +143,7 @@ nav .brand{display:flex;align-items:center}
 .ls-home .feat:hover .ic-cal .cday{animation:ic-dot .9s ease infinite}
 @keyframes ic-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.55}}
 .ls-home .feat:hover .ic-target{animation:ic-tgt 1.1s ease infinite}
+.ls-home .feat:hover .ic-voice{animation:ic-tgt 1.1s ease infinite}
 @keyframes ic-tgt{0%,100%{transform:scale(1)}50%{transform:scale(1.09)}}
 .ls-home .ic-risk .trend{stroke-dasharray:42;stroke-dashoffset:0}
 .ls-home .feat:hover .ic-risk .trend{animation:ic-draw .75s ease}
@@ -223,11 +224,12 @@ export function homeHtml(loc = "en") {
   <div class="nav-r">
     <a href="#how">${L.nav_how}</a>
     <a href="#get">${L.nav_what}</a>
+    <a href="#writer">${L.nav_writer}</a>
     <a href="/about.html">${L.nav_about}</a>
     <a href="/faq.html">${L.nav_faq}</a>
     <a href="/blog">${L.nav_blog}</a>
     <a href="/account">${loginLabel}</a>
-    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a><a href="/blog">${L.nav_blog}</a><a href="/account">${loginLabel}</a></div></details>
+    <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="#writer">${L.nav_writer}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a><a href="/blog">${L.nav_blog}</a><a href="/account">${loginLabel}</a></div></details>
     ${langSwitcher(loc)}
     <a href="?start=1" class="btn btn-gold">${L.nav_cta}</a>
   </div>
@@ -241,6 +243,7 @@ export function homeHtml(loc = "en") {
       <li>${L.edge1}</li>
       <li>${L.edge2}</li>
       <li>${L.edge3}</li>
+      <li>${L.edge4}</li>
     </ul>
     <div class="cta-row reveal" style="transition-delay:.21s">
       <a href="?start=1" class="btn btn-gold btn-lg">${L.hero_cta}</a>
@@ -309,6 +312,19 @@ export function homeHtml(loc = "en") {
     <div class="feat"><div class="ic"><svg class="ic-spark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path class="sp1" d="M11 3.5l1.4 4.1 4.1 1.4-4.1 1.4L11 14.5 9.6 10.4 5.5 9l4.1-1.4z"/><path class="sp2" d="M17.5 14l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7z"/></svg></div><h3>${L.f4_h}</h3><p>${L.f4_p}</p></div>
     <div class="feat"><div class="ic"><svg class="ic-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><line x1="3.5" y1="9.2" x2="20.5" y2="9.2"/><line x1="8" y1="3.2" x2="8" y2="6.4"/><line x1="16" y1="3.2" x2="16" y2="6.4"/><circle class="cday" cx="9" cy="13.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.5" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="16" cy="13.5" r="1.1" fill="currentColor" stroke="none" opacity=".45"/><circle cx="9" cy="16.8" r="1.1" fill="currentColor" stroke="none" opacity=".45"/></svg></div><h3>${L.f5_h}</h3><p>${L.f5_p}</p></div>
     <div class="feat"><div class="ic"><svg class="ic-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.4"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>${L.f6_h}</h3><p>${L.f6_p}</p></div>
+  </div>
+</div></section>
+
+<section id="writer"><div class="wrap">
+  <div class="sec-head">
+    <span class="eyebrow">${L.writer_eyebrow}</span>
+    <h2>${L.writer_h2}</h2>
+    <p>${L.writer_p}</p>
+  </div>
+  <div class="grid">
+    <div class="feat"><div class="ic"><svg class="ic-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><h3>${L.w1_h}</h3><p>${L.w1_p}</p></div>
+    <div class="feat"><div class="ic"><svg class="ic-voice" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4"/><path d="M8 7v10"/><path d="M12 4v16"/><path d="M16 7v10"/><path d="M20 10v4"/></svg></div><h3>${L.w2_h}</h3><p>${L.w2_p}</p></div>
+    <div class="feat"><div class="ic"><svg class="ic-risk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline class="trend" points="3 17 9 11 13 14 21 6"/><polyline points="16 6 21 6 21 11"/></svg></div><h3>${L.w3_h}</h3><p>${L.w3_p}</p></div>
   </div>
 </div></section>
 
