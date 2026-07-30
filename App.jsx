@@ -1131,14 +1131,21 @@ function Logo({ onHome }) {
 function CopyBtn({ text, label }) {
   const { t } = useLocale();
   const [state, setState] = useState("idle"); // idle | copied | failed
+  const legacyCopy = () => {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    if (!ok) throw new Error("copy rejected");
+  };
   const copy = async () => {
     try {
       if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
+        // Webviews sometimes reject writeText even when present; fall back before failing.
+        try { await navigator.clipboard.writeText(text); } catch (e) { legacyCopy(); }
       } else {
-        const ta = document.createElement("textarea");
-        ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
-        document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+        legacyCopy();
       }
       setState("copied");
     } catch (e) {
@@ -1148,7 +1155,7 @@ function CopyBtn({ text, label }) {
   };
   const color = state==="copied" ? "#56c08a" : state==="failed" ? "#e0556b" : "#c8a96e";
   return (
-    <button onClick={copy} style={{ background:"transparent", border:`1px solid ${state==="failed"?"#e0556b66":"#c8a96e44"}`, color, borderRadius:8, padding:"9px 14px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", flexShrink:0, minHeight:40 }}>
+    <button onClick={copy} style={{ background:"transparent", border:`1px solid ${state==="failed"?"#e0556b66":"#c8a96e44"}`, color, borderRadius:8, padding:"11px 14px", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", flexShrink:0, minHeight:44 }}>
       {state==="copied" ? t("copied") : state==="failed" ? "✗" : (label || t("copy"))}
     </button>
   );
@@ -1161,6 +1168,9 @@ function Badge({ children, color="#c8a96e" }) {
     </div>
   );
 }
+
+// Funnel steps that participate in system-back navigation (one history entry each).
+const HISTORY_PHASES = ["cohort", "form", "pdf_upload", "quiz", "note", "revenue", "post_screenshots", "paywall"];
 
 // True on actual touch phones/small tablets; used to swap desktop-only instructions
 // (like LinkedIn's desktop PDF export path) for the mobile-app path.
@@ -1324,7 +1334,7 @@ function AccuracySurvey({ planId, cohort, archetype, score }) {
         <div>
           <textarea value={comment} onChange={(e) => setComment(e.target.value)} maxLength={200}
             placeholder={t("survey_ph")} rows={2}
-            style={{ width: "100%", boxSizing: "border-box", background: "#0d0d18", border: "1px solid #2a2a3e", borderRadius: 10, color: "#e8e8f0", fontSize: 13, lineHeight: 1.5, padding: "10px 12px", resize: "vertical", marginBottom: 10, fontFamily: "inherit" }} />
+            style={{ width: "100%", boxSizing: "border-box", background: "#0d0d18", border: "1px solid #2a2a3e", borderRadius: 10, color: "#e8e8f0", fontSize: 16, lineHeight: 1.5, padding: "10px 12px", resize: "vertical", marginBottom: 10, fontFamily: "inherit" }} />
           <button type="button" onClick={submit} disabled={submitting} className="primary-btn" style={{ width: "auto", padding: "8px 20px", fontSize: 13, opacity: submitting ? 0.6 : 1 }}>{t("survey_send")}</button>
         </div>
       )}
@@ -1458,7 +1468,7 @@ function ShareCardSection({ cohort, score, name }) {
 
       <input value={personal} onChange={e=>setPersonal(e.target.value)} maxLength={140}
         placeholder={t("sc_personal_ph")}
-        style={{ width:"100%", boxSizing:"border-box", background:"#08080e", border:"1px solid #20202f", borderRadius:10, padding:"11px 13px", color:"#F9FAFB", fontSize:13, marginBottom:10, fontFamily:"'DM Sans',sans-serif" }} />
+        style={{ width:"100%", boxSizing:"border-box", background:"#08080e", border:"1px solid #20202f", borderRadius:10, padding:"11px 13px", color:"#F9FAFB", fontSize:16, marginBottom:10, fontFamily:"'DM Sans',sans-serif" }} />
 
       <div style={{ background:"#08080e", border:"1px solid #1a1a2e", borderRadius:10, padding:"13px 14px", marginBottom:10 }}>
         <p style={{ color:"#d8d7e8", fontSize:13, lineHeight:1.65, margin:0, whiteSpace:"pre-wrap" }}>{caption}</p>
@@ -1812,7 +1822,7 @@ function PostWriter() {
       const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "refine", current: out, instruction, locale }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.post) setRefineErr((d && d.error) || "Could not apply the edit. Try again.");
-      else { setOut(d.post); setRefineInstr(""); }
+      else { setOut(d.post); setVersions((vs) => vs.map((v, i) => (i === activeVer ? d.post : v))); setRefineInstr(""); }
     } catch (e) { setRefineErr("Could not apply the edit. Try again."); }
     setRefining(false);
   };
@@ -1828,7 +1838,7 @@ function PostWriter() {
           {samples.map((s, i) => (
             <div key={i} style={{ position: "relative" }}>
               <img src={s.preview} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid #20202f", display: "block" }} />
-              <button onClick={() => setSamples((prev) => prev.filter((_, j) => j !== i))} aria-label="Remove" style={{ position: "absolute", top: -8, right: -8, width: 28, height: 28, borderRadius: "50%", background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", fontSize: 13, cursor: "pointer", lineHeight: 1, padding: 0 }}>✕</button>
+              <button onClick={() => setSamples((prev) => prev.filter((_, j) => j !== i))} aria-label="Remove" style={{ position: "absolute", top: -10, right: -10, width: 32, height: 32, borderRadius: "50%", background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", fontSize: 14, cursor: "pointer", lineHeight: 1, padding: 0 }}>✕</button>
             </div>
           ))}
           {samples.length < 3 && (
@@ -1885,7 +1895,7 @@ function PostWriter() {
               <FoldedPost text={out} device={device} />
             </div>
           ) : (
-            <textarea value={out} onChange={(e) => setOut(e.target.value)} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />
+            <textarea value={out} onChange={(e) => { const v = e.target.value; setOut(v); setVersions((vs) => vs.map((vv, i) => (i === activeVer ? v : vv))); }} rows={Math.min(18, Math.max(7, out.split("\n").length + 2))} style={ta} />
           )}
           {linkInfo && (
             <div style={{ marginTop: 12, background: "#0f0f1a", border: "1px solid #20202f", borderRadius: 12, padding: 12 }}>
@@ -1908,7 +1918,7 @@ function PostWriter() {
               <div style={{ color: "#56566f", fontSize: 11, marginTop: 7 }}>Prefer to type it yourself? Switch to the Edit tab above, your text stays untouched.</div>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <input value={refineInstr} onChange={(e) => setRefineInstr(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !refining) applyRefine(); }} placeholder='e.g. "make it punchier" or "change the opening to: ..."' style={{ flex: 1, minWidth: 0, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, color: "#f5f5fc", fontSize: 13.5, padding: "10px 12px", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }} />
+              <input value={refineInstr} onChange={(e) => setRefineInstr(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !refining) applyRefine(); }} placeholder='e.g. "make it punchier" or "change the opening to: ..."' style={{ flex: 1, minWidth: 0, background: "#08080e", border: "1px solid #20202f", borderRadius: 10, color: "#f5f5fc", fontSize: 16, padding: "10px 12px", fontFamily: "'DM Sans',sans-serif", boxSizing: "border-box" }} />
               <button onClick={applyRefine} disabled={refining} style={{ background: "transparent", border: "1px solid #2a2a3e", color: "#c8a96e", borderRadius: 10, padding: "10px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, opacity: refining ? 0.6 : 1 }}>{refining ? "Editing..." : "Apply edit"}</button>
             </div>
             {refineErr && <p style={{ color: "#e0556b", fontSize: 12.5, marginTop: 8 }}>{refineErr}</p>}
@@ -2075,10 +2085,17 @@ export default function App() {
       const id = match[1];
       const loadPlan = async () => {
         try {
+          // If this device unlocked this exact plan, send the unlock email as the
+          // ownership proof so the reload renders the full owner view.
+          let ownerEmail = "";
+          try {
+            const st = JSON.parse(localStorage.getItem("ls_owner_v1") || "null");
+            if (st && st.planId === id && typeof st.email === "string") ownerEmail = st.email;
+          } catch (e) {}
           const res = await fetch("/api/load-plan", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ planId: id })
+            body: JSON.stringify(ownerEmail ? { planId: id, email: ownerEmail } : { planId: id })
           });
           const data = await res.json().catch(() => ({}));
           if (res.ok && data.plan) {
@@ -2236,8 +2253,13 @@ export default function App() {
   const resumeFunnel = () => {
     const snap = savedProgress;
     if (!snap) return;
-    hadProfileSnapRef.current = !!snap._hp;
-    hadPostsSnapRef.current = !!snap._hpost;
+    // The PDF text and screenshots themselves are NOT persisted, so the had-profile
+    // flags may only survive into a PAYWALL resume (which replays the already-generated
+    // plan those inputs produced). Any earlier-step resume will REGENERATE without
+    // them, and keeping the flags would lift the honest no-profile score cap.
+    const flagsValid = snap.target === "paywall";
+    hadProfileSnapRef.current = flagsValid && !!snap._hp;
+    hadPostsSnapRef.current = flagsValid && !!snap._hpost;
     if (snap.userData) setUserData(snap.userData);
     if (snap.cohort) setCohort(snap.cohort);
     if (snap.answers) setAnswers(snap.answers);
@@ -2275,6 +2297,10 @@ export default function App() {
           if (data.teaser) setTeaser(data.teaser);
         } catch (e) {
           planRef.current = null;
+          // The paid run never finished; the next generation runs WITHOUT the lost
+          // PDF/screenshots, so the had-profile flags must not survive into it.
+          hadProfileSnapRef.current = false;
+          hadPostsSnapRef.current = false;
           setPhase("post_screenshots");
         }
       })();
@@ -2347,6 +2373,33 @@ export default function App() {
     if (phase !== "intro") window.scrollTo(0, 0);
   }, [phase, currentQ]);
 
+  // The system back gesture must step BACK through the funnel, not eject the user
+  // from the site (the default in-app-browser behavior that killed mid-funnel runs
+  // on phones). One history entry per funnel step; popping past the first step
+  // lands on the landing page, and one more back leaves normally.
+  useEffect(() => {
+    if (HISTORY_PHASES.indexOf(phase) === -1 || sharedView) return;
+    try {
+      if (!window.history.state || window.history.state.lsPhase !== phase) {
+        window.history.pushState({ lsPhase: phase }, "");
+      }
+    } catch (e) {}
+  }, [phase, sharedView]);
+  useEffect(() => {
+    const onPop = (e) => {
+      const target = e.state && e.state.lsPhase;
+      setPhase(prev => {
+        if (prev === "result") return "intro"; // back on the report = back to the landing
+        if (target && HISTORY_PHASES.indexOf(target) !== -1 && HISTORY_PHASES.indexOf(prev) !== -1) return target;
+        if (!target && HISTORY_PHASES.indexOf(prev) !== -1) return "intro"; // popped past the first step
+        return prev;
+      });
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Account section: on entering /account, check the session and load the saved reports.
   useEffect(() => {
     if (phase !== "account" || acctEmail !== undefined) return;
@@ -2377,7 +2430,11 @@ export default function App() {
       localStorage.setItem("ls_funnel_v1", JSON.stringify({
         ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
         revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
-        teaser: teaser || null, // paywall refresh keeps the score teaser, the gate's strongest asset
+        // Paywall refresh keeps the score teaser, the gate's strongest asset. The
+        // deterministic PDF anchor can't survive a reload (the PDF text is gone), so
+        // persist the BLENDED gate number too — the restored gate must show the same
+        // score the user already saw.
+        teaser: teaser ? { ...teaser, _gateOverall: (measuredRef.current && teaser.profileOverall != null) ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : (teaser._gateOverall != null ? teaser._gateOverall : null) } : null,
         _hp: !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
         _hpost: !noPostsYet && postScreenshots.filter(Boolean).length > 0,
       }));
@@ -2560,7 +2617,14 @@ export default function App() {
     }
     const measured = (isPdfRun && pdfPlainRef.current) ? measureProfile(pdfPlainRef.current, { firstName: user.firstName, lastName: user.lastName, jobTitle: user.jobTitle }) : null;
     measuredRef.current = measured; // used to blend the score client-side after the model returns
-    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, validScreenshots.length, cohort, specialNote, isPdfRun, locale, measured) }); var imgBudget = 2500000; validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { messageContent.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
+    // Apply the payload budget BEFORE building the prompt, so the screenshot count the
+    // model is told always equals the number of images actually attached (an over-budget
+    // drop used to leave the prompt claiming an image that never arrived).
+    var imgBudget = 2500000; var attachedImages = [];
+    validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { attachedImages.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
+    if (attachedImages.length < validScreenshots.length) console.log("[api] dropped " + (validScreenshots.length - attachedImages.length) + " screenshot(s) over the payload budget");
+    messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, attachedImages.length, cohort, specialNote, isPdfRun, locale, measured) });
+    attachedImages.forEach(function(img){ messageContent.push(img); });
     // Prefix JSON
     messageContent.push({ type:"text", text:"Respond with only raw JSON starting with {" });
 
@@ -2671,6 +2735,10 @@ export default function App() {
             // Put the saved report's URL in the bar: a phone user who refreshes or
             // backgrounds the tab reloads their report instead of a blank landing.
             try { window.history.replaceState({}, "", "/plan/" + savedPlanId); } catch (e) {}
+            // Owner evidence for reloads: load-plan accepts planId+email as the same
+            // ownership proof the unlock used, so a cold reload on this device shows
+            // the full report instead of the limited shared view.
+            try { localStorage.setItem("ls_owner_v1", JSON.stringify({ planId: savedPlanId, email: email.trim().toLowerCase() })); } catch (e) {}
           }
         } catch(e) { console.log("Save plan error:", e); }
 
@@ -2697,17 +2765,21 @@ export default function App() {
         } catch(e) { console.log("Email error:", e); }
       })();
     } catch(e) {
-      if (e.message === "Failed to fetch") {
-        setEmailError(t("err_connection"));
-      } else if (e && e.message && /taking longer|Could not load|malformed/i.test(e.message)) {
-        setEmailError(e.message);
-      } else {
-        setEmailError(t("err_generic"));
-      }
+      setEmailError(localizeError(e && e.message));
     }
     clearTimeout(slowTimer);
     setLoadingSlow(false);
     setLoading(false);
+  };
+
+  // Every user-visible failure funnels through here so all 7 locales read errors in
+  // their own language; raw messages only go to telemetry.
+  const localizeError = (msg) => {
+    const m = String(msg || "");
+    if (/failed to fetch|load failed|networkerror|network error/i.test(m)) return t("err_connection");
+    if (/taking longer/i.test(m)) return t("err_timeout");
+    if (/hourly|limit/i.test(m)) return t("err_try_later");
+    return t("err_generic");
   };
 
   const handlePDF = (file) => {
@@ -2770,13 +2842,17 @@ export default function App() {
     }
   };
 
-  // Back to the landing page without wiping progress; answers survive a return trip
-  const goHome = () => setPhase("intro");
+  // Back to the landing page without wiping progress; answers survive a return trip.
+  // Also drop a /plan/:id URL, or the next reload would resurrect the old report.
+  const goHome = () => {
+    try { if (/^\/plan\//.test(window.location.pathname)) window.history.replaceState({}, "", localeHome); } catch (e) {}
+    setPhase("intro");
+  };
   // Root URL for the current locale (English at "/", others under their prefix), so
   // resets and "start over" keep the user on their localized route.
   const localeHome = locale === "en" ? "/" : "/" + locale + "/";
 
-  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} try { if (/^\/plan\//.test(window.location.pathname)) window.history.replaceState({}, "", localeHome); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   // Count the question being answered, so Q1 shows visible progress instead of an empty bar.
   const progress = ((currentQ+1)/Math.max(QUESTIONS.length,1))*100;
@@ -2912,7 +2988,7 @@ export default function App() {
         ) : acctEmail ? (
           <>
             {plans.length > 0 && (
-              <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+              <div className="tab-row" style={{ gap: 8 }}>
                 {[["overview", "Overview"], ["create", "Create"], ["reports", "Reports"]].map(([k, labl]) => (
                   <button key={k} className={"tab-pill" + (accountTab === k ? " active" : "")} onClick={() => setAccountTab(k)} style={{ flex: 1 }}>{labl}</button>
                 ))}
@@ -3094,7 +3170,7 @@ export default function App() {
             <h2 style={{ ...s.h1, fontSize:24 }}>Sign in</h2>
             {loginMsg && <p style={{ color: "#e0a23c", fontSize: 13, marginBottom: 12, lineHeight: 1.5, background: "#1a1410", border: "1px solid #3a2e16", borderRadius: 10, padding: "10px 12px" }}>{loginMsg}</p>}
             {signinSent ? (
-              <p style={{ color:"#56c08a", fontSize:13, fontWeight:600 }}>Check your email for a sign-in link.</p>
+              <div><p style={{ color:"#56c08a", fontSize:13, fontWeight:600, marginBottom:10 }}>Check your email for a sign-in link.</p><p style={{ color:"#9696b4", fontSize:12.5, lineHeight:1.5, marginBottom:10 }}>Nothing arriving? Check spam, or:</p><button onClick={()=>setSigninSent(false)} style={{ background:"transparent", border:"1px solid #2a2a3e", color:"#c8a96e", borderRadius:8, padding:"10px 14px", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Resend or use a different email</button></div>
             ) : (
               <>
                 <OAuthButtons next="/account" />
@@ -3112,7 +3188,7 @@ export default function App() {
         {openCard && typeof document !== "undefined" && createPortal(
           <div onClick={() => setOpenCard(null)} style={{ position: "fixed", inset: 0, background: "rgba(4,4,8,0.82)", zIndex: 1000, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "28px 16px", overflowY: "auto" }}>
             <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 520, position: "relative" }}>
-              <button onClick={() => setOpenCard(null)} aria-label="Close" style={{ position: "absolute", top: -4, right: 0, zIndex: 2, background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 15 }}>✕</button>
+              <button onClick={() => setOpenCard(null)} aria-label="Close" style={{ position: "absolute", top: -4, right: 0, zIndex: 2, background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", borderRadius: 10, width: 40, height: 40, cursor: "pointer", fontSize: 16 }}>✕</button>
               <ShareCardSection cohort={openCard.cohort} score={openCard.score} name={openCard.firstName} />
             </div>
           </div>,
@@ -3131,7 +3207,7 @@ export default function App() {
         <style dangerouslySetInnerHTML={{ __html: HOME_CSS }} />
         <div className="ls-home" dangerouslySetInnerHTML={{ __html: homeHtml(locale) }} />
         {savedProgress && !resumeDismissed && (
-          <div style={{ position:"fixed", left:0, right:0, bottom:18, zIndex:9998, display:"flex", justifyContent:"center", padding:"0 12px", pointerEvents:"none" }}>
+          <div style={{ position:"fixed", left:0, right:0, bottom:"calc(18px + var(--ls-consent-pad, 0px))", zIndex:9998, display:"flex", justifyContent:"center", padding:"0 12px", pointerEvents:"none" }}>
             <div style={{ pointerEvents:"auto", display:"flex", alignItems:"center", gap:4, background:"#0d0d18", border:"1px solid #2a2a3e", borderRadius:100, padding:6, boxShadow:"0 18px 50px -16px rgba(0,0,0,0.9)", fontFamily:"'DM Sans',sans-serif" }}>
               <button onClick={resumeFunnel} style={{ display:"flex", alignItems:"center", gap:10, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:100, padding:"10px 20px", fontWeight:700, fontSize:14, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
                 {t("resume_cta")} <span style={{ fontSize:16, lineHeight:1 }}>→</span>
@@ -3500,7 +3576,7 @@ export default function App() {
 
         {genError && (
           <div style={{ background:"rgba(239,68,68,0.08)", border:"1px solid rgba(239,68,68,0.35)", borderRadius:12, padding:"12px 16px", marginBottom:16 }}>
-            <p style={{ color:"#ef4444", fontSize:13, lineHeight:1.5, margin:0 }}>{genError}</p>
+            <p style={{ color:"#ef4444", fontSize:13, lineHeight:1.5, margin:0 }}>{localizeError(genError)}</p>
             <p style={{ color:"#8a8a9a", fontSize:12, lineHeight:1.5, margin:"4px 0 0" }}>{t("gen_error_retry")}</p>
           </div>
         )}
@@ -3511,6 +3587,11 @@ export default function App() {
           // to a stale plan in 500ms (see the analyzing effect's planRef.current check).
           planRef.current = null;
           setPlanId(null);
+          // Rotate the idempotency key at each generation attempt boundary: a kept key
+          // would make the server replay the PREVIOUS run's plan and silently ignore any
+          // edited answers/screenshots. callAPI mints a fresh key before the call, so
+          // refresh-mid-generation replay still works for THIS run.
+          try { localStorage.removeItem("ls_reqkey_v1"); } catch (e) {}
           setPhase("analyzing");
           const ans = founderUnlock ? { ...answers, what_they_need_linkedin_to_unlock: founderUnlock } : answers;
           // Start API call immediately parallel to animation
@@ -3560,7 +3641,9 @@ export default function App() {
     // Blend the gate teaser with the same deterministic anchor the report uses, so the
     // number the user sees at the email gate matches the one inside the report.
     const gateModelOverall = (teaser && teaser.profileOverall != null)
-      ? (measuredRef.current ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : teaser.profileOverall)
+      ? (measuredRef.current
+          ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall)
+          : (teaser._gateOverall != null ? teaser._gateOverall : teaser.profileOverall))
       : null;
     const gateScore = (gateModelOverall != null)
       ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(gateModelOverall)))
@@ -3672,7 +3755,7 @@ export default function App() {
             <p style={{ color:"#f5f5fc", fontSize:14, fontWeight:700, marginBottom:6 }}>This is a shared result.</p>
             <p style={{ color:"#9696b4", fontSize:13, lineHeight:1.5, marginBottom:14 }}>The full report (rewrites, keywords and the content plan) is private to its owner. If this is yours, sign in and we will email you a secure link back to it.</p>
             {signinSent ? (
-              <p style={{ color:"#56c08a", fontSize:13, fontWeight:600 }}>Check your email for a sign-in link.</p>
+              <div><p style={{ color:"#56c08a", fontSize:13, fontWeight:600, marginBottom:10 }}>Check your email for a sign-in link.</p><p style={{ color:"#9696b4", fontSize:12.5, lineHeight:1.5, marginBottom:10 }}>Nothing arriving? Check spam, or:</p><button onClick={()=>setSigninSent(false)} style={{ background:"transparent", border:"1px solid #2a2a3e", color:"#c8a96e", borderRadius:8, padding:"10px 14px", fontSize:12.5, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>Resend or use a different email</button></div>
             ) : (
               <>
                 <OAuthButtons next={typeof window !== "undefined" ? window.location.pathname : "/account"} />
@@ -3783,8 +3866,8 @@ export default function App() {
                 <div key={i} style={{ position:"relative" }} className="tab-tooltip-wrap">
                   <button
                     className={`tab-pill${activeSection===i?" active":""}`}
-                    style={{ opacity: locked ? 0.45 : 1, cursor: locked ? "not-allowed" : "pointer" }}
-                    onClick={()=>{ if(!locked) setActiveSection(i); }}
+                    style={{ opacity: locked ? 0.55 : 1 }}
+                    onClick={()=>setActiveSection(i)}
                   >
                     {locked && <span style={{ marginRight:4, fontSize:10 }}>🔒</span>}{t(tabKey)}
                   </button>

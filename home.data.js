@@ -7,7 +7,7 @@ export const HOME_STRINGS = {
     "nav_blog": "Blog",
     "nav_about": "About",
     "nav_faq": "FAQ",
-    "nav_cta": "Get your score",
+    "nav_cta": "Your score",
     "hero_eyebrow": "LinkedIn Intelligence",
     "hero_h1": "<span class=\"gold\">Crack the LinkedIn algorithm.</span> Get seen.",
     "hero_lede": "We read your real profile and posts, decode what the feed rewards and hand you the plan to lead your field.",

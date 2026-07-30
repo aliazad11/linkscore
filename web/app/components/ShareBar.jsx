@@ -30,7 +30,11 @@ export default function ShareBar({ title }) {
       try {
         const ta = document.createElement("textarea");
         ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
-        document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        // execCommand signals denial via a false return, not a throw — treat it as failure.
+        if (!ok) { setFailedUrl(url); return; }
         setCopied(true); setTimeout(function () { setCopied(false); }, 1600);
       } catch (e) { setFailedUrl(url); }
     };

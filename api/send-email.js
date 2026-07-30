@@ -128,11 +128,11 @@ export default async function handler(req) {
     // The CTA carries a signed auto-login link: on a phone the email is usually opened
     // in a browser with no session, and a bare /plan/:id would greet the report's own
     // owner with a locked "shared result" page. Trust model = email inbox access, same
-    // as the magic link; TTL is 7 days (not 30) so a forwarded email doesn't stay a
+    // as the magic link; TTL is 48 hours so a forwarded email doesn't stay a
     // working session grant for long. Falls back to the plain URL if AUTH_SECRET is unset.
     let planUrl = `https://www.linkedscore.app/plan/${planId}`;
     try {
-      const tok = await signLoginToken({ email: cleanEmail, purpose: "login", next: `/plan/${planId}` }, 7 * 24 * 3600);
+      const tok = await signLoginToken({ email: cleanEmail, purpose: "login", next: `/plan/${planId}` }, 48 * 3600);
       if (tok) planUrl = `https://www.linkedscore.app/api/auth-verify?token=${encodeURIComponent(tok)}&p=${encodeURIComponent(planId)}`;
     } catch (e) { /* keep the plain link */ }
     const score = clampScore(plan.score);
@@ -148,7 +148,7 @@ export default async function handler(req) {
     const tl = plan.thought_leader;
     const thoughtLeaderBlock = tl && tl.available ? `
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
-      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.tl_score}</p>
+      <p style="color:#8a8aa8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.tl_score}</p>
       <p style="color:#c8a96e;font-size:52px;font-weight:800;margin:0 0 6px;">${clampScore(tl.score)}<span style="font-size:18px;color:#8a8aa8;">/100</span></p>
       <div style="margin-top:14px;">
         ${[[L.hook_quality, clampScore(tl.hook_score)], [L.engagement, clampScore(tl.engagement_score)], [L.voice, clampScore(tl.voice_score)], [L.structure, clampScore(tl.structure_score)]].map(([label, score]) => `
@@ -167,32 +167,32 @@ export default async function handler(req) {
 
     const html = `<!DOCTYPE html>
 <html lang="${lang}">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
-<body style="margin:0;padding:0;background:#08080e;font-family:'Segoe UI',sans-serif;">
-  <div style="max-width:580px;margin:0 auto;padding:40px 20px;">
-    <img src="https://www.linkedscore.app/logo.png" alt="LinkedScore" style="height:36px;margin-bottom:36px;display:block;" />
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="color-scheme" content="dark"><meta name="supported-color-schemes" content="dark"></head>
+<body style="margin:0;padding:0;background:#08080e;font-family:'Segoe UI',sans-serif;" bgcolor="#08080e">
+  <div style="max-width:580px;margin:0 auto;padding:40px 20px;background:#08080e;">
+    <span style="display:inline-block;background:#0a0a0f;border-radius:10px;padding:9px 12px;margin-bottom:36px;"><img src="https://www.linkedscore.app/logo.png" alt="LinkedScore" style="height:36px;display:block;" /></span>
     <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${name}, ${L.you_are}</h1>
     <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(archetype || plan.archetype || '').slice(0, 80))}</h2>
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
     ${cardImage ? `<img src="${esc(cardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 16px;display:block;" />` : ''}
     ${cardCaption ? `<div style="background:#0d0d18;border:1px solid #20202f;border-radius:14px;padding:20px;margin:0 0 24px;">
-      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">${shareCopyLabel}</p>
+      <p style="color:#8a8aa8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">${shareCopyLabel}</p>
       <p style="color:#d8d7e8;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0;">${esc(String(cardCaption).slice(0, 1200))}</p>
     </div>` : ''}
     <p style="color:#b6b5cc;font-size:14px;line-height:1.7;margin-bottom:32px;">${esc(String(plan.headline || '').slice(0, 300))}</p>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
-      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.profile_score}</p>
+      <p style="color:#8a8aa8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.profile_score}</p>
       <p style="color:#c8a96e;font-size:52px;font-weight:800;margin:0 0 6px;">${score}<span style="font-size:18px;color:#8a8aa8;">/100</span></p>
       <p style="color:#f87171;font-size:13px;line-height:1.5;">${esc(String(plan.urgency || '').slice(0, 300))}</p>
     </div>
     ${thoughtLeaderBlock}
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
-      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.post_hooks}</p>
+      <p style="color:#8a8aa8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.post_hooks}</p>
       <ul style="list-style:none;padding:0;margin:0;">${hooks}</ul>
       <p style="color:#9a99b4;font-size:12px;line-height:1.5;margin:14px 0 0;"><span style="color:#c8a96e;">&#10003;</span> ${draftCaveat}</p>
     </div>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:32px;">
-      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.critical_rules}</p>
+      <p style="color:#8a8aa8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.critical_rules}</p>
       <ul style="padding-left:18px;margin:0;">${rules}</ul>
     </div>
     <a href="${planUrl}" style="display:block;text-align:center;background-color:#c8a96e;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:28px;">${L.view_plan}</a>

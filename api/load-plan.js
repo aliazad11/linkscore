@@ -17,7 +17,7 @@ export default async function handler(req, res) {
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: "Server not configured" });
 
-  const { planId } = req.body || {};
+  const { planId, email } = req.body || {};
   if (!planId || typeof planId !== "string" || !UUID_RE.test(planId)) {
     return res.status(400).json({ error: "Missing planId" });
   }
@@ -38,7 +38,13 @@ export default async function handler(req, res) {
     const row = rows[0];
     const pd = row.plan_data || {};
     const session = readSession(req);
-    const isOwner = !!(session && session.purpose === "session" && session.email &&
+    // Ownership proof #2: the exact email this plan was unlocked with, kept in the
+    // owner's own localStorage. Same bar as the get-plan unlock (unguessable UUID +
+    // the matching email), so a phone reload doesn't demote the owner to the limited
+    // share view just because funnel users never get a session cookie.
+    const emailOwner = !!(typeof email === "string" && email && row.email &&
+      email.trim().toLowerCase() === String(row.email).trim().toLowerCase());
+    const isOwner = emailOwner || !!(session && session.purpose === "session" && session.email &&
       row.email && session.email === String(row.email).toLowerCase());
 
     if (isOwner) {
