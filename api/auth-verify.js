@@ -17,6 +17,12 @@ export default async function handler(req, res) {
   const token = (req.query && req.query.token) || "";
   const payload = verifyToken(token);
   if (!payload || payload.purpose !== "login" || !payload.email) {
+    // Report emails carry ?p=<planId>: when their auto-login token has expired, degrade
+    // to the plain (gated) plan page instead of a dead "link expired" screen.
+    const pid = String((req.query && req.query.p) || "");
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pid)) {
+      return redirect(res, "/plan/" + pid);
+    }
     return redirect(res, "/account?login=expired");
   }
   try {

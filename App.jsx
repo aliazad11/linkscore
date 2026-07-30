@@ -1159,6 +1159,12 @@ function Badge({ children, color="#c8a96e" }) {
   );
 }
 
+// True on actual touch phones/small tablets; used to swap desktop-only instructions
+// (like LinkedIn's desktop PDF export path) for the mobile-app path.
+const isPhoneDevice = () => {
+  try { return window.matchMedia("(pointer: coarse)").matches && Math.min(window.innerWidth, window.innerHeight) < 820; } catch (e) { return false; }
+};
+
 // Clipboard with a legacy fallback for browsers without the async clipboard API.
 function copyText(text) {
   try {
@@ -1460,7 +1466,14 @@ function ShareCardSection({ cohort, score, name }) {
       </button>
 
       <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-        <button onClick={downloadImage} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+        {CAN_NATIVE_SHARE && (
+          <button onClick={shareNow} style={{ display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+            {t("share_linkedin")}
+          </button>
+        )}
+        <button onClick={downloadImage} style={CAN_NATIVE_SHARE
+          ? { background:"transparent", color:"#c8a96e", border:"1px solid #c8a96e44", borderRadius:10, padding:"11px 16px", fontWeight:600, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }
+          : { display:"flex", alignItems:"center", gap:8, background:"linear-gradient(135deg,#c8a96e,#a07840)", color:"#08080e", border:"none", borderRadius:10, padding:"11px 16px", fontWeight:700, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
           {dl ? t("sc_saved")+" ✓" : t("sc_download")}
         </button>
         <button onClick={copyCaption} style={{ background:"transparent", color:"#8a8aa6", border:"1px solid #2a2a3e", borderRadius:10, padding:"11px 16px", fontWeight:600, fontSize:13, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
@@ -2155,7 +2168,14 @@ export default function App() {
     if (!snap || !snap.phase) return;
     if (Date.now() - (snap.ts || 0) > 7 * 24 * 60 * 60 * 1000) { try { localStorage.removeItem("ls_funnel_v1"); } catch (e) {} return; }
     let target = snap.phase;
-    if (target === "analyzing" || target === "generating") target = snap.planId ? "paywall" : "post_screenshots";
+    if (target === "analyzing" || target === "generating") {
+      // If a request key survives, the server may already hold this run's finished
+      // (and paid-for) plan — resume at the paywall and replay it instead of
+      // sending the user back through the whole funnel.
+      let rk = "";
+      try { rk = localStorage.getItem("ls_reqkey_v1") || ""; } catch (e) {}
+      target = (snap.planId || rk) ? "paywall" : "post_screenshots";
+    }
     const RESTORABLE = ["cohort", "form", "pdf_upload", "quiz", "note", "revenue", "post_screenshots", "paywall"];
     if (!RESTORABLE.includes(target)) return;
     setSavedProgress({ ...snap, target }); // offer resume; do NOT auto-advance
@@ -2182,6 +2202,32 @@ export default function App() {
     if (snap.revChannelShare) setRevChannelShare(snap.revChannelShare);
     if (snap.noPostsYet) setNoPostsYet(snap.noPostsYet);
     if (snap.planId) { setPlanId(snap.planId); planRef.current = snap.planId; }
+    if (snap.target === "paywall" && !snap.planId) {
+      // The tab died mid-generation. Ask the server (replay-only, never billed) for
+      // the finished plan under this run's request key; if it isn't there, the run
+      // never completed and the honest path is back to the last real step.
+      (async () => {
+        try {
+          const rk = localStorage.getItem("ls_reqkey_v1") || "";
+          if (!rk) throw new Error("no request key");
+          const tr = await fetch("/api/funnel-token");
+          const td = await tr.json().catch(() => ({}));
+          const res = await fetch("/api/generate-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-funnel-token": (td && td.token) || "", "x-request-key": rk, "x-replay-only": "1" },
+            body: JSON.stringify({ messages: [{ role: "user", content: [{ type: "text", text: "replay" }] }] }),
+          });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const data = await res.json();
+          if (!data.planId) throw new Error("no plan");
+          planRef.current = data.planId;
+          if (data.teaser) setTeaser(data.teaser);
+        } catch (e) {
+          planRef.current = null;
+          setPhase("post_screenshots");
+        }
+      })();
+    }
     if (snap.target === "quiz") {
       const qs = getQuestionsForCohort(snap.cohort);
       const qq = qs[snap.currentQ];
@@ -2406,7 +2452,9 @@ export default function App() {
   const goToPhase = (target) => { if (target === "quiz") { const qq = QUESTIONS[currentQ]; restoreSelection(qq, qq ? answers[qq.id] : null); } else { setSelected(null); setMultiSelected([]); setOtherText(""); } setPhase(target); };
   const renderStepRail = (current) => { const STEPS = [["cohort",t("rail_category")],["form",t("rail_about")],["pdf_upload",t("rail_profile")],["quiz",t("rail_questions")],["post_screenshots",t("rail_posts")]]; const ci = STEPS.findIndex(function(s){ return s[0] === current; }); return (<div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:16 }}>{STEPS.map(function(s, i){ var isCur = i === ci; var reached = i < ci; return (<button key={s[0]} onClick={function(){ if (reached) goToPhase(s[0]); }} disabled={!reached && !isCur} style={{ fontSize:11, fontWeight:600, padding:"5px 10px", borderRadius:8, border: isCur ? "1px solid #c8a96e" : (reached ? "1px solid #4a4a6a" : "1px solid #22223a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (reached ? "#c8a96e" : "#44445a"), cursor: reached ? "pointer" : "default", whiteSpace:"nowrap" }}>{s[1]}</button>); })}</div>); };
   // Compress image to reduce payload size, with fallback to original
-  const compressImage = (base64, mimeType, maxSide = 800, quality = 0.7) => new Promise(resolve => {
+  // 1568px is the vision-model sweet spot: an 800px cap made tall phone screenshots
+  // of posts illegible to the analyzer, which silently degraded every mobile report.
+  const compressImage = (base64, mimeType, maxSide = 1568, quality = 0.72) => new Promise(resolve => {
     try {
       const img = new Image();
       const timeout = setTimeout(() => resolve({ base64, type: mimeType }), 5000); // fallback after 5s
@@ -2547,7 +2595,12 @@ export default function App() {
         });
         const saveData = await saveRes.json().catch(() => ({}));
         savedPlanId = saveData.planId || null;
-        if (savedPlanId) setPlanId(savedPlanId);
+        if (savedPlanId) {
+          setPlanId(savedPlanId);
+          // Put the saved report's URL in the bar: a phone user who refreshes or
+          // backgrounds the tab reloads their report instead of a blank landing.
+          try { window.history.replaceState({}, "", "/plan/" + savedPlanId); } catch (e) {}
+        }
       } catch(e) { console.log("Save plan error:", e); }
 
       // Send email via serverless function
@@ -3147,9 +3200,13 @@ export default function App() {
         <Logo onHome={goHome} />
         {renderStepRail("pdf_upload")}
         <h2 style={{ ...s.h1, fontSize:26 }}>{t("pdf_title")}</h2>
-        <p style={{ ...s.sub }}>{locale==="en"
-          ? (<>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</>)
-          : t("pdf_sub")}</p>
+        <p style={{ ...s.sub }}>{isPhoneDevice()
+          ? (locale==="en"
+              ? (<>In the LinkedIn app, open your profile, tap <strong style={{ color:"#c8a96e" }}>More (…)</strong> below your headline and choose <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Then upload that file here.</>)
+              : t("pdf_sub_mobile"))
+          : (locale==="en"
+              ? (<>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</>)
+              : t("pdf_sub"))}</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
           style={!pdfName ? { borderColor:"#c8a96e", background:"rgba(200,169,110,0.05)" } : undefined}

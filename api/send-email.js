@@ -43,6 +43,26 @@ function clampScore(n) {
   return Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 0;
 }
 
+// WebCrypto twin of _auth.js signToken (this file runs on the edge runtime, which has
+// no node:crypto). Format must stay byte-identical: base64url(json) + "." +
+// base64url(HMAC-SHA256(secret, base64url(json))), with `exp` added to the payload.
+async function signLoginToken(payload, ttlSeconds) {
+  const secret = process.env.AUTH_SECRET || "";
+  if (!secret) return null;
+  const b64url = (bytes) => {
+    let s = "";
+    const arr = new Uint8Array(bytes);
+    for (let i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  };
+  const enc = new TextEncoder();
+  const body = { ...payload, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
+  const data = b64url(enc.encode(JSON.stringify(body)));
+  const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
+  return data + "." + b64url(sig);
+}
+
 export default async function handler(req) {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -105,7 +125,16 @@ export default async function handler(req) {
     }
 
     const name = esc(String(firstName || 'there').slice(0, 60));
-    const planUrl = `https://www.linkedscore.app/plan/${planId}`;
+    // The CTA carries a signed auto-login link: on a phone the email is usually opened
+    // in a browser with no session, and a bare /plan/:id would greet the report's own
+    // owner with a locked "shared result" page. Trust model = email inbox access, same
+    // as the magic link; TTL is 7 days (not 30) so a forwarded email doesn't stay a
+    // working session grant for long. Falls back to the plain URL if AUTH_SECRET is unset.
+    let planUrl = `https://www.linkedscore.app/plan/${planId}`;
+    try {
+      const tok = await signLoginToken({ email: cleanEmail, purpose: "login", next: `/plan/${planId}` }, 7 * 24 * 3600);
+      if (tok) planUrl = `https://www.linkedscore.app/api/auth-verify?token=${encodeURIComponent(tok)}&p=${encodeURIComponent(planId)}`;
+    } catch (e) { /* keep the plain link */ }
     const score = clampScore(plan.score);
 
     const hooks = (Array.isArray(plan.post_hooks) ? plan.post_hooks.slice(0, 3) : []).map((h) =>
@@ -113,19 +142,19 @@ export default async function handler(req) {
     ).join('') || '';
 
     const rules = (Array.isArray(plan.critical_rules) ? plan.critical_rules.slice(0, 3) : []).map(r =>
-      `<li style="margin-bottom:10px;color:#6a6a8a;font-size:14px;line-height:1.6;">${esc(String(r).slice(0, 400))}</li>`
+      `<li style="margin-bottom:10px;color:#b6b5cc;font-size:14px;line-height:1.6;">${esc(String(r).slice(0, 400))}</li>`
     ).join('') || '';
 
     const tl = plan.thought_leader;
     const thoughtLeaderBlock = tl && tl.available ? `
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
-      <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.tl_score}</p>
-      <p style="color:#c8a96e;font-size:52px;font-weight:800;margin:0 0 6px;">${clampScore(tl.score)}<span style="font-size:18px;color:#3a3a5a;">/100</span></p>
+      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.tl_score}</p>
+      <p style="color:#c8a96e;font-size:52px;font-weight:800;margin:0 0 6px;">${clampScore(tl.score)}<span style="font-size:18px;color:#8a8aa8;">/100</span></p>
       <div style="margin-top:14px;">
         ${[[L.hook_quality, clampScore(tl.hook_score)], [L.engagement, clampScore(tl.engagement_score)], [L.voice, clampScore(tl.voice_score)], [L.structure, clampScore(tl.structure_score)]].map(([label, score]) => `
         <div style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <span style="color:#4a4a6a;font-size:12px;">${label}</span>
+            <span style="color:#b6b5cc;font-size:12px;">${label}</span>
             <span style="color:${score < 40 ? '#ef4444' : score < 70 ? '#f59e0b' : '#10b981'};font-size:12px;font-weight:700;">${score}/100</span>
           </div>
           <div style="height:3px;background:#1a1a2e;border-radius:4px;">
@@ -133,7 +162,7 @@ export default async function handler(req) {
           </div>
         </div>`).join('')}
       </div>
-      <p style="color:#4a4a6a;font-size:13px;line-height:1.6;margin-top:12px;padding-top:12px;border-top:1px solid #1a1a2e;">${esc(String(tl.analysis || '').slice(0, 400))}</p>
+      <p style="color:#b6b5cc;font-size:13px;line-height:1.6;margin-top:12px;padding-top:12px;border-top:1px solid #1a1a2e;">${esc(String(tl.analysis || '').slice(0, 400))}</p>
     </div>` : '';
 
     const html = `<!DOCTYPE html>
@@ -147,27 +176,27 @@ export default async function handler(req) {
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
     ${cardImage ? `<img src="${esc(cardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 16px;display:block;" />` : ''}
     ${cardCaption ? `<div style="background:#0d0d18;border:1px solid #20202f;border-radius:14px;padding:20px;margin:0 0 24px;">
-      <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">${shareCopyLabel}</p>
+      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">${shareCopyLabel}</p>
       <p style="color:#d8d7e8;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0;">${esc(String(cardCaption).slice(0, 1200))}</p>
     </div>` : ''}
-    <p style="color:#4a4a6a;font-size:14px;line-height:1.7;margin-bottom:32px;">${esc(String(plan.headline || '').slice(0, 300))}</p>
+    <p style="color:#b6b5cc;font-size:14px;line-height:1.7;margin-bottom:32px;">${esc(String(plan.headline || '').slice(0, 300))}</p>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
-      <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.profile_score}</p>
-      <p style="color:#c8a96e;font-size:52px;font-weight:800;margin:0 0 6px;">${score}<span style="font-size:18px;color:#3a3a5a;">/100</span></p>
-      <p style="color:#ef4444;font-size:12px;line-height:1.5;">${esc(String(plan.urgency || '').slice(0, 300))}</p>
+      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;">${L.profile_score}</p>
+      <p style="color:#c8a96e;font-size:52px;font-weight:800;margin:0 0 6px;">${score}<span style="font-size:18px;color:#8a8aa8;">/100</span></p>
+      <p style="color:#f87171;font-size:13px;line-height:1.5;">${esc(String(plan.urgency || '').slice(0, 300))}</p>
     </div>
     ${thoughtLeaderBlock}
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:16px;">
-      <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.post_hooks}</p>
+      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.post_hooks}</p>
       <ul style="list-style:none;padding:0;margin:0;">${hooks}</ul>
-      <p style="color:#6a6a8a;font-size:12px;line-height:1.5;margin:14px 0 0;"><span style="color:#c8a96e;">&#10003;</span> ${draftCaveat}</p>
+      <p style="color:#9a99b4;font-size:12px;line-height:1.5;margin:14px 0 0;"><span style="color:#c8a96e;">&#10003;</span> ${draftCaveat}</p>
     </div>
     <div style="background:#0d0d18;border:1px solid #1a1a2e;border-radius:16px;padding:24px;margin-bottom:32px;">
-      <p style="color:#3a3a5a;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.critical_rules}</p>
+      <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.critical_rules}</p>
       <ul style="padding-left:18px;margin:0;">${rules}</ul>
     </div>
     <a href="${planUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:28px;">${L.view_plan}</a>
-    <p style="color:#6a6a8a;font-size:11px;text-align:center;line-height:1.6;">${L.footer} <a href="https://www.linkedscore.app/privacy.html" style="color:#9696b4;">${L.privacy}</a><br/>&copy; 2026 LinkedScore</p>
+    <p style="color:#9a99b4;font-size:11px;text-align:center;line-height:1.6;">${L.footer} <a href="https://www.linkedscore.app/privacy.html" style="color:#9696b4;">${L.privacy}</a><br/>&copy; 2026 LinkedScore</p>
   </div>
 </body>
 </html>`;

@@ -46,3 +46,22 @@ footer .foot-links a:hover { color:var(--gold); }
 .share button:hover { border-color: var(--gold); color: var(--gold); }
 .header-nav { display:flex; align-items:center; gap:18px; }
 .cta-sm { margin-top:0; padding:8px 14px; font-size:13px; border-radius:8px; }
+
+/* Never let media or long tokens force a horizontal scroll. */
+img { max-width:100%; height:auto; }
+article { overflow-wrap:break-word; }
+article pre, article table { display:block; overflow-x:auto; }
+
+@media (max-width:640px) {
+  .container { padding:40px 18px; }
+  .site-header .container { padding:14px 18px; }
+  h1 { font-size:29px; }
+  h2 { font-size:21px; }
+  .post-card { padding:18px; }
+  .post-card h2 { font-size:19px; }
+  article p { font-size:16px; }
+  .cta { display:block; text-align:center; }
+  .cta-box { padding:22px 18px; }
+  .header-nav { gap:12px; }
+  footer .container { padding:24px 18px; }
+}
