@@ -13,7 +13,7 @@ export const HOME_CSS = `.ls-home{box-sizing:border-box}
 }
 .ls-home *{box-sizing:border-box;margin:0;padding:0}
 .ls-home{scroll-behavior:smooth}
-.ls-home{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.ls-home{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip}
 .ls-home a{color:inherit;text-decoration:none}
 .ls-home .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 .ls-home .eyebrow{font-family:var(--disp);font-size:12px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
@@ -28,6 +28,7 @@ nav .brand{display:flex;align-items:center}
 .ls-home .nav-r a:hover{color:var(--ink)}
 .ls-home .btn{font-family:var(--disp);font-weight:600;cursor:pointer;border:none;border-radius:11px;transition:transform .15s ease, box-shadow .2s ease}
 .ls-home .btn-gold{background:linear-gradient(135deg,var(--gold-lt),var(--gold-dk));color:#0a0a0f;padding:12px 20px;font-size:14px;box-shadow:0 6px 24px -8px rgba(200,169,110,.6)}
+.ls-home .nav-r a.btn-gold{color:#0a0a0f}
 .ls-home .btn-gold:hover{transform:translateY(-1px);box-shadow:0 10px 32px -8px rgba(200,169,110,.7)}
 .ls-home .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--ink);padding:12px 20px;font-size:14px}
 .ls-home .btn-ghost:hover{border-color:var(--gold)}
@@ -100,6 +101,14 @@ nav .brand{display:flex;align-items:center}
 .ls-home .steps,.ls-home .grid{grid-template-columns:1fr}
 .ls-home .founder{grid-template-columns:1fr;text-align:center;justify-items:center}
 .ls-home .hero{padding:54px 0 60px}
+}
+@media (max-width:640px){
+.ls-home .gauge-row{flex-direction:column;align-items:flex-start;gap:16px}
+.ls-home section{padding:48px 0}
+.ls-home .sec-head{margin-bottom:32px}
+.ls-home .final{padding:64px 0}
+.ls-home .founder{padding:28px 20px}
+.ls-home .founder p{text-align:left}
 }
 @media (max-width:640px){
 .ls-home nav .wrap{padding:0 16px}
@@ -220,7 +229,7 @@ export function homeHtml(loc = "en") {
   const L = S(loc);
   const loginLabel = ({ en:"Log in", de:"Anmelden", fr:"Connexion", es:"Entrar", pt:"Entrar", nl:"Inloggen", it:"Accedi" })[loc] || "Log in";
   return `<nav><div class="wrap">
-  <a href="/" aria-label="LinkedScore home" class="brand"><img src="/logo.png" alt="LinkedScore" /></a>
+  <a href="${homeHref(loc)}" aria-label="LinkedScore home" class="brand"><img src="/logo.png" alt="LinkedScore" /></a>
   <div class="nav-r">
     <a href="#how">${L.nav_how}</a>
     <a href="#get">${L.nav_what}</a>

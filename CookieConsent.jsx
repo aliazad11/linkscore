@@ -12,12 +12,24 @@ export function CookieConsent() {
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState(false);
   const [analytics, setAnalytics] = useState(false);
+  const [card, setCard] = useState(null);
 
   useEffect(() => {
     if (!getConsent()) setOpen(true); // first visit: no choice stored yet
     _open = () => { const c = getConsent(); setAnalytics(!!(c && c.analytics)); setCustom(true); setOpen(true); };
     return () => { _open = null; };
   }, []);
+
+  // While the banner is up it floats over the bottom of the page; pad the body by
+  // its real height so it never hides the step's primary button on a phone.
+  useEffect(() => {
+    if (!open || !card) { document.body.style.paddingBottom = ""; return; }
+    const apply = () => { document.body.style.paddingBottom = (card.offsetHeight + 24) + "px"; };
+    apply();
+    let ro = null;
+    if (typeof ResizeObserver !== "undefined") { ro = new ResizeObserver(apply); ro.observe(card); }
+    return () => { if (ro) ro.disconnect(); document.body.style.paddingBottom = ""; };
+  }, [open, card]);
 
   const decide = (analyticsOptIn) => {
     setConsent({ analytics: analyticsOptIn, ts: Date.now() });
@@ -39,7 +51,7 @@ export function CookieConsent() {
   return (
     <div role="dialog" aria-label={t("cc_title")} aria-modal="false"
       style={{ position: "fixed", left: 0, right: 0, bottom: 0, zIndex: 9999, padding: "12px", display: "flex", justifyContent: "center", pointerEvents: "none" }}>
-      <div style={{ pointerEvents: "auto", width: "100%", maxWidth: 560, background: "#0d0d18", border: "1px solid #2a2a3e", borderRadius: 16, padding: "18px 20px", boxShadow: "0 24px 70px -20px rgba(0,0,0,0.95)", fontFamily: "'DM Sans',sans-serif" }}>
+      <div ref={setCard} style={{ pointerEvents: "auto", width: "100%", maxWidth: 560, background: "#0d0d18", border: "1px solid #2a2a3e", borderRadius: 16, padding: "18px 20px", boxShadow: "0 24px 70px -20px rgba(0,0,0,0.95)", fontFamily: "'DM Sans',sans-serif" }}>
         <p style={{ color: "#F9FAFB", fontSize: 15, fontWeight: 700, marginBottom: 6 }}>{t("cc_title")}</p>
         <p style={{ color: "#b6b5cc", fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
           {t("cc_desc")} <a href={`${base}/cookies.html`} style={{ color: "#c8a96e" }}>{t("legal_cookies")}</a> · <a href={`${base}/privacy.html`} style={{ color: "#c8a96e" }}>{t("legal_privacy")}</a>
