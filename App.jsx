@@ -1818,11 +1818,12 @@ function PostWriter() {
     const instruction = refineInstr.trim();
     if (instruction.length < 2) { setRefineErr("Tell me what to change."); return; }
     setRefining(true); setRefineErr("");
+    const targetVer = activeVer; // refine belongs to the version it started from
     try {
       const r = await fetch("/api/polish-post", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "refine", current: out, instruction, locale }) });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.post) setRefineErr((d && d.error) || "Could not apply the edit. Try again.");
-      else { setOut(d.post); setVersions((vs) => vs.map((v, i) => (i === activeVer ? d.post : v))); setRefineInstr(""); }
+      else { setVersions((vs) => vs.map((v, i) => (i === targetVer ? d.post : v))); setOut(d.post); setRefineInstr(""); }
     } catch (e) { setRefineErr("Could not apply the edit. Try again."); }
     setRefining(false);
   };
@@ -1867,7 +1868,7 @@ function PostWriter() {
           {versions.length > 1 && (
             <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap", alignItems: "center" }}>
               {versions.map((v, i) => (
-                <button key={i} onClick={() => { setActiveVer(i); setOut(v); setView("preview"); }} style={{ ...pill(activeVer === i), display: "flex", alignItems: "center", gap: 5 }}>
+                <button key={i} disabled={refining} onClick={() => { setActiveVer(i); setOut(v); setView("preview"); }} style={{ ...pill(activeVer === i), display: "flex", alignItems: "center", gap: 5, opacity: refining ? 0.5 : 1 }}>
                   {i === 0 && <span style={{ color: activeVer === 0 ? "#c8a96e" : "#7a7a96" }}>★</span>}
                   {i === 0 ? "Our pick" : `Version ${i + 1}`}
                 </button>
@@ -2274,7 +2275,15 @@ export default function App() {
     if (snap.revChannelShare) setRevChannelShare(snap.revChannelShare);
     if (snap.noPostsYet) setNoPostsYet(snap.noPostsYet);
     if (snap.planId) { setPlanId(snap.planId); planRef.current = snap.planId; }
-    if (snap.teaser) setTeaser(snap.teaser);
+    if (snap.teaser) {
+      setTeaser(snap.teaser);
+      // Rehydrate the deterministic anchors for a paywall resume so the unlocked
+      // report gets the same anchored score the gate shows (detPayload({det})
+      // round-trips, so finalizePlan and blendGateOverall both work from this).
+      if (flagsValid && snap.teaser._det && !measuredRef.current) {
+        measuredRef.current = { det: snap.teaser._det };
+      }
+    }
     if (snap.target === "paywall" && !snap.planId) {
       // The tab died mid-generation. Ask the server (replay-only, never billed) for
       // the finished plan under this run's request key; if it isn't there, the run
@@ -2389,7 +2398,10 @@ export default function App() {
     const onPop = (e) => {
       const target = e.state && e.state.lsPhase;
       setPhase(prev => {
-        if (prev === "result") return "intro"; // back on the report = back to the landing
+        // Back on the report goes to the landing — but ONLY when the funnel's own
+        // history entries are being popped (URL reverts to "/"). A same-document pop
+        // that stays on /plan/ (e.g. the skip-link hash) must not eject the report.
+        if (prev === "result") return /^\/plan\//.test(window.location.pathname) ? prev : "intro";
         if (target && HISTORY_PHASES.indexOf(target) !== -1 && HISTORY_PHASES.indexOf(prev) !== -1) return target;
         if (!target && HISTORY_PHASES.indexOf(prev) !== -1) return "intro"; // popped past the first step
         return prev;
@@ -2422,24 +2434,30 @@ export default function App() {
   }, [phase, acctEmail]);
 
   useEffect(() => {
-    if (phase === "intro" || phase === "result" || phase === "plan_missing") {
-      if (phase === "result") { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} }
+    // Clear the snapshot only when the user's OWN funnel completes — a shared /plan
+    // link opened in the same browser must not wipe someone's in-progress run or the
+    // replay key of an already-paid generation.
+    if (phase === "result") {
+      if (!sharedView) { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} }
       return;
     }
+    // Write snapshots only for genuine funnel phases: route phases like "account" and
+    // "loading" used to clobber a real snapshot with an empty one on mount.
+    if (HISTORY_PHASES.indexOf(phase) === -1 && phase !== "analyzing" && phase !== "generating") return;
     try {
       localStorage.setItem("ls_funnel_v1", JSON.stringify({
         ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
         revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
         // Paywall refresh keeps the score teaser, the gate's strongest asset. The
         // deterministic PDF anchor can't survive a reload (the PDF text is gone), so
-        // persist the BLENDED gate number too — the restored gate must show the same
-        // score the user already saw.
-        teaser: teaser ? { ...teaser, _gateOverall: (measuredRef.current && teaser.profileOverall != null) ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : (teaser._gateOverall != null ? teaser._gateOverall : null) } : null,
+        // persist the BLENDED gate number AND the deterministic anchors (_det) — the
+        // restored gate and the unlocked report must both show the number the user saw.
+        teaser: teaser ? { ...teaser, _gateOverall: (measuredRef.current && teaser.profileOverall != null) ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : (teaser._gateOverall != null ? teaser._gateOverall : null), _det: measuredRef.current ? detPayload(measuredRef.current) : (teaser._det || null) } : null,
         _hp: !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
         _hpost: !noPostsYet && postScreenshots.filter(Boolean).length > 0,
       }));
     } catch (e) {}
-  }, [phase, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId, teaser]);
+  }, [phase, sharedView, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId, teaser]);
 
   useEffect(() => {
     if (phase !== "analyzing") return;
@@ -2738,7 +2756,7 @@ export default function App() {
             // Owner evidence for reloads: load-plan accepts planId+email as the same
             // ownership proof the unlock used, so a cold reload on this device shows
             // the full report instead of the limited shared view.
-            try { localStorage.setItem("ls_owner_v1", JSON.stringify({ planId: savedPlanId, email: email.trim().toLowerCase() })); } catch (e) {}
+            try { localStorage.setItem("ls_owner_v1", JSON.stringify({ planId: savedPlanId, email: (saveData.ownerEmail || email).trim().toLowerCase() })); } catch (e) {}
           }
         } catch(e) { console.log("Save plan error:", e); }
 
@@ -2852,7 +2870,7 @@ export default function App() {
   // resets and "start over" keep the user on their localized route.
   const localeHome = locale === "en" ? "/" : "/" + locale + "/";
 
-  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} try { if (/^\/plan\//.test(window.location.pathname)) window.history.replaceState({}, "", localeHome); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
+  const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} hadProfileSnapRef.current = false; hadPostsSnapRef.current = false; measuredRef.current = null; try { if (/^\/plan\//.test(window.location.pathname)) window.history.replaceState({}, "", localeHome); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
   // Count the question being answered, so Q1 shows visible progress instead of an empty bar.
   const progress = ((currentQ+1)/Math.max(QUESTIONS.length,1))*100;
@@ -3592,6 +3610,10 @@ export default function App() {
           // edited answers/screenshots. callAPI mints a fresh key before the call, so
           // refresh-mid-generation replay still works for THIS run.
           try { localStorage.removeItem("ls_reqkey_v1"); } catch (e) {}
+          // A fresh run is judged on its OWN inputs: flags restored from an earlier
+          // resumed run must not survive into it and lift the no-profile score cap.
+          hadProfileSnapRef.current = false;
+          hadPostsSnapRef.current = false;
           setPhase("analyzing");
           const ans = founderUnlock ? { ...answers, what_they_need_linkedin_to_unlock: founderUnlock } : answers;
           // Start API call immediately parallel to animation
