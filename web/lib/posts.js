@@ -1,5 +1,51 @@
 const posts = [
 {
+slug: "what-is-a-good-linkedin-ssi-score",
+title: `What Is a Good LinkedIn SSI Score? An Honest Read of All Four Pillars`,
+date: "2026-07-30",
+image: "/ssi-score.jpg",
+excerpt: "SSI runs 0 to 100 across four pillars, but LinkedIn never says what a good score is. Here is an honest benchmark, and the part of the score that can quietly hurt you.",
+html: `<p>Every week someone checks their Social Selling Index for the first time, sees a 43 or a 61 or a 74, and asks the same question. Is that good? The short answer: SSI runs from 0 to 100, built from four pillars worth 25 points each. Most professionals who use LinkedIn actively land somewhere in the middle band. Scores above 70 are uncommon and usually belong to people in sales roles who live inside Sales Navigator. But the number on its own tells you less than you think, because a meaningful part of SSI measures how much you use LinkedIn, not how well you are positioned on it.</p>
+<p>That distinction is the whole article. Let me unpack it.</p>
+<h2>What the SSI actually is</h2>
+<p>The Social Selling Index is LinkedIn's own 0 to 100 score, originally built to sell Sales Navigator to sales teams. It is free to check for any logged-in member at <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a>, and it updates daily.</p>
+<p>The score is the sum of four pillars, each worth up to 25 points:</p>
+<ul>
+<li><strong>Establish your professional brand.</strong> Profile completeness and the content you publish. Photo, headline, About, experience, plus whether you post and whether anyone engages with it.</li>
+<li><strong>Find the right people.</strong> How actively you search for and view the right profiles. This pillar leans heavily on search behavior, and it is the one Sales Navigator users max out almost by accident.</li>
+<li><strong>Engage with insights.</strong> Whether you share, comment and react, and whether your activity starts conversations.</li>
+<li><strong>Build relationships.</strong> Connections, especially with senior people, and whether your invitations get accepted.</li>
+</ul>
+<h2>So what counts as a good score?</h2>
+<p>LinkedIn does not publish an official benchmark for what a good SSI is, which is why every answer you find online is somebody's reading. Here is mine, from running profile audits across executives, founders, consultants and job seekers:</p>
+<ul>
+<li><strong>Under 40:</strong> you are barely using the platform. Usually an incomplete profile plus long silences. Nothing is broken, there is simply no signal yet.</li>
+<li><strong>40 to 60:</strong> the typical range for an active professional with a complete profile who engages sometimes. Most people who care enough to check their SSI are here.</li>
+<li><strong>60 to 75:</strong> consistently active. Almost always someone with a real content or engagement habit, or a hybrid role that involves outreach.</li>
+<li><strong>75 and up:</strong> rare, and usually a full-time seller with Sales Navigator. If you are not in sales and you are here, you spend serious time on LinkedIn.</li>
+</ul>
+<p>Treat those bands as a reading of typical patterns, not a grading scale handed down from LinkedIn. The more useful move is to look at how the points split across the four pillars, because two people with the same 58 can have completely different problems.</p>
+<h2>The uncomfortable truth about SSI</h2>
+<p>Here is the part most SSI guides skip. Two of the four pillars, finding people and engaging, are largely usage meters. They go up when you spend more time searching, viewing and reacting. They do not particularly care whether that activity builds your reputation or quietly spends it.</p>
+<p>Which means you can raise your SSI with exactly the kind of activity that hurts your authority. Reacting to everything in your feed, running filler polls, resharing viral clips. The score climbs, and the audience that matters thinks less of you with every notification. I wrote about that trade in detail in <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">the five tactics that quietly kill your authority</a>, and SSI is one reason people fall into it. The metric rewards motion. Your reputation rewards judgment.</p>
+<p>The brand pillar is the one that mostly measures something real, because it is anchored in your profile itself. And that is also where most non-sales professionals are leaving the easiest points, and the most reputation, on the table.</p>
+<h2>How to raise it without becoming spam</h2>
+<p><strong>Start with the brand pillar.</strong> A complete profile is the cheapest 20-plus points on the board and the only part of SSI a stranger actually sees. Real photo, a banner that fits your industry, an About section that says who you help and how, and a headline that does more than state your job title. If yours is a title and a company name, <a href="/blog/linkedin-headline-formula">the headline formula</a> is the place to start.</p>
+<p><strong>Make search a habit, not a binge.</strong> The find-people pillar responds to regular, targeted searching. Ten minutes looking up the actual people you want in your network beats an hour of aimless scrolling, for the score and for your pipeline.</p>
+<p><strong>Comment with a take.</strong> The engage pillar counts reactions, but comments that say something a peer could disagree with are what start conversations, and conversations are what the pillar is really trying to measure. Five thoughtful comments a week outperform fifty congrats.</p>
+<p><strong>Send invitations people want to accept.</strong> The relationships pillar rewards accepted connections, especially senior ones. A one-line personalized note referencing something real keeps your acceptance rate, and this pillar, healthy.</p>
+<p>Notice what is not on the list: posting every day. A high SSI does not require it, and your audience does not want it. One or two strong posts a month, given a real first hour of your attention, do more for the brand pillar than daily filler. That first hour is its own game, which I covered in <a href="/blog/linkedin-golden-hour">the LinkedIn golden hour</a>.</p>
+<h2>Where SSI fits in an honest assessment</h2>
+<p>SSI is one useful, self-reported signal. It is not a verdict on your positioning, because it cannot read quality. It cannot tell you whether your About section actually says anything, whether your headline is findable or whether your last ten posts built trust or spent it.</p>
+<p>That is exactly how we treat it at LinkedScore. The analyzer asks for your four pillar numbers and then reads them against your actual profile, and the gap between the two is usually the diagnosis. A 65 SSI sitting on top of an empty About section is one of the most common patterns we see: plenty of activity, nothing underneath it. The score says active. The profile says unfinished.</p>
+<p>If you want that read on your own profile, <a href="/">run the free LinkedScore analysis</a>. Enter your pillar scores, upload your profile, and you get a pillar-by-pillar SSI breakdown next to an honest score of what your profile actually communicates.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>What is a good SSI score on LinkedIn?</strong><br />There is no official benchmark from LinkedIn. In practice, 40 to 60 is typical for an active professional, 60 to 75 signals consistent activity, and 75-plus is rare outside full-time sales roles. The pillar breakdown matters more than the total.</p>
+<p><strong>How do I check my SSI score?</strong><br />Visit <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a> while logged in to LinkedIn. It is free for every member, no Sales Navigator required, and the score updates daily.</p>
+<p><strong>Does a higher SSI mean more reach for my posts?</strong><br />LinkedIn has promoted correlations between social selling activity and outcomes, but it has never confirmed SSI as a direct input to the feed algorithm. Treat it as a reflection of your habits, not a lever that boosts distribution by itself.</p>
+<p><strong>Can chasing SSI hurt my personal brand?</strong><br />Yes. Two of the four pillars reward volume of activity, so you can push the number up with reactive, low-value engagement that makes senior readers take you less seriously. Raise the score through profile quality and real conversations instead.</p>`,
+},
+{
 slug: "creative-linkedin-tactics-that-kill-your-authority",
 title: `5 "Creative" LinkedIn Tactics That Quietly Kill Your Authority`,
 date: "2026-06-12",
