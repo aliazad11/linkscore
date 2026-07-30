@@ -27,10 +27,13 @@ export default async function handler(req, res) {
   const rawNext = (req.body && typeof req.body.next === "string") ? req.body.next : "";
   const next = /^\/[A-Za-z0-9/_-]*$/.test(rawNext) ? rawNext : "";
 
+  // A transport failure is not account state: reporting "couldn't send" is
+  // enumeration-safe (it happens for any address) and beats lying "check your email"
+  // to someone whose link never left the server.
   try {
     const token = signToken({ email, purpose: "login", next }, 900); // 15 minutes
     const link = `${SITE}/api/auth-verify?token=${encodeURIComponent(token)}`;
-    await fetch("https://api.resend.com/emails", {
+    const send = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -44,13 +47,20 @@ export default async function handler(req, res) {
         html: `<div style="font-family:'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#08080e;color:#f5f5fc;">
           <p style="color:#c8a96e;font-weight:800;letter-spacing:2px;margin:0 0 16px;">LINKEDSCORE</p>
           <p style="line-height:1.6;">Click below to sign in and see your saved reports. This link expires in 15 minutes.</p>
-          <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:700;margin:8px 0;">Sign in to LinkedScore</a>
-          <p style="color:#6a6a8a;font-size:12px;margin-top:24px;line-height:1.6;">If you did not request this, you can safely ignore this email.</p>
+          <a href="${link}" style="display:inline-block;background-color:#c8a96e;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:14px 22px;border-radius:12px;font-weight:700;margin:8px 0;">Sign in to LinkedScore</a>
+          <p style="color:#9a99b4;font-size:12px;margin-top:12px;line-height:1.6;word-break:break-all;">Button not working? Copy this link into your browser:<br/>${link}</p>
+          <p style="color:#9a99b4;font-size:12px;margin-top:24px;line-height:1.6;">If you did not request this, you can safely ignore this email.</p>
         </div>`,
       }),
-    }).catch(() => {});
+    });
+    if (!send.ok) {
+      const detail = await send.text().catch(() => "");
+      console.error("[auth-request] Resend error " + send.status + " " + detail);
+      return res.status(502).json({ ok: false, error: "Could not send the sign-in email. Please try again." });
+    }
   } catch (e) {
-    // Swallow internal errors so the response never reveals account state.
+    console.error("[auth-request] send failed", e);
+    return res.status(502).json({ ok: false, error: "Could not send the sign-in email. Please try again." });
   }
   return res.status(200).json({ ok: true });
 }

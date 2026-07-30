@@ -1008,6 +1008,9 @@ const GLOBAL_CSS = `
   .pdf-drop:hover, .pdf-drop.dragover { border-color:#c8a96e; background:rgba(200,169,110,0.04); }
   .tab-tooltip { display:none; }
   .tab-tooltip-wrap:hover .tab-tooltip { display:block; }
+  /* Phones: the quiz already shows a step rail, a counter and a progress bar; the
+     numbered dot row is a fourth indicator eating ~50px of a small viewport. */
+  @media (max-width:640px) { .quiz-dots { display:none !important; } }
   .week-card { background:#0d0d18; border:1px solid #1a1a2e; border-radius:14px; padding:18px; margin-bottom:10px; position:relative; overflow:hidden; }
   .week-card.post { border-left:3px solid #c8a96e; }
   .week-card.engagement { border-left:3px solid #3a6a4a; }
@@ -1444,7 +1447,7 @@ function ShareCardSection({ cohort, score, name }) {
       )}
 
       <img src={imgPath} alt={title + " share card"} loading="lazy"
-        style={{ width:"100%", display:"block", borderRadius:12, border:"1px solid #20202f", marginBottom:14 }} />
+        style={{ width:"100%", aspectRatio:"16/9", objectFit:"cover", display:"block", borderRadius:12, border:"1px solid #20202f", marginBottom:14 }} />
 
       <div style={{ display:"flex", gap:8, background:"rgba(200,169,110,0.07)", border:"1px solid #c8a96e33", borderRadius:10, padding:"10px 12px", marginBottom:14 }}>
         <span style={{ fontSize:14, lineHeight:1.2 }}>📌</span>
@@ -1545,8 +1548,10 @@ function Sparkline({ data, width = 220, height = 44, color = "#c8a96e" }) {
     return [x, y];
   };
   const pts = data.map((v, i) => xy(v, i).map(n => n.toFixed(1)).join(",")).join(" ");
+  // viewBox + fluid width: on a 375px phone a fixed 220px svg clipped its right edge,
+  // hiding the highlighted latest-score dot.
   return (
-    <svg width={width} height={height} style={{ display: "block", maxWidth: "100%" }}>
+    <svg viewBox={`0 0 ${width} ${height}`} style={{ display: "block", width: "100%", maxWidth: width, height: "auto" }}>
       <polyline points={pts} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
       {data.map((v, i) => { const [x, y] = xy(v, i); return <circle key={i} cx={x} cy={y} r={2.6} fill={i === data.length - 1 ? "#ecd6a3" : color} />; })}
     </svg>
@@ -1588,7 +1593,7 @@ function ToolkitItem({ label, text, preview }) {
         <p style={{ color: "#7a7a96", fontSize: 10.5, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 3 }}>{label}</p>
         <p style={{ color: "#c8c8dd", fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap" }}>{shown}</p>
       </div>
-      <button onClick={copy} style={{ flexShrink: 0, background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "6px 11px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{copied ? "Copied" : "Copy"}</button>
+      <button onClick={copy} style={{ flexShrink: 0, background: copied ? "#16321f" : "transparent", border: "1px solid " + (copied ? "#2e6a45" : "#2a2a3e"), color: copied ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "10px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", minHeight: 40 }}>{copied ? "Copied" : "Copy"}</button>
     </div>
   );
 }
@@ -1604,7 +1609,7 @@ function EarnedCardRow({ c, locale, onOpen }) {
   const g = gendered ? guessGender(c.firstName) : "m";
   const entry = (SHARE_I18N[loc][nn] && SHARE_I18N[loc][nn][g]) || (SHARE_I18N.en[nn] && SHARE_I18N.en[nn].m);
   const caption = entry && entry.captions && entry.captions.length ? entry.captions[0] : "";
-  const btn = (on) => ({ background: on ? "#16321f" : "transparent", border: "1px solid " + (on ? "#2e6a45" : "#2a2a3e"), color: on ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "7px 13px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" });
+  const btn = (on) => ({ background: on ? "#16321f" : "transparent", border: "1px solid " + (on ? "#2e6a45" : "#2a2a3e"), color: on ? "#56c08a" : "#c8a96e", borderRadius: 8, padding: "10px 14px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", minHeight: 40 });
   const copyCap = () => { copyText(caption).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); }).catch(() => {}); };
   const download = async () => {
     try {
@@ -1612,6 +1617,19 @@ function EarnedCardRow({ c, locale, onOpen }) {
       const a = document.createElement("a"); a.href = url; a.download = "linkedscore-card.jpg"; document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 4000); setDl(true); setTimeout(() => setDl(false), 1800);
     } catch (e) { window.open(c.img, "_blank", "noopener"); }
+  };
+  // blob + a.download silently no-ops in the LinkedIn/Gmail in-app browsers; the OS
+  // share sheet is the path that actually works there, so it leads on mobile.
+  const shareCard = async () => {
+    try {
+      const res = await fetch(c.img); const blob = await res.blob();
+      const file = new File([blob], "linkedscore-card.jpg", { type: "image/jpeg" });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: caption });
+        return;
+      }
+    } catch (e) { if (e && e.name === "AbortError") return; }
+    download();
   };
   return (
     <div style={{ background: "#0d0d18", border: "1px solid #1a1a2e", borderRadius: 14, overflow: "hidden", marginBottom: 12 }}>
@@ -1621,6 +1639,7 @@ function EarnedCardRow({ c, locale, onOpen }) {
       <div style={{ padding: 14 }}>
         {caption && <p style={{ color: "#c8c8dd", fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap", marginBottom: 12, maxHeight: 110, overflow: "hidden" }}>{caption}</p>}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {CAN_NATIVE_SHARE && <button onClick={shareCard} style={{ ...btn(false), borderColor: "#c8a96e66" }}>Share</button>}
           {caption && <button onClick={copyCap} style={btn(copied)}>{copied ? "Copied" : "Copy caption"}</button>}
           <button onClick={download} style={btn(dl)}>{dl ? "Saved" : "Download"}</button>
           <button onClick={() => onOpen(c)} style={{ background: "transparent", border: "1px solid #2a2a3e", color: "#9696b4", borderRadius: 8, padding: "7px 13px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" }}>More options</button>
@@ -1654,7 +1673,9 @@ function readImageFile(file) {
               resolve({ data: out.split(",")[1], media_type: "image/jpeg", preview: out });
             } catch (e) { resolve(fallback); }
           };
-          img.onerror = () => { clearTimeout(to); resolve(fallback); };
+          // Undecodable formats (HEIC in most browsers) must FAIL visibly: the raw
+          // fallback used to ship a full-res HEIC the API silently discarded.
+          img.onerror = () => { clearTimeout(to); resolve(null); };
           img.src = dataUrl;
         } catch (e) { resolve(fallback); }
       };
@@ -1750,11 +1771,17 @@ function PostWriter() {
     const id = setInterval(() => setPhaseIdx((i) => Math.min(i + 1, GEN_STEPS.length - 1)), 2600);
     return () => clearInterval(id);
   }, [loading]);
-  const pill = (active) => ({ background: active ? "#16162a" : "transparent", border: "1px solid " + (active ? "#2a2a3e" : "transparent"), color: active ? "#ecd6a3" : "#7a7a96", borderRadius: 8, padding: "5px 14px", fontSize: 12.5, fontWeight: 600, cursor: "pointer" });
+  const pill = (active) => ({ background: active ? "#16162a" : "transparent", border: "1px solid " + (active ? "#2a2a3e" : "transparent"), color: active ? "#ecd6a3" : "#7a7a96", borderRadius: 8, padding: "10px 14px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", minHeight: 40 });
   const ta = { width: "100%", background: "#08080e", border: "1px solid #20202f", borderRadius: 12, color: "#f5f5fc", fontSize: 16, padding: 12, fontFamily: "'DM Sans',sans-serif", resize: "vertical", lineHeight: 1.55, boxSizing: "border-box" };
   const onFiles = async (e) => {
-    const files = [...(e.target.files || [])].filter((f) => f.type.startsWith("image/"));
-    for (const f of files) { const part = await readImageFile(f); if (part) setSamples((prev) => (prev.length < 3 ? [...prev, part] : prev)); }
+    const files = [...(e.target.files || [])].filter((f) => f.type.startsWith("image/") || /\.(heic|heif)$/i.test(f.name || ""));
+    let failed = 0;
+    for (const f of files) {
+      const part = await readImageFile(f);
+      if (part) setSamples((prev) => (prev.length < 3 ? [...prev, part] : prev));
+      else failed++;
+    }
+    setErr(failed ? "That photo format did not work here. Use a screenshot (PNG or JPG) instead." : "");
     e.target.value = "";
   };
   const run = async () => {
@@ -1801,7 +1828,7 @@ function PostWriter() {
           {samples.map((s, i) => (
             <div key={i} style={{ position: "relative" }}>
               <img src={s.preview} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid #20202f", display: "block" }} />
-              <button onClick={() => setSamples((prev) => prev.filter((_, j) => j !== i))} aria-label="Remove" style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, borderRadius: "50%", background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", fontSize: 11, cursor: "pointer", lineHeight: 1, padding: 0 }}>✕</button>
+              <button onClick={() => setSamples((prev) => prev.filter((_, j) => j !== i))} aria-label="Remove" style={{ position: "absolute", top: -8, right: -8, width: 28, height: 28, borderRadius: "50%", background: "#16162a", border: "1px solid #2a2a3e", color: "#c8c8dd", fontSize: 13, cursor: "pointer", lineHeight: 1, padding: 0 }}>✕</button>
             </div>
           ))}
           {samples.length < 3 && (
@@ -1942,7 +1969,7 @@ function ReportCard({ p, delta, locale, onDelete }) {
           </div>
         </div>
       </a>
-      {onDelete && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(p.planId); }} title="Delete this report" aria-label="Delete this report" style={{ position: "absolute", top: 8, right: 8, zIndex: 2, background: "rgba(8,8,14,0.55)", border: "1px solid #2a2a3e", color: "#8a8aa6", borderRadius: 8, width: 26, height: 26, cursor: "pointer", fontSize: 13, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>}
+      {onDelete && <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(p.planId); }} title="Delete this report" aria-label="Delete this report" style={{ position: "absolute", top: 6, right: 6, zIndex: 2, background: "rgba(8,8,14,0.72)", border: "1px solid #2a2a3e", color: "#a8a8c0", borderRadius: 10, width: 38, height: 38, cursor: "pointer", fontSize: 15, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>}
     </div>
   );
 }
@@ -1966,6 +1993,7 @@ export default function App() {
   const [emailError, setEmailError] = useState("");
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingSlow, setLoadingSlow] = useState(false); // >8s unlock wait: show "still analyzing"
   const [activeSection, setActiveSection] = useState(0);
   const [pdfText, setPdfText] = useState("");
 
@@ -1975,6 +2003,25 @@ export default function App() {
   const [sharedLimited, setSharedLimited] = useState(false); // non-owner viewing a shared /plan/:id (owner gate)
   const [signinEmail, setSigninEmail] = useState("");
   const [signinSent, setSigninSent] = useState(false);
+  const [signinErr, setSigninErr] = useState("");
+  const [signinBusy, setSigninBusy] = useState(false);
+
+  // Magic-link request that fails loudly: silent failures stranded phone users on a
+  // "Check your email" screen for an email that never left the device.
+  const requestSignin = async (next) => {
+    const em = (signinEmail || "").trim().toLowerCase();
+    if (!em.includes("@") || !em.includes(".")) { setSigninErr("Please enter a valid email."); return; }
+    if (signinBusy) return;
+    setSigninErr(""); setSigninBusy(true);
+    try {
+      const r = await fetch("/api/auth-request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: em, next }) });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      setSigninSent(true);
+    } catch (e) {
+      setSigninErr("Couldn't send the link. Check your connection and try again.");
+    }
+    setSigninBusy(false);
+  };
   const [acctEmail, setAcctEmail] = useState(undefined); // undefined=checking, null=signed out, string=signed in
   const [myPlans, setMyPlans] = useState(null);
   const [myMoves, setMyMoves] = useState([]);
@@ -1998,6 +2045,9 @@ export default function App() {
   const [pdfError, setPdfError] = useState("");
   const [postScreenshots, setPostScreenshots] = useState([null, null, null]);
   const [noPostsYet, setNoPostsYet] = useState(false);
+  const [ssErr, setSsErr] = useState(""); // visible per-pick error on the screenshots step
+  const [resetArmed, setResetArmed] = useState(false); // two-tap "Start over" confirm on the report
+  const [kwOpen, setKwOpen] = useState(-1); // dashboard keyword chip expanded inline (was a desktop-only tooltip)
   const [revCurrency, setRevCurrency] = useState("");
   const [revValue, setRevValue] = useState("");
   const [revPeriod, setRevPeriod] = useState("per_year");
@@ -2202,6 +2252,7 @@ export default function App() {
     if (snap.revChannelShare) setRevChannelShare(snap.revChannelShare);
     if (snap.noPostsYet) setNoPostsYet(snap.noPostsYet);
     if (snap.planId) { setPlanId(snap.planId); planRef.current = snap.planId; }
+    if (snap.teaser) setTeaser(snap.teaser);
     if (snap.target === "paywall" && !snap.planId) {
       // The tab died mid-generation. Ask the server (replay-only, never billed) for
       // the finished plan under this run's request key; if it isn't there, the run
@@ -2326,11 +2377,12 @@ export default function App() {
       localStorage.setItem("ls_funnel_v1", JSON.stringify({
         ts: Date.now(), phase, cohort, userData, answers, currentQ, specialNote,
         revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId,
+        teaser: teaser || null, // paywall refresh keeps the score teaser, the gate's strongest asset
         _hp: !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
         _hpost: !noPostsYet && postScreenshots.filter(Boolean).length > 0,
       }));
     } catch (e) {}
-  }, [phase, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId]);
+  }, [phase, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId, teaser]);
 
   useEffect(() => {
     if (phase !== "analyzing") return;
@@ -2393,6 +2445,14 @@ export default function App() {
     if (!userData.jobTitle.trim()) e.jobTitle = "Required";
     if (!userData.linkedinUrl.trim()||!userData.linkedinUrl.toLowerCase().includes("linkedin.com/in/")) e.linkedinUrl = "Enter your LinkedIn profile URL (linkedin.com/in/...)";
     setFormErrors(e);
+    if (Object.keys(e).length) {
+      // On a phone the submit button sits below the fold; without this the tap
+      // appears to do nothing because the errored field is scrolled off-screen.
+      setTimeout(() => {
+        const bad = document.querySelector(".field-input.error");
+        if (bad) { bad.scrollIntoView({ behavior: "smooth", block: "center" }); try { bad.focus({ preventScroll: true }); } catch (err) {} }
+      }, 60);
+    }
     return Object.keys(e).length===0;
   };
 
@@ -2538,8 +2598,11 @@ export default function App() {
 
   const handlePaywall = async () => {
     if (loading) return;
-    if (!email.includes("@")||!email.includes(".")) { setEmailError("Please enter a valid email"); return; }
-    setEmailError(""); setLoading(true);
+    if (!email.includes("@")||!email.includes(".")) { setEmailError(t("err_email_invalid")); return; }
+    setEmailError(""); setLoading(true); setLoadingSlow(false);
+    // After 8s of waiting, swap the button label to an honest "still analyzing" so a
+    // slow generation doesn't read as a frozen page.
+    const slowTimer = setTimeout(() => setLoadingSlow(true), 8000);
     try {
       // Plan was already fetched during animation, wait for it if not ready
       let pid = planRef.current;
@@ -2569,80 +2632,92 @@ export default function App() {
       const finalized = finalizePlan(result, revInputs, locale, hadProfile, hadPosts, measuredRef.current);
       setPlan(finalized);
 
-      // Persist user + plan via the server (service key), so the browser never
-      // touches the users/plans tables directly.
-      let savedPlanId = null;
-      try {
-        const saveRes = await fetch("/api/save-plan", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            first_name: userData.firstName,
-            job_title: userData.jobTitle,
-            linkedin_url: userData.linkedinUrl,
-            plan_data: { ...finalized, _locale: locale },
-            cohort: cohort || null,
-            quiz_answers: answers,
-            special_note: specialNote || null,
-            ssi_scores: {
-              establish_brand: userData.establish_brand || null,
-              find_people: userData.find_people || null,
-              engage_insights: userData.engage_insights || null,
-              build_relationships: userData.build_relationships || null
-            }
-          })
-        });
-        const saveData = await saveRes.json().catch(() => ({}));
-        savedPlanId = saveData.planId || null;
-        if (savedPlanId) {
-          setPlanId(savedPlanId);
-          // Put the saved report's URL in the bar: a phone user who refreshes or
-          // backgrounds the tab reloads their report instead of a blank landing.
-          try { window.history.replaceState({}, "", "/plan/" + savedPlanId); } catch (e) {}
-        }
-      } catch(e) { console.log("Save plan error:", e); }
-
-      // Send email via serverless function
-      console.log("Sending email with planId:", savedPlanId);
-      try {
-        const cardImg = (function(){ var p = cardImagePath(cohort, finalized.score, locale, userData.firstName); return p ? "https://www.linkedscore.app" + p : ""; })();
-        const emailRes = await fetch("/api/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email,
-            firstName: userData.firstName,
-            plan: finalized,
-            planId: savedPlanId,
-            locale,
-            archetype: fixedArchetype(cohort, finalized.score, locale, userData.firstName) || finalized.archetype,
-            cardImage: cardImg,
-            cardCaption: shareCaptionFor(cohort, finalized.score, locale, userData.firstName)
-          })
-        });
-        const emailData = await emailRes.json();
-        console.log("Email response:", emailData);
-      } catch(e) { console.log("Email error:", e); }
-
+      // Reveal the report NOW. Persisting and emailing used to run serially before
+      // setPhase("result"), holding the already-fetched report hostage to two more
+      // round-trips on a phone connection.
       identify(email);
       track("plan_unlocked", { cohort, planId: pid || null, score: (finalized && finalized.score) || null, had_profile: hadProfile });
       setPhase("result");
+
+      (async () => {
+        // Persist user + plan via the server (service key), so the browser never
+        // touches the users/plans tables directly.
+        let savedPlanId = null;
+        try {
+          const saveRes = await fetch("/api/save-plan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              first_name: userData.firstName,
+              job_title: userData.jobTitle,
+              linkedin_url: userData.linkedinUrl,
+              plan_data: { ...finalized, _locale: locale },
+              cohort: cohort || null,
+              quiz_answers: answers,
+              special_note: specialNote || null,
+              ssi_scores: {
+                establish_brand: userData.establish_brand || null,
+                find_people: userData.find_people || null,
+                engage_insights: userData.engage_insights || null,
+                build_relationships: userData.build_relationships || null
+              }
+            })
+          });
+          const saveData = await saveRes.json().catch(() => ({}));
+          savedPlanId = saveData.planId || null;
+          if (savedPlanId) {
+            setPlanId(savedPlanId);
+            // Put the saved report's URL in the bar: a phone user who refreshes or
+            // backgrounds the tab reloads their report instead of a blank landing.
+            try { window.history.replaceState({}, "", "/plan/" + savedPlanId); } catch (e) {}
+          }
+        } catch(e) { console.log("Save plan error:", e); }
+
+        // Send email via serverless function (needs savedPlanId, so it stays chained).
+        console.log("Sending email with planId:", savedPlanId);
+        try {
+          const cardImg = (function(){ var p = cardImagePath(cohort, finalized.score, locale, userData.firstName); return p ? "https://www.linkedscore.app" + p : ""; })();
+          const emailRes = await fetch("/api/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email,
+              firstName: userData.firstName,
+              plan: finalized,
+              planId: savedPlanId,
+              locale,
+              archetype: fixedArchetype(cohort, finalized.score, locale, userData.firstName) || finalized.archetype,
+              cardImage: cardImg,
+              cardCaption: shareCaptionFor(cohort, finalized.score, locale, userData.firstName)
+            })
+          });
+          const emailData = await emailRes.json();
+          console.log("Email response:", emailData);
+        } catch(e) { console.log("Email error:", e); }
+      })();
     } catch(e) {
       if (e.message === "Failed to fetch") {
-        setEmailError("Connection error, please check your internet and try again.");
+        setEmailError(t("err_connection"));
+      } else if (e && e.message && /taking longer|Could not load|malformed/i.test(e.message)) {
+        setEmailError(e.message);
       } else {
-        setEmailError(`Error: ${e.message}`);
+        setEmailError(t("err_generic"));
       }
     }
+    clearTimeout(slowTimer);
+    setLoadingSlow(false);
     setLoading(false);
   };
 
   const handlePDF = (file) => {
     if (!file) return;
-    if (file.type !== "application/pdf") { setPdfError("That file isn't a PDF. Export yours from LinkedIn via Resources → Save to PDF."); return; }
+    // Android in-app browsers (LinkedIn/Gmail WebViews) sometimes deliver files with an
+    // empty MIME type; fall back to the .pdf extension before rejecting.
+    const looksPdf = file.type === "application/pdf" || (!file.type && /\.pdf$/i.test(file.name || ""));
+    if (!looksPdf) { setPdfError(t("pdf_err_type")); return; }
     // Truncating base64 corrupts the PDF, so reject oversized files instead
-    if (file.size > 3 * 1024 * 1024) { setPdfError("That PDF is over 3MB. LinkedIn profile exports are usually small, try re-exporting it."); setPdfName(""); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; return; }
+    if (file.size > 3 * 1024 * 1024) { setPdfError(t("pdf_err_size")); setPdfName(""); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; return; }
     setPdfError("");
     setPdfName(file.name);
     // Deterministic scoring needs the plain text; extraction is async, lazy-loads
@@ -2655,7 +2730,7 @@ export default function App() {
       .then((t) => { if (pdfRunRef.current === run) pdfPlainRef.current = t || ""; })
       .catch(() => { if (pdfRunRef.current === run) pdfPlainRef.current = ""; });
     const reader = new FileReader();
-    reader.onerror = () => { setPdfError("Couldn't read that file. Please try again."); setPdfName(""); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; };
+    reader.onerror = () => { setPdfError(t("pdf_err_read")); setPdfName(""); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; };
     reader.onload = (e) => {
       if (pdfRunRef.current !== run) return; // a newer upload superseded this one
       const base64 = e.target.result.split(",")[1];
@@ -2684,7 +2759,9 @@ export default function App() {
   // A phone gallery multi-select sends several files through one slot's picker:
   // the first replaces the tapped slot, the rest fan into the empty slots.
   const handlePostScreenshots = (index, fileList) => {
-    const files = Array.from(fileList || []).filter(f => f && f.type.startsWith("image/"));
+    const all = Array.from(fileList || []);
+    const files = all.filter(f => f && f.type.startsWith("image/"));
+    setSsErr(all.length && !files.length ? t("ss_err_not_image") : "");
     if (!files.length) return;
     handlePostScreenshot(index, files[0]);
     if (files.length > 1) {
@@ -2701,7 +2778,8 @@ export default function App() {
 
   const reset = () => { try { localStorage.removeItem("ls_funnel_v1"); localStorage.removeItem("ls_reqkey_v1"); } catch (e) {} setSavedProgress(null); setResumeDismissed(false); setSharedView(false); setPhase("intro"); setAnswers({}); setCurrentQ(0); setPlan(null); planRef.current = null; setUserData({firstName:"",lastName:"",age:"",jobTitle:"",linkedinUrl:"",establish_brand:"",find_people:"",engage_insights:"",build_relationships:""}); setCohort(null); setSpecialNote(""); setQuizPhase("generic"); setEmail(""); setSelected(null); setOtherText(""); setMultiSelected([]); setPdfText(""); pdfRunRef.current++; pdfPlainRef.current = ""; setPdfName(""); setPdfError(""); setGenError(""); setPostScreenshots([null,null,null]); setNoPostsYet(false); setRevCurrency(""); setRevValue(""); setRevPeriod("per_year"); setRevTarget(""); setFounderHasRevenue(null); setFounderUnlock(""); setRevChannelShare("0.3"); setActiveSection(0); setAnalysisStep(0); setAnalysisProgress(0); setPlanId(null); setEmailError(""); setFormErrors({}); };
 
-  const progress = (currentQ/QUESTIONS.length)*100;
+  // Count the question being answered, so Q1 shows visible progress instead of an empty bar.
+  const progress = ((currentQ+1)/Math.max(QUESTIONS.length,1))*100;
 
   const s = {
     h1: { color:"#F9FAFB", fontSize:32, fontWeight:800, lineHeight:1.2, marginBottom:12, letterSpacing:-0.5 },
@@ -2936,9 +3014,18 @@ export default function App() {
                     <p style={{ color: "#7a7a96", fontSize: 10.5, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 }}>Keywords to add</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
                       {myAssets.keywords.map((k, i) => (
-                        <span key={i} title={k.where ? k.where + (k.example ? " — " + k.example : "") : ""} style={{ background: "rgba(200,169,110,0.1)", border: "1px solid #c8a96e33", color: "#ecd6a3", borderRadius: 6, padding: "5px 10px", fontSize: 12.5, fontWeight: 600 }}>{k.keyword}</span>
+                        <button key={i} onClick={() => setKwOpen(kwOpen === i ? -1 : i)} style={{ background: kwOpen === i ? "rgba(200,169,110,0.22)" : "rgba(200,169,110,0.1)", border: "1px solid " + (kwOpen === i ? "#c8a96e" : "#c8a96e33"), color: "#ecd6a3", borderRadius: 6, padding: "9px 12px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>{k.keyword}</button>
                       ))}
                     </div>
+                    {kwOpen >= 0 && myAssets.keywords[kwOpen] && (
+                      <div style={{ marginTop: 9, background: "#08080e", border: "1px solid #1a1a2e", borderRadius: 8, padding: "10px 12px", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          {myAssets.keywords[kwOpen].where && <p style={{ color: "#c8a96e", fontSize: 11, fontWeight: 700, marginBottom: 3, textTransform: "uppercase", letterSpacing: 0.5 }}>{myAssets.keywords[kwOpen].where}</p>}
+                          <p style={{ color: "#c8c8dd", fontSize: 12.5, lineHeight: 1.5 }}>{myAssets.keywords[kwOpen].example || "Add this keyword where it reads naturally."}</p>
+                        </div>
+                        <CopyBtn text={myAssets.keywords[kwOpen].keyword} />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -3013,9 +3100,10 @@ export default function App() {
                 <OAuthButtons next="/account" />
                 <p style={{ color:"#9696b4", fontSize:13, marginBottom:14, lineHeight:1.5 }}>Enter your email and we will send you a secure link to see your saved reports.</p>
                 <div style={{ display:"flex", gap:8 }}>
-                  <input type="email" value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
-                  <button className="primary-btn" style={{ width:"auto", whiteSpace:"nowrap" }} onClick={async ()=>{ if(!signinEmail.includes("@")||!signinEmail.includes("."))return; try{ await fetch("/api/auth-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signinEmail.trim().toLowerCase(),next:"/account"})}); }catch(e){} setSigninSent(true); }}>Send link</button>
+                  <input type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
+                  <button className="primary-btn" disabled={signinBusy} style={{ width:"auto", whiteSpace:"nowrap" }} onClick={()=>requestSignin("/account")}>{signinBusy ? "Sending…" : "Send link"}</button>
                 </div>
+                {signinErr && <p style={{ color:"#f87171", fontSize:12, marginTop:6 }}>{signinErr}</p>}
                 <p style={{ color: "#56566f", fontSize: 11.5, marginTop: 10, lineHeight: 1.5 }}>Secure email sign-in. No password to remember, lose or leak.</p>
               </>
             )}
@@ -3131,7 +3219,7 @@ export default function App() {
         <div className="progress-bar" style={{ marginBottom:24 }}>
           <div className="progress-fill" style={{ width:`${progress}%` }} />
         </div>
-        <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>{QUESTIONS.map(function(qq, i){ var answered = answers[qq.id] != null; var isCur = i === currentQ; var ok = isCur || answered; return (<button key={qq.id} onClick={function(){ if (ok) goToQuestion(i); }} disabled={!ok} style={{ width:30, height:30, borderRadius:"50%", border: isCur ? "2px solid #c8a96e" : (answered ? "1px solid #6a5a9a" : "1px solid #2a2a3a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (answered ? "#c8a96e" : "#3a3a5a"), fontSize:12, fontWeight:700, cursor: ok ? "pointer" : "default", padding:0 }}>{i + 1}</button>); })}</div>
+        <div className="quiz-dots" style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:20 }}>{QUESTIONS.map(function(qq, i){ var answered = answers[qq.id] != null; var isCur = i === currentQ; var ok = isCur || answered; return (<button key={qq.id} onClick={function(){ if (ok) goToQuestion(i); }} disabled={!ok} style={{ width:30, height:30, borderRadius:"50%", border: isCur ? "2px solid #c8a96e" : (answered ? "1px solid #6a5a9a" : "1px solid #2a2a3a"), background: isCur ? "#c8a96e" : "transparent", color: isCur ? "#0a0a0f" : (answered ? "#c8a96e" : "#3a3a5a"), fontSize:12, fontWeight:700, cursor: ok ? "pointer" : "default", padding:0 }}>{i + 1}</button>); })}</div>
         <h2 style={{ color:"#F9FAFB", fontSize:22, fontWeight:800, marginBottom:8, lineHeight:1.3 }}>{q.question}</h2>
         <p style={{ color:"#c8c7dd", fontSize:13, marginBottom:22 }}>{q.subtitle}</p>
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginBottom:22 }}>
@@ -3205,7 +3293,7 @@ export default function App() {
               ? (<>In the LinkedIn app, open your profile, tap <strong style={{ color:"#c8a96e" }}>More (…)</strong> below your headline and choose <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Then upload that file here.</>)
               : t("pdf_sub_mobile"))
           : (locale==="en"
-              ? (<>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>. Takes 10 seconds.</>)
+              ? (<>With your real profile, the plan critiques what you actually wrote instead of guessing. Go to your LinkedIn profile → click <strong style={{ color:"#c8a96e" }}>Resources</strong> → <strong style={{ color:"#c8a96e" }}>Save to PDF</strong>.</>)
               : t("pdf_sub"))}</p>
         <div
           className={`pdf-drop${isDragging?" dragover":""}`}
@@ -3225,7 +3313,7 @@ export default function App() {
             <div>
               <p style={{ fontSize:28, marginBottom:12 }}>📄</p>
               <p style={{ color:"#c8a96e", fontSize:15, fontWeight:700, marginBottom:4 }}>{t("pdf_upload_cta")}</p>
-              <p style={{ color:"#b6b5cc", fontSize:12 }}>{t("pdf_browse")}</p>
+              <p style={{ color:"#b6b5cc", fontSize:12 }}>{isPhoneDevice() ? t("pdf_browse_mobile") : t("pdf_browse")}</p>
             </div>
           )}
         </div>
@@ -3233,7 +3321,7 @@ export default function App() {
         <p style={{ color:"#7a7a96", fontSize:11, textAlign:"center", marginTop:10, marginBottom:24 }}>{t("pdf_privacy")}</p>
         {pdfName
           ? <button className="primary-btn" onClick={()=>setPhase("quiz")}>{t("btn_continue")}</button>
-          : <button className="ghost-btn" onClick={()=>setPhase("quiz")} style={{ color:"#c8c7dd", fontSize:13 }}>{t("skip_preliminary")}</button>}
+          : <button className="ghost-btn" onClick={()=>{ track("pdf_skipped", { is_mobile: isPhoneDevice() }); setPhase("quiz"); }} style={{ color:"#c8c7dd", fontSize:13 }}>{t("skip_preliminary")}</button>}
         <button className="ghost-btn" style={{ marginTop:10 }} onClick={()=>setPhase("form")}>{t("btn_back")}</button>
       </div>
     </Layout>
@@ -3376,7 +3464,9 @@ export default function App() {
                 >
                   {postScreenshots[i] ? (
                     <>
-                      <img src={postScreenshots[i].preview} alt={`Post ${i+1}`} style={{ width:72, height:56, objectFit:"cover", borderRadius:10, flexShrink:0 }} />
+                      {/* Portrait thumb anchored to the top: a post screenshot's identifying
+                          part is its header/author line, not a center crop. */}
+                      <img src={postScreenshots[i].preview} alt={`Post ${i+1}`} style={{ width:48, height:78, objectFit:"cover", objectPosition:"top", borderRadius:8, flexShrink:0, margin:"8px 0 8px 8px", border:"1px solid #20202f" }} />
                       <div>
                         <p style={{ color:"#c8a96e", fontSize:13, fontWeight:700 }}>✓ {t("ss_post_uploaded", {n: i+1})}</p>
                         <p style={{ color:"#c8c7dd", fontSize:11 }}>{t("ss_replace")}</p>
@@ -3394,6 +3484,7 @@ export default function App() {
                 </div>
               </div>
             ))}
+            {ssErr && <p style={{ color:"#f87171", fontSize:12.5, margin:"2px 0 0" }}>{ssErr}</p>}
           </div>
         )}
 
@@ -3404,7 +3495,7 @@ export default function App() {
           <div style={{ width:18, height:18, borderRadius:4, border:`1.5px solid ${noPostsYet?"#c8a96e":"#2a2a3e"}`, background:noPostsYet?"#c8a96e":"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}>
             {noPostsYet && <span style={{ color:"#08080e", fontSize:11, fontWeight:900 }}>✓</span>}
           </div>
-          <p style={{ color:noPostsYet?"#c8a96e":"#4a4a6a", fontSize:13, fontWeight:noPostsYet?600:400 }}>{t("ss_no_posts")}</p>
+          <p style={{ color:noPostsYet?"#c8a96e":"#9696b4", fontSize:13, fontWeight:noPostsYet?600:400 }}>{t("ss_no_posts")}</p>
         </div>
 
         {genError && (
@@ -3530,11 +3621,11 @@ export default function App() {
         </div>
         <div style={{ marginBottom:14, textAlign:"left" }}>
           <label style={s.label}>{t("email_label")}</label>
-          <input className={`field-input${emailError?" error":""}`} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==="Enter"&&handlePaywall()} />
+          <input className={`field-input${emailError?" error":""}`} type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==="Enter"&&handlePaywall()} />
           {emailError&&<p style={s.err}>{emailError}</p>}
         </div>
         <button className="primary-btn" disabled={loading} onClick={handlePaywall}>
-          {loading?t("btn_generating"):t("btn_get_plan")}
+          {loading?(loadingSlow?t("btn_still_analyzing"):t("btn_generating")):t("btn_get_plan")}
         </button>
         <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>{t("paywall_consent")} <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
       </div>
@@ -3586,9 +3677,10 @@ export default function App() {
               <>
                 <OAuthButtons next={typeof window !== "undefined" ? window.location.pathname : "/account"} />
                 <div style={{ display:"flex", gap:8 }}>
-                  <input type="email" value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
-                  <button className="primary-btn" style={{ width:"auto", whiteSpace:"nowrap" }} onClick={async ()=>{ if(!signinEmail.includes("@")||!signinEmail.includes("."))return; try{ await fetch("/api/auth-request",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:signinEmail.trim().toLowerCase(),next:window.location.pathname})}); }catch(e){} setSigninSent(true); }}>Sign in</button>
+                  <input type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} value={signinEmail} onChange={e=>setSigninEmail(e.target.value)} placeholder="you@email.com" className="field-input" style={{ flex:1 }} />
+                  <button className="primary-btn" disabled={signinBusy} style={{ width:"auto", whiteSpace:"nowrap" }} onClick={()=>requestSignin(window.location.pathname)}>{signinBusy ? "Sending…" : "Sign in"}</button>
                 </div>
+                {signinErr && <p style={{ color:"#f87171", fontSize:12, marginTop:6 }}>{signinErr}</p>}
               </>
             )}
           </div>
@@ -3910,7 +4002,7 @@ export default function App() {
 
 
 
-          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><img src="data:image/jpeg;base64,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" alt="Ali Azad" style={{ width:72, height:72, borderRadius:"50%", objectFit:"cover", display:"block", marginBottom:14 }} /><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>{t("founder_title")}</p><p style={{ color:"#55556e", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>{t("founder_bio1")}</p><p style={{ color:"#55556e", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>{t("founder_bio2")}</p><div style={{ borderTop:"1px solid #e7e7f2", margin:"0 0 16px", paddingTop:16 }}><p style={{ fontWeight:700, fontSize:15, margin:"0 0 10px", color:"#1a1a2e" }}>{t("sess_title")}</p>{[t("sess_b1"), t("sess_b2"), t("sess_b3")].map((b, bi) => (<p key={bi} style={{ color:"#55556e", fontSize:13.5, lineHeight:1.55, margin:"0 0 6px" }}>✓ {b}</p>))}<p style={{ fontWeight:700, fontSize:14, color:"#1a1a2e", margin:"12px 0 4px" }}>{t("sess_price")}</p><p style={{ color:"#9c763c", fontSize:13, fontWeight:600, margin:0 }}>{t("sess_offer", { code: "CELEBRATION" })}</p><p style={{ color:"#9a99b0", fontSize:11.5, lineHeight:1.5, margin:"8px 0 0" }}>{t("sess_terms")} <a href={(locale === "en" ? "" : "/" + locale) + "/terms.html"} target="_blank" rel="noreferrer" style={{ color:"#9a99b0" }}>{t("legal_terms")}</a></p></div><div style={{ display:"flex", flexWrap:"wrap", gap:10 }}><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star?utm_source=linkedscore&utm_medium=report&utm_campaign=celebration50" target="_blank" rel="noopener noreferrer" onClick={()=>track("calendly_clicked", { placement:"result" })} style={{ flex:"1 1 200px", textAlign:"center", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"13px 20px", borderRadius:9, textDecoration:"none", boxSizing:"border-box" }}>{t("founder_cta_book")}</a><a href="https://www.linkedin.com/in/aliazad11/" target="_blank" rel="noopener noreferrer" style={{ flex:"1 1 200px", textAlign:"center", background:"#ffffff", color:"#0a66c2", fontWeight:600, fontSize:14, padding:"13px 20px", borderRadius:9, textDecoration:"none", border:"1px solid #0a66c2", boxSizing:"border-box" }}>{t("founder_cta_linkedin")}</a></div></div><button className="ghost-btn" style={{ marginTop:20 }} onClick={reset}>{t("btn_start_over")}</button>
+          <div className="card-block" style={{ marginTop:28, padding:22, borderRadius:14, border:"1px solid #e7e7f2", background:"#f7f8fc" }}><img src="data:image/jpeg;base64,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" alt="Ali Azad" style={{ width:72, height:72, borderRadius:"50%", objectFit:"cover", display:"block", marginBottom:14 }} /><p style={{ fontWeight:700, fontSize:16, margin:"0 0 8px" }}>{t("founder_title")}</p><p style={{ color:"#55556e", fontSize:14, lineHeight:1.6, margin:"0 0 10px" }}>{t("founder_bio1")}</p><p style={{ color:"#55556e", fontSize:14, lineHeight:1.6, margin:"0 0 16px" }}>{t("founder_bio2")}</p><div style={{ borderTop:"1px solid #e7e7f2", margin:"0 0 16px", paddingTop:16 }}><p style={{ fontWeight:700, fontSize:15, margin:"0 0 10px", color:"#1a1a2e" }}>{t("sess_title")}</p>{[t("sess_b1"), t("sess_b2"), t("sess_b3")].map((b, bi) => (<p key={bi} style={{ color:"#55556e", fontSize:13.5, lineHeight:1.55, margin:"0 0 6px" }}>✓ {b}</p>))}<p style={{ fontWeight:700, fontSize:14, color:"#1a1a2e", margin:"12px 0 4px" }}>{t("sess_price")}</p><p style={{ color:"#9c763c", fontSize:13, fontWeight:600, margin:0 }}>{t("sess_offer", { code: "CELEBRATION" })}</p><p style={{ color:"#9a99b0", fontSize:11.5, lineHeight:1.5, margin:"8px 0 0" }}>{t("sess_terms")} <a href={(locale === "en" ? "" : "/" + locale) + "/terms.html"} target="_blank" rel="noreferrer" style={{ color:"#9a99b0" }}>{t("legal_terms")}</a></p></div><div style={{ display:"flex", flexWrap:"wrap", gap:10 }}><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star?utm_source=linkedscore&utm_medium=report&utm_campaign=celebration50" target="_blank" rel="noopener noreferrer" onClick={()=>track("calendly_clicked", { placement:"result" })} style={{ flex:"1 1 200px", textAlign:"center", background:"#0a66c2", color:"#ffffff", fontWeight:600, fontSize:14, padding:"13px 20px", borderRadius:9, textDecoration:"none", boxSizing:"border-box" }}>{t("founder_cta_book")}</a><a href="https://www.linkedin.com/in/aliazad11/" target="_blank" rel="noopener noreferrer" style={{ flex:"1 1 200px", textAlign:"center", background:"#ffffff", color:"#0a66c2", fontWeight:600, fontSize:14, padding:"13px 20px", borderRadius:9, textDecoration:"none", border:"1px solid #0a66c2", boxSizing:"border-box" }}>{t("founder_cta_linkedin")}</a></div></div><button className="ghost-btn" style={{ marginTop:20, color: resetArmed ? "#e0a23c" : undefined, borderColor: resetArmed ? "#e0a23c88" : undefined }} onClick={()=>{ if (resetArmed) { reset(); return; } setResetArmed(true); setTimeout(()=>setResetArmed(false), 4000); }}>{resetArmed ? t("btn_start_over_confirm") : t("btn_start_over")}</button>
         </div>
       </Layout>
     );

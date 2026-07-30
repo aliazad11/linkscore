@@ -116,7 +116,17 @@ nav .brand{display:flex;align-items:center}
 .ls-home .nav-r{gap:10px}
 .ls-home .nav-r > a{display:none}
 .ls-home nav .navmenu{display:block}
-.ls-home .nav-r .btn-gold{padding:9px 12px;font-size:13px;white-space:nowrap}
+.ls-home .nav-r .btn-gold{padding:12px 14px;font-size:13px;white-space:nowrap;min-height:44px;display:inline-flex;align-items:center;box-sizing:border-box}
+.ls-home .navmenu summary,.ls-home .langpick summary{min-height:44px;min-width:44px;padding:10px 12px;box-sizing:border-box}
+.ls-home .foot-links a{display:inline-block;padding:10px 4px}
+.ls-home .foot-links{gap:14px}
+}
+/* Endless decorative loops only where a pointer can enjoy them; a phone GPU should not
+   run four infinite animations for effects that pay off on hover. */
+@media (hover:none){
+.ls-home .feat .mini .b{animation:none}
+.ls-home .step .ln::before{animation:none}
+.ls-home #arc{animation:none}
 }
 .ls-home .foot-links{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .ls-home .foot-links a{color:var(--sub);text-decoration:none}

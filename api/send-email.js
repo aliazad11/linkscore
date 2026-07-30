@@ -195,7 +195,7 @@ export default async function handler(req) {
       <p style="color:#8a8aa8;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px;">${L.critical_rules}</p>
       <ul style="padding-left:18px;margin:0;">${rules}</ul>
     </div>
-    <a href="${planUrl}" style="display:block;text-align:center;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:28px;">${L.view_plan}</a>
+    <a href="${planUrl}" style="display:block;text-align:center;background-color:#c8a96e;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:28px;">${L.view_plan}</a>
     <p style="color:#9a99b4;font-size:11px;text-align:center;line-height:1.6;">${L.footer} <a href="https://www.linkedscore.app/privacy.html" style="color:#9696b4;">${L.privacy}</a><br/>&copy; 2026 LinkedScore</p>
   </div>
 </body>

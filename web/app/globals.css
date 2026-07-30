@@ -19,7 +19,7 @@ p { color:#c9c9d8; margin:0 0 18px; }
 .post-card h2 { margin:6px 0 8px; font-size:22px; }
 .post-meta { color:var(--muted); font-size:13px; }
 article p { font-size:17px; }
-article ul { color:#c9c9d8; margin:0 0 18px 22px; }
+article ul, article ol { color:#c9c9d8; margin:0 0 18px 22px; padding-left:4px; }
 article li { margin-bottom:8px; }
 article strong { color:var(--text); }
 .back { color:var(--gold); font-size:14px; font-weight:600; }
@@ -39,13 +39,14 @@ footer .foot-links a:hover { color:var(--gold); }
 .hero { margin: 24px 0 16px; }
 .hero .kicker { margin-bottom: 6px; }
 .hero h1 { margin: 6px 0 10px; }
-.hero-img { width: 100%; height: auto; border-radius: 12px; margin-bottom: 20px; display: block; }
+.hero-img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover; border-radius: 12px; margin-bottom: 20px; display: block; }
 .share { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); }
 .share-label { color: var(--muted); font-size: 13px; font-weight: 600; }
-.share button { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, color 0.2s; }
-.share button:hover { border-color: var(--gold); color: var(--gold); }
+.share button, .share .share-a { background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 999px; padding: 11px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: border-color 0.2s, color 0.2s; min-height: 44px; display: inline-flex; align-items: center; text-decoration: none; box-sizing: border-box; }
+.share button:hover, .share .share-a:hover { border-color: var(--gold); color: var(--gold); }
 .header-nav { display:flex; align-items:center; gap:18px; }
-.cta-sm { margin-top:0; padding:8px 14px; font-size:13px; border-radius:8px; }
+.cta-sm { margin-top:0; padding:11px 16px; font-size:13px; border-radius:8px; }
+.back { display:inline-block; padding:10px 0; }
 
 /* Never let media or long tokens force a horizontal scroll. */
 img { max-width:100%; height:auto; }
