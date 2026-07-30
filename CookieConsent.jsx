@@ -21,14 +21,24 @@ export function CookieConsent() {
   }, []);
 
   // While the banner is up it floats over the bottom of the page; pad the body by
-  // its real height so it never hides the step's primary button on a phone.
+  // its real height so it never hides the step's primary button on a phone. The same
+  // height is published as --ls-consent-pad so other FIXED elements (the resume pill)
+  // can sit above the banner instead of underneath it.
   useEffect(() => {
-    if (!open || !card) { document.body.style.paddingBottom = ""; return; }
-    const apply = () => { document.body.style.paddingBottom = (card.offsetHeight + 24) + "px"; };
+    const clear = () => {
+      document.body.style.paddingBottom = "";
+      try { document.documentElement.style.removeProperty("--ls-consent-pad"); } catch (e) {}
+    };
+    if (!open || !card) { clear(); return; }
+    const apply = () => {
+      const h = card.offsetHeight + 24;
+      document.body.style.paddingBottom = h + "px";
+      try { document.documentElement.style.setProperty("--ls-consent-pad", h + "px"); } catch (e) {}
+    };
     apply();
     let ro = null;
     if (typeof ResizeObserver !== "undefined") { ro = new ResizeObserver(apply); ro.observe(card); }
-    return () => { if (ro) ro.disconnect(); document.body.style.paddingBottom = ""; };
+    return () => { if (ro) ro.disconnect(); clear(); };
   }, [open, card]);
 
   const decide = (analyticsOptIn) => {

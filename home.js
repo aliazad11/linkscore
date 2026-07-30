@@ -122,12 +122,15 @@ nav .brand{display:flex;align-items:center}
 .ls-home .foot-links{gap:14px}
 }
 /* Endless decorative loops only where a pointer can enjoy them; a phone GPU should not
-   run four infinite animations for effects that pay off on hover. */
+   run four infinite animations for effects that pay off on hover. !important because the
+   animation declarations appear LATER in this sheet and would otherwise win on source order. */
 @media (hover:none){
-.ls-home .feat .mini .b{animation:none}
-.ls-home .step .ln::before{animation:none}
-.ls-home #arc{animation:none}
+.ls-home .feat .mini .b{animation:none!important}
+.ls-home .step .ln::before{animation:none!important}
+.ls-home #arc{animation:none!important}
 }
+body{margin:0}
+.ls-home section{scroll-margin-top:72px}
 .ls-home .foot-links{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
 .ls-home .foot-links a{color:var(--sub);text-decoration:none}
 .ls-home .foot-links a:hover{color:var(--gold)}
