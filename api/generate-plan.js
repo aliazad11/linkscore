@@ -211,13 +211,10 @@ export default async function handler(req, res) {
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY) return res.status(500).json({ error: "Server not configured" });
 
-  if (!(await durableRateOk(ip, 8, SERVICE_KEY, "generate-plan"))) {
-    return res.status(429).json({ error: "You've reached the hourly analysis limit. Please try again later." });
-  }
-
   // Idempotency: the client persists one request key per funnel run. A refresh during
   // the 2-3 minute wait used to orphan a PAID completed generation server-side and
   // bill a second one; now the same key returns the already-generated plan instantly.
+  // Checked BEFORE the rate limit so replays never eat into the hourly budget.
   const rawKey = req.headers["x-request-key"];
   const reqKey = (typeof rawKey === "string" && /^[a-zA-Z0-9-]{8,64}$/.test(rawKey)) ? rawKey : null;
   if (reqKey) {
@@ -248,6 +245,16 @@ export default async function handler(req, res) {
         }
       }
     } catch (e) { /* replay check is best-effort; fall through to generate */ }
+  }
+
+  // A resume probe asks only "did my earlier run finish?" — it must NEVER trigger a
+  // fresh (billed) generation, so answer 404 instead of falling through.
+  if (req.headers["x-replay-only"] === "1") {
+    return res.status(404).json({ error: "No completed analysis for this session." });
+  }
+
+  if (!(await durableRateOk(ip, 8, SERVICE_KEY, "generate-plan"))) {
+    return res.status(429).json({ error: "You've reached the hourly analysis limit. Please try again later." });
   }
 
   const controller = new AbortController();
