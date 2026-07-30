@@ -84,7 +84,7 @@ export default async function handler(req, res) {
     }
     const rows = await ins.json();
     const planId = rows && rows[0] && rows[0].id;
-    return res.status(200).json({ planId: planId || null });
+    return res.status(200).json({ planId: planId || null, ownerEmail });
   } catch (e) {
     console.error("[save-plan] " + (e && e.message));
     return res.status(500).json({ error: "Could not save plan" });

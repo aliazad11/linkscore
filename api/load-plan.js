@@ -8,6 +8,17 @@
 import { readSession } from "./_auth.js";
 
 export const config = { maxDuration: 15 };
+
+// Same lightweight limiter get-plan uses: the optional email proof must not be
+// brute-forceable (guessing which email owns a shared plan).
+const hits = new Map();
+function rateOk(ip) {
+  const now = Date.now();
+  const arr = (hits.get(ip) || []).filter((t) => now - t < 60000);
+  arr.push(now);
+  hits.set(ip, arr);
+  return arr.length <= 20;
+}
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -20,6 +31,10 @@ export default async function handler(req, res) {
   const { planId, email } = req.body || {};
   if (!planId || typeof planId !== "string" || !UUID_RE.test(planId)) {
     return res.status(400).json({ error: "Missing planId" });
+  }
+  if (email) {
+    const ip = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+    if (!rateOk(ip)) return res.status(429).json({ error: "Too many requests" });
   }
 
   try {

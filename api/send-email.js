@@ -46,21 +46,54 @@ function clampScore(n) {
 // WebCrypto twin of _auth.js signToken (this file runs on the edge runtime, which has
 // no node:crypto). Format must stay byte-identical: base64url(json) + "." +
 // base64url(HMAC-SHA256(secret, base64url(json))), with `exp` added to the payload.
+function b64urlBytes(bytes) {
+  let s = "";
+  const arr = new Uint8Array(bytes);
+  for (let i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 async function signLoginToken(payload, ttlSeconds) {
   const secret = process.env.AUTH_SECRET || "";
   if (!secret) return null;
-  const b64url = (bytes) => {
-    let s = "";
-    const arr = new Uint8Array(bytes);
-    for (let i = 0; i < arr.length; i++) s += String.fromCharCode(arr[i]);
-    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-  };
   const enc = new TextEncoder();
   const body = { ...payload, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
-  const data = b64url(enc.encode(JSON.stringify(body)));
+  const data = b64urlBytes(enc.encode(JSON.stringify(body)));
   const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, enc.encode(data));
-  return data + "." + b64url(sig);
+  return data + "." + b64urlBytes(sig);
+}
+
+// WebCrypto twin of _auth.js verifyToken + readSession, for the edge runtime: a
+// signed-in user may type a DIFFERENT address at the unlock gate, in which case the
+// plans row is owned by the session email (save-plan's rule) and the typed-email
+// ownership check alone would wrongly reject the send.
+async function readSessionEdge(req) {
+  try {
+    const secret = process.env.AUTH_SECRET || "";
+    if (!secret) return null;
+    const cookie = req.headers.get("cookie") || "";
+    const m = cookie.match(/(?:^|;\s*)ls_session=([^;]+)/);
+    if (!m) return null;
+    const token = decodeURIComponent(m[1]);
+    const dot = token.indexOf(".");
+    if (dot === -1) return null;
+    const data = token.slice(0, dot), sig = token.slice(dot + 1);
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const expected = b64urlBytes(await crypto.subtle.sign("HMAC", key, enc.encode(data)));
+    if (expected !== sig) return null;
+    const pad = data.replace(/-/g, "+").replace(/_/g, "/");
+    const raw = atob(pad + "=".repeat((4 - (pad.length % 4)) % 4));
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    const body = JSON.parse(new TextDecoder().decode(bytes));
+    if (!body.exp || body.exp < Math.floor(Date.now() / 1000)) return null;
+    if (body.purpose !== "session" || !body.email) return null;
+    return body;
+  } catch (e) {
+    return null;
+  }
 }
 
 export default async function handler(req) {
@@ -120,8 +153,16 @@ export default async function handler(req) {
     }
     const rows = await check.json();
     const owner = rows && rows[0] && typeof rows[0].email === 'string' ? rows[0].email.trim().toLowerCase() : null;
-    if (!owner || owner !== cleanEmail) {
+    if (!owner) {
       return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+    if (owner !== cleanEmail) {
+      // Second proof: the requester's own signed session owns this plan (signed-in
+      // user typed a different address at the gate). Still sends to the typed address.
+      const sess = await readSessionEdge(req);
+      if (!(sess && String(sess.email).trim().toLowerCase() === owner)) {
+        return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+      }
     }
 
     const name = esc(String(firstName || 'there').slice(0, 60));
