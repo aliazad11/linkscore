@@ -35,7 +35,7 @@ export default function Article({ params }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       <a className="back" href="/blog">Back to blog</a>
       <div className="hero">
-        {post.image ? <img className="hero-img" src={post.image} alt={post.title} /> : null}
+        {post.image ? <img className="hero-img" src={post.image} alt={post.title} width="1376" height="768" fetchPriority="high" /> : null}
         <p className="kicker">LinkedScore</p>
         <h1>{post.title}</h1>
         <p className="post-meta">{post.date}</p>
