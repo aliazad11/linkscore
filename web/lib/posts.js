@@ -2,6 +2,7 @@ const posts = [
 {
 slug: "what-is-a-good-linkedin-ssi-score",
 title: `What Is a Good LinkedIn SSI Score? An Honest Read of All Four Pillars`,
+metaTitle: "What Is a Good LinkedIn SSI Score? Honest Benchmarks",
 date: "2026-07-30",
 image: "/ssi-score.jpg",
 excerpt: "SSI runs 0 to 100 across four pillars, but LinkedIn never says what a good score is. Here is an honest benchmark, and the part of the score that can quietly hurt you.",
@@ -48,6 +49,7 @@ html: `<p>Every week someone checks their Social Selling Index for the first tim
 {
 slug: "creative-linkedin-tactics-that-kill-your-authority",
 title: `5 "Creative" LinkedIn Tactics That Quietly Kill Your Authority`,
+metaTitle: "Creative LinkedIn Tactics That Kill Your Authority",
 date: "2026-06-12",
 image: "/creative-tactics.jpg",
 excerpt: "These 5 LinkedIn tactics work for reach but quietly cost you trust. Here is the line between the legitimate version and the bait version of each.",
