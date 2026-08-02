@@ -13,7 +13,7 @@ export function generateMetadata({ params }) {
   if (!post) return {};
   const og = { title: post.title, description: post.excerpt, type: "article", url: SITE + "/blog/" + post.slug };
   if (post.image) { og.images = [post.image]; }
-  return { title: post.title, description: post.excerpt, openGraph: og, alternates: { canonical: SITE + "/blog/" + post.slug } };
+  return { title: post.metaTitle || post.title, description: post.excerpt, openGraph: og, alternates: { canonical: SITE + "/blog/" + post.slug } };
 }
 
 export default function Article({ params }) {
@@ -24,8 +24,10 @@ export default function Article({ params }) {
     "@type": "Article",
     headline: post.title,
     datePublished: post.date,
+    dateModified: post.updated || post.date,
     description: post.excerpt,
     url: SITE + "/blog/" + post.slug,
+    mainEntityOfPage: { "@type": "WebPage", "@id": SITE + "/blog/" + post.slug },
     author: { "@type": "Person", name: "Ali Azad", url: "https://www.linkedin.com/in/aliazad11/" },
     publisher: { "@type": "Organization", name: "LinkedScore", logo: { "@type": "ImageObject", url: SITE + "/logo.png" } }
   };

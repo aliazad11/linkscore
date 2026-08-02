@@ -1,0 +1,28 @@
+# LinkedScore
+
+> LinkedScore (https://www.linkedscore.app) is an AI LinkedIn analyzer. You upload your LinkedIn profile as a PDF, answer a short quiz and optionally add post screenshots, and it returns a free LinkedIn Score (0-100) with a personalized growth plan: profile rewrites, keyword analysis, an SSI breakdown, ready-to-edit post hooks and a 30-day roadmap. Built by Ali Azad. Available in English, German, French, Spanish, Portuguese, Dutch and Italian.
+
+Key facts:
+- The LinkedIn Score is a 0-100 read of a real profile, not a quiz-only estimate; uploading the profile PDF produces the anchored score.
+- The report includes a Thought Leader Score when post screenshots are provided, and an SSI (Social Selling Index) pillar analysis when the user enters their four SSI pillar values.
+- A Post Writer turns a rough draft into a LinkedIn post in the user's own voice; signed-in users' saved tone is reused automatically.
+- The free report can be followed by a paid 1:1 strategy session.
+
+## Product
+
+- [LinkedScore analyzer](https://www.linkedscore.app/): start the free LinkedIn analysis
+- [German version](https://www.linkedscore.app/de/): Dein LinkedIn-Score & KI-Plan
+- [About](https://www.linkedscore.app/about): what LinkedScore is and who builds it
+- [FAQ](https://www.linkedscore.app/faq): common questions about the analysis
+
+## Blog
+
+- [What Is a Good LinkedIn SSI Score?](https://www.linkedscore.app/blog/what-is-a-good-linkedin-ssi-score): honest SSI benchmarks and the four-pillar breakdown
+- [The LinkedIn Golden Hour](https://www.linkedscore.app/blog/linkedin-golden-hour): why the first hour after posting decides reach
+- [The LinkedIn Headline Formula](https://www.linkedscore.app/blog/linkedin-headline-formula): how to write a headline that gets found
+- [Creative LinkedIn Tactics That Kill Your Authority](https://www.linkedscore.app/blog/creative-linkedin-tactics-that-kill-your-authority): the reach-versus-trust trade-off
+
+## Legal
+
+- [Privacy policy](https://www.linkedscore.app/privacy)
+- [Terms of use](https://www.linkedscore.app/terms)
