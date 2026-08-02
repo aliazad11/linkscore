@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Free LinkedIn Headline Analyzer | LinkedScore</title>
+<meta name="description" content="Free LinkedIn headline analyzer: paste your headline, pick your goal and get an honest 0 to 100 score with the exact issues and one rewrite. No signup, nothing stored." />
+<meta name="robots" content="index,follow" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="canonical" href="https://www.linkedscore.app/headline-analyzer.html" />
+<meta name="theme-color" content="#08080e" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="LinkedScore" />
+<meta property="og:title" content="Free LinkedIn Headline Analyzer | LinkedScore" />
+<meta property="og:description" content="Paste your LinkedIn headline, pick your goal and get an honest 0 to 100 score with the exact issues and one rewrite. Free, no signup, nothing stored." />
+<meta property="og:url" content="https://www.linkedscore.app/headline-analyzer.html" />
+<meta property="og:image" content="https://www.linkedscore.app/og-compass.jpg" />
+<meta property="og:image:width" content="2400" />
+<meta property="og:image:height" content="1260" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Free LinkedIn Headline Analyzer | LinkedScore" />
+<meta name="twitter:description" content="An honest 0 to 100 score for your LinkedIn headline, with the exact issues and one rewrite. Free." />
+<meta name="twitter:image" content="https://www.linkedscore.app/og-compass.jpg" />
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is the LinkedIn headline analyzer really free?","acceptedAnswer":{"@type":"Answer","text":"Yes. No signup, no email, no card. Score as many versions of your headline as you like. The full profile analysis on the LinkedScore homepage is free too."}},{"@type":"Question","name":"Do you store my headline?","acceptedAnswer":{"@type":"Answer","text":"No. The headline is sent to the analysis engine when you click the button, scored and returned to your screen. It is not saved, logged or connected to you in any way."}},{"@type":"Question","name":"What is a good headline score?","acceptedAnswer":{"@type":"Answer","text":"Most headlines that are just a job title and a company land between 30 and 55. Above 70 means who you help, the outcome and the proof are all present in words your audience would search for."}}]}</script>
+<script defer src="/_vercel/insights/script.js"></script>
+<style>
+  :root { --bg:#08080e; --panel:#101019; --field:#0c0c15; --gold:#c8a96e; --gold-lt:#e7cf9a; --text:#f5f5fc; --sub:#9696b4; --mute:#56566f; --border:#1d1d2e; --line-gold:rgba(200,169,110,.18); --red:#e0556b; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  [hidden] { display:none !important; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  a { color:var(--gold); }
+  .wrap { max-width:880px; margin:0 auto; padding:0 24px; }
+
+  .topbar { max-width:880px; margin:0 auto; padding:22px 24px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar img { height:28px; }
+  .topbar a { font-size:14px; font-weight:600; text-decoration:none; color:var(--gold); min-height:44px; display:inline-flex; align-items:center; }
+
+  .hero { padding:44px 0 30px; }
+  .kicker { color:var(--gold); font-size:12px; font-weight:600; letter-spacing:2px; text-transform:uppercase; margin-bottom:14px; }
+  h1 { font-size:clamp(32px,6vw,46px); font-weight:800; line-height:1.08; letter-spacing:-0.5px; margin-bottom:14px; }
+  .promise { color:#c8c7dd; font-size:17px; max-width:620px; line-height:1.55; }
+
+  .tool { background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:24px; margin-top:26px; }
+  .field { margin-bottom:18px; }
+  label { display:block; font-size:12px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; color:var(--sub); margin-bottom:8px; }
+  textarea { width:100%; min-height:96px; background:var(--field); border:1px solid var(--border); border-radius:12px; color:var(--text); font-family:inherit; font-size:16px; line-height:1.5; padding:14px; resize:vertical; }
+  textarea::placeholder { color:var(--mute); }
+  textarea:focus, select:focus { outline:none; border-color:var(--gold); }
+  select { width:100%; min-height:48px; background:var(--field); border:1px solid var(--border); border-radius:12px; color:var(--text); font-family:inherit; font-size:16px; padding:0 42px 0 14px; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23c8a96e' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 16px center; cursor:pointer; }
+  .analyze { width:100%; min-height:52px; background:var(--gold); color:#0a0a0f; font-family:inherit; font-weight:700; font-size:16px; border:none; border-radius:12px; cursor:pointer; transition:opacity .2s, transform .15s; }
+  .analyze:hover { transform:translateY(-1px); }
+  .analyze:disabled { opacity:.55; cursor:wait; transform:none; }
+  .err { margin-top:14px; color:var(--red); font-size:14.5px; border:1px solid rgba(224,85,107,.35); background:rgba(224,85,107,.07); border-radius:10px; padding:12px 14px; }
+
+  .results { margin-top:30px; scroll-margin-top:20px; }
+  .score-row { display:flex; align-items:center; gap:26px; background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:26px; }
+  .ring-wrap { position:relative; width:140px; height:140px; flex-shrink:0; }
+  .ring { width:140px; height:140px; transform:rotate(-90deg); }
+  .ring-bg { fill:none; stroke:var(--border); stroke-width:10; }
+  .ring-fg { fill:none; stroke:var(--gold); stroke-width:10; stroke-linecap:round; stroke-dasharray:339.292; stroke-dashoffset:339.292; transition:stroke-dashoffset 1s cubic-bezier(.22,.8,.3,1); }
+  .score-num { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:40px; letter-spacing:-1px; }
+  .score-num small { font-size:14px; color:var(--mute); font-weight:600; margin:14px 0 0 3px; letter-spacing:0; }
+  .verdict { font-size:18px; font-weight:600; line-height:1.45; }
+  .res-h { font-size:20px; font-weight:700; margin:28px 0 10px; letter-spacing:-0.2px; }
+  .issues { list-style:none; }
+  .issues li { position:relative; padding:11px 0 11px 26px; color:var(--sub); font-size:15.5px; line-height:1.55; border-bottom:1px solid var(--border); }
+  .issues li:last-child { border-bottom:none; }
+  .issues li::before { content:""; position:absolute; left:4px; top:20px; width:7px; height:7px; border-radius:50%; background:var(--gold); }
+  .rewrite { background:var(--panel); border:1px solid var(--border); border-left:3px solid var(--gold); border-radius:14px; padding:18px 20px; font-size:17px; font-weight:500; line-height:1.5; }
+  .rewrite-note { color:var(--mute); font-size:13.5px; margin-top:10px; }
+  .cta-box { margin-top:30px; text-align:center; background:var(--panel); border:1px solid var(--line-gold); border-radius:16px; padding:30px 24px; }
+  .cta-line { font-size:19px; font-weight:700; margin-bottom:18px; letter-spacing:-0.2px; }
+  .cta { display:inline-flex; align-items:center; justify-content:center; min-height:48px; background:var(--gold); color:#0a0a0f; font-weight:700; font-size:15px; padding:0 30px; border-radius:12px; text-decoration:none; }
+  .cta-sub { margin-top:14px; font-size:14px; }
+  .cta-sub a { color:var(--sub); text-decoration:underline; text-underline-offset:3px; }
+
+  .content { padding:54px 0 10px; }
+  .content h2 { font-size:24px; font-weight:800; letter-spacing:-0.3px; margin:38px 0 12px; }
+  .content h2:first-child { margin-top:0; }
+  .content p { color:var(--sub); font-size:16px; margin-bottom:14px; max-width:680px; }
+  .content p b, .content li b { color:var(--text); font-weight:600; }
+  .content ul { list-style:none; margin:6px 0 14px; }
+  .content ul li { position:relative; padding:7px 0 7px 24px; color:var(--sub); font-size:15.5px; line-height:1.55; max-width:680px; }
+  .content ul li::before { content:""; position:absolute; left:2px; top:16px; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  .faq h3 { font-size:17px; font-weight:700; margin:22px 0 6px; }
+
+  .foot { max-width:880px; margin:40px auto 0; padding:26px 24px 64px; font-size:13px; color:var(--mute); border-top:1px solid var(--border); }
+  .foot a { color:var(--sub); text-decoration:none; margin-right:16px; display:inline-block; padding:6px 0; }
+
+  @media (max-width:560px) { .score-row { flex-direction:column; text-align:center; } .verdict { font-size:16.5px; } }
+  @media (prefers-reduced-motion:reduce) { .ring-fg { transition:none; } .analyze:hover { transform:none; } }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/" aria-label="LinkedScore home" style="display:flex"><img src="/logo.png" alt="LinkedScore" /></a>
+    <a href="/">Back to LinkedScore</a>
+  </div>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="kicker">Free Tool</p>
+      <h1>Free LinkedIn Headline Analyzer</h1>
+      <p class="promise">Paste your headline, pick your goal and get an honest 0 to 100 score, the three issues costing you most and one rewrite. No signup.</p>
+
+      <form id="hl-form" class="tool" novalidate>
+        <div class="field">
+          <label for="headline">Your current headline</label>
+          <textarea id="headline" name="headline" maxlength="300" placeholder="Marketing Director at Acme Corp | Helping B2B teams turn content into pipeline" required></textarea>
+        </div>
+        <div class="field">
+          <label for="goal">What should your headline win you?</label>
+          <select id="goal" name="goal">
+            <option value="Clients" selected>Clients</option>
+            <option value="A better job">A better job</option>
+            <option value="Investors">Investors</option>
+            <option value="Followers">Followers</option>
+          </select>
+        </div>
+        <button type="submit" class="analyze" id="analyze-btn">Analyze my headline</button>
+        <p id="err" class="err" role="alert" hidden></p>
+        <noscript><p class="err">The analyzer needs JavaScript to run. Everything else on this page works without it.</p></noscript>
+      </form>
+
+      <div id="results" class="results" aria-live="polite" hidden>
+        <div class="score-row">
+          <div class="ring-wrap">
+            <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="ring-bg" cx="60" cy="60" r="54"/>
+              <circle class="ring-fg" id="score-arc" cx="60" cy="60" r="54"/>
+            </svg>
+            <div class="score-num"><span id="score-num">0</span><small>/100</small></div>
+          </div>
+          <p class="verdict" id="verdict"></p>
+        </div>
+        <h2 class="res-h">What's holding it back</h2>
+        <ul class="issues" id="issues"></ul>
+        <h2 class="res-h">A stronger version</h2>
+        <div class="rewrite"><span id="rewrite-text"></span></div>
+        <p class="rewrite-note">Built only from what your headline already says. Fill the [brackets] with your specifics.</p>
+        <div class="cta-box">
+          <p class="cta-line">Your headline is one line of your profile. LinkedScore reads all of it.</p>
+          <a class="cta" href="/">Get your free LinkedIn Score</a>
+          <p class="cta-sub"><a href="/blog/linkedin-headline-formula">Or read the headline formula first</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <h2>Why your headline is the most-read line on LinkedIn</h2>
+      <p>Your headline follows you everywhere on the platform. It sits under your name in search results, in the feed on every post you publish, next to every comment you leave and inside every connection request you send. Most of the people who read it will never click through to your profile. For them the headline is not the preview. It is the whole impression.</p>
+      <p>That is also why the default headline is so expensive. LinkedIn fills it with your job title and your employer, and most people never change it. <b>"Marketing Director at Acme"</b> tells a stranger what your company calls you. It does not tell a client what you can do for them, a recruiter why you beat the other profiles in the shortlist or an investor why your company matters. And it rarely contains the words those people actually type into search.</p>
+
+      <h2>What this LinkedIn headline analyzer checks</h2>
+      <p>The analyzer reads your headline against the same five questions I use in a manual profile audit:</p>
+      <ul>
+        <li><b>Searchability.</b> Would the words your target audience types into LinkedIn search find you? The title you call yourself and the term a buyer searches for are often different words.</li>
+        <li><b>Clarity.</b> Can a stranger tell in three seconds who you help? "Helping companies grow" helps nobody in particular.</li>
+        <li><b>Outcome.</b> Does the headline name a result, or only an activity? People hire outcomes.</li>
+        <li><b>Proof.</b> Is there one concrete reason to believe you? A number, a named specialty, a real credential.</li>
+        <li><b>Buzzword soup.</b> Words like visionary, passionate and results-driven take up characters and say nothing. The analyzer penalizes them without mercy.</li>
+      </ul>
+      <p>It then returns a 0 to 100 score for your stated goal, the three issues that cost you the most and one rewrite. The rewrite uses only what your headline already says. Where it needs a specific you have not given, it leaves a bracketed placeholder for you to fill, because a tool that invents achievements for you is writing fiction on your behalf.</p>
+
+      <h2>The formula behind strong headlines</h2>
+      <p>Every headline that scores high here does three things: it names who you help, the outcome you get them and the proof that you can deliver it. Who, outcome, proof. In that order, in words your audience would search for. If your score came back lower than you hoped, that formula is the repair kit. I break it down with real before and after examples in <a href="/blog/linkedin-headline-formula">the LinkedIn headline formula</a>.</p>
+      <p>And remember what this tool cannot see. A headline sits on top of a photo, a banner, an About section and a body of posts, and readers judge all of it together. The free <a href="/">LinkedScore analysis</a> reads the whole profile and your actual posts, then hands you a full plan, not just one line.</p>
+
+      <div class="faq">
+        <h2>Frequently asked questions</h2>
+        <h3>Is it really free?</h3>
+        <p>Yes. No signup, no email, no card. Score as many versions of your headline as you like. The full profile analysis on the homepage is free too.</p>
+        <h3>Do you store my headline?</h3>
+        <p>No. When you click the button your headline is sent to our analysis engine, scored and returned to your screen. We do not save it, log it or connect it to you in any way. Refresh the page and it is gone.</p>
+        <h3>What is a good score?</h3>
+        <p>Most headlines that are just a job title and a company land between 30 and 55 here. That is by design. The analyzer is honest, not flattering, because a comfortable score would not tell you anything. Above 70 means who, outcome and proof are all present. Treat your first score as the baseline, apply the fixes and run it again.</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="foot">
+    <a href="/">Home</a><a href="/blog">Blog</a><a href="/about.html">About</a><a href="/faq.html">FAQ</a><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/imprint.html">Imprint</a>
+    <p style="margin-top:12px;">© 2026 LinkedScore</p>
+  </div>
+
+  <script>
+  (function () {
+    var form = document.getElementById('hl-form');
+    var btn = document.getElementById('analyze-btn');
+    var ta = document.getElementById('headline');
+    var goalSel = document.getElementById('goal');
+    var results = document.getElementById('results');
+    var errBox = document.getElementById('err');
+    var CIRC = 2 * Math.PI * 54;
+
+    function showError(msg) { errBox.textContent = msg; errBox.hidden = false; }
+
+    // All model output lands in the DOM via textContent only. Never innerHTML.
+    function render(d) {
+      var score = Math.max(0, Math.min(100, Math.round(Number(d.score) || 0)));
+      document.getElementById('score-num').textContent = String(score);
+      document.getElementById('verdict').textContent = String(d.verdict || '');
+      var list = document.getElementById('issues');
+      list.textContent = '';
+      var issues = Array.isArray(d.issues) ? d.issues : [];
+      issues.slice(0, 3).forEach(function (t) {
+        var s = String(t || '').trim();
+        if (!s) return;
+        var li = document.createElement('li');
+        li.textContent = s;
+        list.appendChild(li);
+      });
+      document.getElementById('rewrite-text').textContent = String(d.rewrite || '');
+      results.hidden = false;
+      var arc = document.getElementById('score-arc');
+      arc.style.strokeDashoffset = String(CIRC);
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          arc.style.strokeDashoffset = String(CIRC * (1 - score / 100));
+        });
+      });
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errBox.hidden = true;
+      var headline = ta.value.trim();
+      if (!headline) { showError('Paste your headline first.'); return; }
+      btn.disabled = true;
+      btn.textContent = 'Analyzing…';
+      fetch('/api/analyze-headline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ headline: headline, goal: goalSel.value })
+      })
+        .then(function (r) {
+          return r.json().catch(function () { return null; }).then(function (d) { return { ok: r.ok, d: d }; });
+        })
+        .then(function (x) {
+          if (!x.ok || !x.d || typeof x.d.score !== 'number') {
+            showError((x.d && x.d.error) ? String(x.d.error) : 'The analyzer could not run right now. Give it a minute and try again.');
+            return;
+          }
+          render(x.d);
+        })
+        .catch(function () {
+          showError('The analyzer could not be reached. Check your connection and try again.');
+        })
+        .then(function () {
+          btn.disabled = false;
+          btn.textContent = 'Analyze my headline';
+        });
+    });
+  })();
+  </script>
+</body>
+</html>

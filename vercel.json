@@ -48,6 +48,10 @@
       "destination": "/cookies.html"
     },
     {
+      "source": "/headline-analyzer",
+      "destination": "/headline-analyzer.html"
+    },
+    {
       "source": "/about",
       "destination": "/about.html"
     },
