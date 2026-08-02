@@ -120,15 +120,18 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: "The analyzer returned something unreadable. Try again." });
     }
 
+    // House style backstop: the model occasionally emits em dashes despite the
+    // prompt rule, so scrub them deterministically (same philosophy as finalizePlan).
+    const deDash = (s) => s.replace(/\s*[—–]\s*/g, ", ");
     const score = Math.max(0, Math.min(100, Math.round(Number(parsed.score) || 0)));
-    const verdict = typeof parsed.verdict === "string" ? parsed.verdict.trim().slice(0, 300) : "";
+    const verdict = typeof parsed.verdict === "string" ? deDash(parsed.verdict.trim()).slice(0, 300) : "";
     let issues = Array.isArray(parsed.issues) ? parsed.issues : [];
     issues = issues
-      .map((i) => (typeof i === "string" ? i.trim().slice(0, 300) : ""))
+      .map((i) => (typeof i === "string" ? deDash(i.trim()).slice(0, 300) : ""))
       .filter(Boolean)
       .slice(0, 3);
     while (issues.length < 3) issues.push("");
-    const rewrite = typeof parsed.rewrite === "string" ? parsed.rewrite.trim().slice(0, 220) : "";
+    const rewrite = typeof parsed.rewrite === "string" ? deDash(parsed.rewrite.trim()).slice(0, 220) : "";
     if (!verdict || !rewrite) {
       console.error("[analyze-headline] incomplete model output");
       return res.status(502).json({ error: "The analyzer returned an incomplete result. Try again." });
