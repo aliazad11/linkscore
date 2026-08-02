@@ -32,17 +32,20 @@ def main():
     ap.add_argument("--headline", required=True)
     ap.add_argument("--kicker", default="LINKEDIN GROWTH")
     ap.add_argument("--gold", default="", help="comma-separated words rendered in gold (punctuation ignored)")
+    ap.add_argument("--raise", dest="raise_frac", type=float, default=0.0,
+                    help="lift the subject above the bottom band: upscale and crop a lower window (0..0.3, e.g. 0.12 lifts ~90px)")
     ap.add_argument("--out", default="blog-banner.jpg")
     a = ap.parse_args()
 
     gold_words = {w.strip().lower().strip("?.,!") for w in a.gold.split(",") if w.strip()}
 
-    # full-bleed topic image, cover-cropped
+    # full-bleed topic image, cover-cropped; --raise overscales so the crop window
+    # can sit lower in the source, which lifts the subject clear of the band
     im = Image.open(a.top).convert("RGB")
-    sc = max(W / im.width, H / im.height)
+    sc = max(W / im.width, H / im.height) * (1 + max(0.0, a.raise_frac))
     im = im.resize((round(im.width * sc), round(im.height * sc)), Image.LANCZOS)
     x0 = (im.width - W) // 2
-    y0 = (im.height - H) // 2
+    y0 = min((im.height - H) // 2 + round(H * a.raise_frac), im.height - H)
     img = im.crop((x0, y0, x0 + W, y0 + H))
 
     # bottom band: translucent near-black over the continuing scene
