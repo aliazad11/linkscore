@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
         <Analytics />
         <header className="site-header"><div className="container"><a href="https://www.linkedscore.app/" className="logo"><img src="/logo.png" alt="LinkedScore" /></a><nav className="header-nav"><a href="/blog" className="muted">Blog</a><a href="https://www.linkedscore.app/" className="cta cta-sm">Get your free score</a></nav></div></header>
         {children}
-        <footer><div className="container"><span>LinkedScore. Practical LinkedIn growth.</span><span className="foot-links"><a href="https://www.linkedscore.app/privacy.html">Privacy</a><a href="https://www.linkedscore.app/terms.html">Terms</a></span></div></footer>
+        <footer><div className="container"><span>LinkedScore. Practical LinkedIn growth.</span><span className="foot-links"><a href="https://www.linkedscore.app/headline-analyzer">Headline Analyzer</a><a href="https://www.linkedscore.app/privacy.html">Privacy</a><a href="https://www.linkedscore.app/terms.html">Terms</a></span></div></footer>
       </body>
     </html>
   );
