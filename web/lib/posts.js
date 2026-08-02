@@ -1,12 +1,135 @@
 const posts = [
 {
+slug: "what-is-the-social-selling-index",
+title: `What Is the Social Selling Index? How LinkedIn's SSI Actually Works`,
+metaTitle: "What Is the Social Selling Index? SSI Explained",
+date: "2026-08-02",
+image: "/social-selling-index.jpg",
+excerpt: `The SSI is LinkedIn's official 0 to 100 score, free for every member at linkedin.com/sales/ssi. Here is how the four pillars actually work and why half the score is really a usage meter.`,
+html: `<p>Let me start by conceding something. The Social Selling Index is real. It is not a growth hacker's invention or some third party vanity tool. It is an official LinkedIn metric, it lives on an official LinkedIn page and it recalculates every day. If you have a LinkedIn account, you have an SSI score right now, whether you have ever looked at it or not.</p>
+<p>Here is the flip. Almost everyone who finds their score misreads what it measures. I have spent more than ten years running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in my region, and today I run executive LinkedIn programs and build LinkedScore. In that time I have watched plenty of smart professionals treat the SSI as a grade for their personal brand. It is not that. It is mostly a meter of how much you use LinkedIn. Understanding that difference is the whole game, so let me walk you through the mechanics properly.</p>
+<h2>What the Social Selling Index actually is</h2>
+<p>The Social Selling Index, or SSI, is LinkedIn's own score for how well you practice what it calls social selling. It runs from 0 to 100 and it is built from four sub-scores, one for each of LinkedIn's four social selling pillars. Each pillar is worth up to 25 points. Add the four together and you have your total.</p>
+<p>The name gives away the origin. LinkedIn built this metric for salespeople. It lives on the Sales Solutions side of the platform and it exists, at least in part, to make the case for Sales Navigator. LinkedIn has long promoted correlations between social selling activity and better sales outcomes, which is exactly what you would expect from the company selling the tools. That does not make the score useless for the rest of us. It just means you should read it knowing who it was designed for.</p>
+<h2>Where to check your SSI</h2>
+<p>Go to linkedin.com/sales/ssi while logged in to LinkedIn. That is it. The dashboard is free for every member. You do not need Sales Navigator, you do not need a premium plan and there is no waiting list. The score updates daily, so what you see reflects your recent behavior, not some quarterly snapshot.</p>
+<p>The dashboard shows you three things: your total score out of 100, the four pillar bars out of 25 each and two comparisons. The comparisons are the interesting part. LinkedIn ranks you against people in your industry and against people in your own network, both as percentiles. Read those with care. Most LinkedIn members are largely passive, so in my reading a flattering percentile mostly tells you that you are more active than a quiet crowd. It feels like a compliment. It is closer to a participation ribbon.</p>
+<h2>The four pillars, one by one</h2>
+<p>LinkedIn names the four pillars: establish your professional brand, find the right people, engage with insights and build relationships. Here is what each one is, plus my honest reading of what actually moves it, based on years of watching these numbers respond to real behavior.</p>
+<p><strong>Establish your professional brand (0 to 25).</strong> This is the pillar closest to what you and I would call personal branding. In my experience it responds to profile completeness, a real photo, a headline that says something, a filled About section, rich media on your profile and, above all, publishing content that earns engagement. If you care about authority rather than pipeline, this is the pillar to watch.</p>
+<p><strong>Find the right people (0 to 25).</strong> This is prospecting. My reading is that it rewards searching for people, viewing profiles and generally behaving like someone researching accounts, and that it climbs fastest for people who use Sales Navigator's search tools. For a salesperson that is fair. For an executive or a consultant it is mostly noise. This pillar is a usage meter, and I will come back to that.</p>
+<p><strong>Engage with insights (0 to 25).</strong> This one tracks whether you share content and interact with other people's content. Posts, comments, reactions, shares. It is the pillar your engagement habits feed. One habit matters more than the rest in my experience: staying in the conversation right after you publish and replying to every comment while the discussion is alive. I have written about why that window matters in <a href="/blog/linkedin-golden-hour">the LinkedIn golden hour</a>.</p>
+<p><strong>Build relationships (0 to 25).</strong> This is your network pillar. My reading is that it responds to connecting with people, particularly senior people, and having those requests accepted. Growing a relevant network nudges it up. Mass-inviting strangers is the fastest way to game it and also the fastest way to fill your feed with people you do not care about.</p>
+<h2>The honest part: half the score is a usage meter</h2>
+<p>Now the part LinkedIn's own material will not tell you. Look at the four pillars again with cold eyes. Find the right people measures whether you use LinkedIn's search products. Build relationships largely measures whether you send connection requests that land. Neither says anything about whether your profile is credible, whether your writing is any good or whether the right people trust you. Half of the index, 50 of the 100 points, is essentially a meter of how intensively you use the platform.</p>
+<p>The other two pillars are better, but they still read activity, not quality. The index registers that you posted, not whether the post said anything. It registers that you commented, not whether the comment was worth reading. A mediocre daily poster can outscore a sharp professional who publishes twice a month, and I see exactly that pattern in my work all the time. The SSI is an input meter. Authority is an output. In my experience they correlate loosely at best.</p>
+<p>This is why I tell the executives I work with to hold the score lightly. Post less, say more. One or two strong posts a month, written with a real point of view, will do more for your actual standing than thirty forgettable ones, even if the thirty produce a prettier SSI curve.</p>
+<h2>Does the SSI affect your reach?</h2>
+<p>LinkedIn has never confirmed that SSI is an input to feed ranking. Plenty of gurus imply otherwise, usually while selling an engagement routine. My reading is that the causation runs the other way. The behaviors that lift your SSI, publishing, commenting, connecting, are behaviors the feed responds to anyway. So the score and your reach can rise together without one causing the other. The SSI is the shadow on the wall, not the thing casting it.</p>
+<h2>How I would actually use the SSI</h2>
+<p>Used correctly, the SSI is a habit mirror, not a scoreboard. Check it monthly, not daily. Treat the professional brand pillar as the one honest signal in the set. Ignore the prospecting pillar entirely unless you are actually in sales. If the engagement pillar is flat, ask whether you have been invisible between posts, because genuine comments on other people's work count for presence too. And never let the number talk you into posting filler. The index cannot tell the difference between noise and substance. Your audience can.</p>
+<p>The deeper question the SSI cannot answer is what your profile is actually signaling to the people who look you up. That is the question I built LinkedScore to answer. If you want to see how your positioning reads to a decision maker, <a href="/">run the free LinkedScore analysis</a>. And if you want to work on it together, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with me</a> directly.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>What is a good Social Selling Index?</strong><br />There is no universal pass mark and the honest answer depends on your industry and your goals, so I wrote a separate piece on <a href="/blog/what-is-a-good-linkedin-ssi-score">what actually counts as a good SSI score</a>.</p>
+<p><strong>Is SSI only for salespeople?</strong><br />No. Every LinkedIn member has a score and can check it free, though the metric was designed for salespeople, which is why two of its four pillars reward prospecting and outreach. If you are not in sales, weight the professional brand pillar most heavily and read the rest loosely.</p>
+<p><strong>Does SSI affect my reach?</strong><br />LinkedIn has never confirmed SSI as a feed ranking input. My reading is that the behaviors that raise the score are also behaviors the feed rewards, so the two tend to move together without one causing the other.</p>
+<p><strong>How often does the Social Selling Index update?</strong><br />Daily. Check it at linkedin.com/sales/ssi while logged in. No Sales Navigator or premium subscription required.</p>`
+},
+{
+slug: "linkedin-keyword-affinity-score",
+title: `The LinkedIn Keyword Affinity Score Does Not Exist. Here Is What Does.`,
+metaTitle: "LinkedIn Keyword Affinity Score Calculation: Debunked",
+date: "2026-08-02",
+image: "/keyword-affinity.jpg",
+excerpt: `Every page ranking for "LinkedIn keyword affinity score calculation" is explaining a metric that does not exist. I checked the docs, traced the fake formula to its source and laid out what actually gets your profile found.`,
+html: `<p>Let me start by conceding something. "LinkedIn keyword affinity score" sounds completely plausible. LinkedIn is a search engine with a ranking algorithm, algorithms score things and keywords are what they score. If someone told you a hidden number measures how strongly your profile is tied to "supply chain" or "growth marketing", you would believe them. I almost did.</p>
+
+<p>So before writing this, I did what I do before publishing any claim: I checked. I searched LinkedIn's Help Center and the Recruiter documentation. I went through the Marketing Labs certification materials and the skill assessment answer banks that get dumped online. I read the pages currently ranking for this exact phrase.</p>
+
+<p>Here is the honest answer, which nobody ranking for this keyword will give you. There is no LinkedIn keyword affinity score. Not in your analytics, not in Recruiter, not in any certification exam, not anywhere. The "calculation" people are searching for appears to have been invented by a content farm in July 2026. But underneath the fake metric sits a real question that deserves a real answer: how does LinkedIn decide whether your profile shows up when someone searches for what you do? That part I can help with. I spent more than ten years running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in my region, and today I run executive LinkedIn programs.</p>
+
+<h2>The keyword affinity score is not a real LinkedIn metric</h2>
+
+<p>I want to be precise here, because precision is the whole point of this article.</p>
+
+<p>LinkedIn does not show, name or document anything called a keyword affinity score. A search of LinkedIn's help documentation returns nothing for the term. The official Marketing Labs certification index does not mention it. I even checked the largest public answer dump for LinkedIn's skill assessments: the word "affinity" appears exactly zero times in the SEO quiz file. If this score were an exam topic, a recruiter-facing number or a creator metric, it would leave a trace somewhere. It leaves none.</p>
+
+<p>The page ranking first for the keyword admits this. Buried in it is this line: "LinkedIn does not publicly disclose a formal metric called a 'keyword affinity score.'" That is the top result conceding, in its own words, that the thing it explains does not officially exist. The rest of that page is educated guessing dressed up as a guide.</p>
+
+<h2>Where the "calculation" actually came from</h2>
+
+<p>Here is my reading of how this keyword was born. My reading, because I cannot prove intent, only publication dates and page contents.</p>
+
+<p>In early July 2026, two low-profile blogs published companion pieces within weeks of each other. One, a WordPress themes blog, explains how the score supposedly works while quietly admitting no such official metric exists. The other, a Python tutorials blog of all things, publishes an exact formula as if it were fact: Keyword Affinity Score = (Placement Score × 0.4) + (Frequency % × 10 × 0.2) + (Relevance Score × 0.4), plus a keyword density calculation on the side.</p>
+
+<p>Those 40/20/40 weights have no source. No LinkedIn documentation, no engineering blog post, no research paper, nothing. Someone, or more likely something, made the numbers up. And the "calculation" modifier in the search query mirrors that article's title almost word for word.</p>
+
+<p>A keyword with a few hundred monthly searches, near-zero difficulty and a results page made of two no-name AI blogs published in the same month is, in my experience, the signature of a content loop: programmatic articles create tracking noise, tools report the noise as demand and new articles chase it. You searched for a metric that was invented by the pages you were about to land on. Welcome to the internet in 2026.</p>
+
+<h2>What "affinity" actually means inside LinkedIn</h2>
+
+<p>Here is where it gets interesting, because "affinity" is not a fabricated word. It is genuine LinkedIn vocabulary. It just does not mean what those articles claim.</p>
+
+<p>LinkedIn's own researchers have published <a href="https://arxiv.org/html/2602.12354v1">a feed-ranking paper</a> describing the features their models use, and affinity is one of them. In that paper, affinity is a count of historical interactions between members: how many times you engaged with a specific person or a type of content, counted over windows from a week to a year. It is member to member. The paper contains no keyword-level affinity of any kind.</p>
+
+<p>That distinction matters. LinkedIn obviously computes relevance internally, and its systems build some model of what your profile is about. But the affinity signal LinkedIn has actually documented measures relationships, not vocabulary. The strongest published signal in the feed is who you genuinely engage with, not which words you repeated most often.</p>
+
+<h2>What actually decides whether you get found</h2>
+
+<p>Now the useful part. Strip away the fake score and the real question remains. LinkedIn is a search engine. Recruiters, buyers and partners type words into it every day, and your profile either surfaces or it does not.</p>
+
+<p>After a decade of building executive profiles, here is what I have seen move retrieval, in rough order of weight:</p>
+
+<ol>
+<li><strong>Your headline.</strong> It is the most visible keyword real estate you own and it travels with you into every search result and comment. If your target phrase is not here, you are invisible for it. I break down exactly how to structure it in <a href="/blog/linkedin-headline-formula">the headline formula</a>.</li>
+<li><strong>Your job titles.</strong> Recruiter search leans heavily on structured fields, and your current title is the most structured field of all. "Marketing Lead" is searchable. "Chief Storytelling Wizard" is not.</li>
+<li><strong>Your Skills section.</strong> Skills are literal search filters on the recruiter side. Fill the section with the terms people would actually filter by, not the ones that flatter you.</li>
+<li><strong>Your About opening.</strong> The first two or three sentences should state, in plain language, what you do and for whom. Not a quote. Not a childhood story.</li>
+</ol>
+
+<p>Notice what is not on this list: keyword density. The same content farm that invented the affinity formula also tells you to calculate what percentage of your profile's words are keywords. That is old website SEO logic ported onto a professional network. Placement beats frequency. Saying "supply chain transformation" once in your headline does more than saying it eleven times across your experience section, and stuffing reads as spam to the one audience that actually matters: the human deciding whether to contact you.</p>
+
+<h2>A keyword audit you can run in ten minutes</h2>
+
+<p>If you want a score, here is one you can compute honestly. This is my heuristic, built from years of profile work. It is not LinkedIn's math and I will not pretend it is. That is the entire difference between a checklist and a fabricated formula.</p>
+
+<ul>
+<li>Pick the one search phrase you most want to be found for. One. If you cannot choose, that is finding number one.</li>
+<li>Headline: does the phrase, or a close variant, appear in it? One point.</li>
+<li>Current title: does it contain the phrase or its standard industry form? One point.</li>
+<li>Skills: is the phrase listed as a skill, ideally with endorsements? One point.</li>
+<li>About: does the phrase appear in the first three sentences? One point.</li>
+<li>Consistency: do your headline, titles and About tell the same story, or three different ones? One point if they agree.</li>
+</ul>
+
+<p>Five points and you are structurally findable. Three or less and you are relying on luck. This will not predict your exact ranking, nothing outside LinkedIn can, but it isolates the levers you actually control.</p>
+
+<h2>Stop chasing invisible numbers</h2>
+
+<p>People hunt for secret metrics because a secret metric feels like a shortcut. Find the hidden score, reverse-engineer it, win. But LinkedIn does not reward people who decode formulas. It rewards people whose positioning is so coherent that every system, algorithmic or human, reaches the same conclusion about them. That is built with one clear phrase, placed where it counts, backed by one or two genuinely strong posts a month. Not with density spreadsheets.</p>
+
+<p>If you want to know how your actual profile reads, not how a made-up formula scores it, <a href="/">run the free LinkedScore analysis</a>. It reads your real profile and tells you where the gaps are. And if you want to work through it live, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with me</a>.</p>
+
+<h2>Frequently asked questions</h2>
+
+<p><strong>Is the LinkedIn keyword affinity score a real feature?</strong><br />No. LinkedIn does not show, name or document any metric called a keyword affinity score. It appears nowhere in LinkedIn's help documentation, certification materials or skill assessments. The term comes from third-party blogs, and the top-ranking one admits the metric is not official.</p>
+
+<p><strong>How is the keyword affinity score calculated?</strong><br />It is not calculated at all, because it does not exist. The formula circulating online, a 40/20/40 weighting of placement, frequency and relevance, was invented by a content farm with no sources, and those weights have no basis in anything LinkedIn has ever released.</p>
+
+<p><strong>Where can I see my keyword affinity score on LinkedIn?</strong><br />Nowhere. No dashboard in LinkedIn, Recruiter or Talent Insights displays one, and no third-party tool can read one, because there is nothing to read. Any tool claiming to show it is showing you its own invention.</p>
+
+<p><strong>Does LinkedIn use "affinity" at all?</strong><br />Yes, internally. LinkedIn's published feed-ranking research uses affinity features, defined as counts of past interactions between members over time windows. It is a relationship signal, not a keyword signal, and it is not exposed to users anywhere.</p>
+
+<p><strong>What should I optimize instead?</strong><br />Placement. Put your target phrase in your headline, your current title, your Skills section and the opening of your About, then keep all four consistent. Placement in the right fields beats repetition everywhere, on LinkedIn and with the humans reading you.</p>`
+},
+{
 slug: "what-is-a-good-linkedin-ssi-score",
 title: `What Is a Good LinkedIn SSI Score? An Honest Read of All Four Pillars`,
 metaTitle: "What Is a Good LinkedIn SSI Score? Honest Benchmarks",
 date: "2026-07-30",
 image: "/ssi-score.jpg",
 excerpt: "SSI runs 0 to 100 across four pillars, but LinkedIn never says what a good score is. Here is an honest benchmark, and the part of the score that can quietly hurt you.",
-html: `<p>Every week someone checks their Social Selling Index for the first time, sees a 43 or a 61 or a 74, and asks the same question. Is that good? The short answer: SSI runs from 0 to 100, built from four pillars worth 25 points each. Most professionals who use LinkedIn actively land somewhere in the middle band. Scores above 70 are uncommon and usually belong to people in sales roles who live inside Sales Navigator. But the number on its own tells you less than you think, because a meaningful part of SSI measures how much you use LinkedIn, not how well you are positioned on it.</p>
+html: `<p>Every week someone checks their Social Selling Index for the first time, sees a 43 or a 61 or a 74, and asks the same question. Is that good? The short answer: SSI runs from 0 to 100, built from <a href="/blog/what-is-the-social-selling-index">four pillars</a> worth 25 points each. Most professionals who use LinkedIn actively land somewhere in the middle band. Scores above 70 are uncommon and usually belong to people in sales roles who live inside Sales Navigator. But the number on its own tells you less than you think, because a meaningful part of SSI measures how much you use LinkedIn, not how well you are positioned on it.</p>
 <p>That distinction is the whole article. Let me unpack it.</p>
 <h2>What the SSI actually is</h2>
 <p>The Social Selling Index is LinkedIn's own 0 to 100 score, originally built to sell Sales Navigator to sales teams. It is free to check for any logged-in member at <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a>, and it updates daily.</p>

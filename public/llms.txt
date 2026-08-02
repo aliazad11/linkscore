@@ -14,9 +14,12 @@ Key facts:
 - [German version](https://www.linkedscore.app/de/): Dein LinkedIn-Score & KI-Plan
 - [About](https://www.linkedscore.app/about): what LinkedScore is and who builds it
 - [FAQ](https://www.linkedscore.app/faq): common questions about the analysis
+- [Free LinkedIn Headline Analyzer](https://www.linkedscore.app/headline-analyzer.html): honest 0-100 headline score with issues and a rewrite
 
 ## Blog
 
+- [What Is the Social Selling Index?](https://www.linkedscore.app/blog/what-is-the-social-selling-index): how LinkedIn's SSI and its four pillars actually work
+- [The Keyword Affinity Score Does Not Exist](https://www.linkedscore.app/blog/linkedin-keyword-affinity-score): debunking a fabricated LinkedIn metric and what to optimize instead
 - [What Is a Good LinkedIn SSI Score?](https://www.linkedscore.app/blog/what-is-a-good-linkedin-ssi-score): honest SSI benchmarks and the four-pillar breakdown
 - [The LinkedIn Golden Hour](https://www.linkedscore.app/blog/linkedin-golden-hour): why the first hour after posting decides reach
 - [The LinkedIn Headline Formula](https://www.linkedscore.app/blog/linkedin-headline-formula): how to write a headline that gets found
