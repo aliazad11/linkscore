@@ -2666,7 +2666,7 @@ export default function App() {
     const callEngine = async (token) => fetch("/api/generate-plan", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "x-funnel-token": token, "x-request-key": reqKey },
-      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }] }),
+      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }], cohort: cohort || null, lang: locale || null }),
     });
     let res = await callEngine(await getToken());
     if (res.status === 403) res = await callEngine(await getToken());

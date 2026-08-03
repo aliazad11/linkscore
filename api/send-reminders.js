@@ -20,6 +20,9 @@ export default async function handler(req, res) {
   const auth = (req.headers && (req.headers.authorization || req.headers.Authorization)) || "";
   const qSecret = (req.query && req.query.secret) || "";
   if (auth !== "Bearer " + CRON_SECRET && qSecret !== CRON_SECRET) return res.status(401).json({ error: "Unauthorized" });
+  // CRON_SECRET is shared with api/aggregate-stats, so enabling the stats copy must not
+  // silently turn reminder emails on. Reminders stay off until this second switch is set.
+  if (process.env.REMINDERS_ENABLED !== "1") return res.status(503).json({ error: "Reminders disabled (set REMINDERS_ENABLED=1 to enable)" });
 
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
   if (!SERVICE_KEY || !process.env.AUTH_SECRET) return res.status(500).json({ error: "Server not configured" });
