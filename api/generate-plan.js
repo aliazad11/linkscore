@@ -5,6 +5,11 @@ import { durableRateOk, hashKey } from "./_ratelimit.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 
+// Whitelists for the optional cohort/lang stamp on stored plans (see the _cohort/_lang
+// stamp near the insert). Must match the client's COHORTS ids and the i18n locale codes.
+const ALLOWED_COHORTS = ["B2B Executive", "Real Estate Professional", "Startup Founder", "Job Seeker", "Consultant or Coach", "Thought Leader"];
+const ALLOWED_LANGS = ["en", "de", "fr", "es", "pt", "nl", "it"];
+
 const hits = new Map();
 function rateOk(ip) {
   const now = Date.now();
@@ -205,7 +210,7 @@ export default async function handler(req, res) {
     console.error("[generate-plan] AUTH_SECRET not set - funnel token check skipped");
   }
 
-  const { messages } = req.body || {};
+  const { messages, cohort, lang } = req.body || {};
   if (!validMessages(messages)) return res.status(400).json({ error: "Missing messages" });
 
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -382,6 +387,15 @@ export default async function handler(req, res) {
     // Tag the stored plan with the run's request key so a refreshed client replays
     // this result instead of paying for a second generation (see idempotency above).
     if (reqKey && plan && typeof plan === "object") plan._reqkey = reqKey;
+    // Stamp the run's cohort, UI language and attachment presence for the nightly
+    // anonymized stats copy (api/aggregate-stats). Optional and whitelisted: an absent
+    // or unknown value is simply not stamped and can never fail the user's analysis.
+    if (plan && typeof plan === "object") {
+      if (ALLOWED_COHORTS.indexOf(cohort) !== -1) plan._cohort = cohort;
+      if (ALLOWED_LANGS.indexOf(lang) !== -1) plan._lang = lang;
+      plan._had_pdf = Array.isArray(messages) && messages.some((m) => m && Array.isArray(m.content) && m.content.some((c) => c && c.type === "document"));
+      plan._had_posts = hadPostImages;
+    }
 
     // 8s cap per insert: in the tightest recovery path (~291s elapsed) a hung Supabase call
     // must fail into the clean 500 below, not push the invocation into Vercel's 300s hard-kill.
