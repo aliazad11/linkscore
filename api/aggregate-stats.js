@@ -188,7 +188,13 @@ export default async function handler(req, res) {
     if (dry) return res.status(200).json({ dry: true, since: windowStart, scanned: out.length, unlock_refresh: refresh.length, would_write: out.length + refresh.length, sample: out.length ? out[0] : (refresh.length ? refresh[0] : null) });
 
     let written = 0;
-    const all = out.concat(refresh);
+    // Dedupe by id before writing: the main scan and the unlock refresh overlap by design,
+    // and Postgres refuses an ON CONFLICT upsert that touches the same row twice in one
+    // command. The refresh copy wins, since it carries the fresher unlocked flag.
+    const byId = new Map();
+    for (const row of out) byId.set(row.id, row);
+    for (const row of refresh) byId.set(row.id, row);
+    const all = Array.from(byId.values());
     for (let i = 0; i < all.length; i += PAGE) {
       const batch = all.slice(i, i + PAGE);
       const ins = await fetch(SUPABASE_URL + "/rest/v1/plan_stats?on_conflict=id", {
