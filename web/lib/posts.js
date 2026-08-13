@@ -1,5 +1,92 @@
 const posts = [
 {
+slug: "linkedin-profile-views-but-no-messages",
+title: `Why Your LinkedIn Profile Gets Views but No Messages`,
+metaTitle: "LinkedIn Profile Views but No Messages: Why",
+date: "2026-08-13",
+image: "/profile-views.jpg",
+excerpt: `Views are a count, not interest. The two reasons nobody writes to you, why many viewers cannot message you at all and what sits above your experience.`,
+html: `<p>A large share of your profile views were never going anywhere, whatever your profile said. Curiosity clicks from people whose posts you commented on. Automation. Someone checking whether they already know you before accepting a request. No version of your About section converts those.</p>
+
+<p>So the useful question is narrower. Did the people who could have written to you have any reason to, and were they even able to? Two problems, opposite fixes. Collapsing them into one list of tips is why so much advice does nothing.</p>
+
+<h2>What the views number actually tells you</h2>
+
+<p>On a free LinkedIn account, the Who's Viewed Your Profile page shows the three most recent viewers from the last 90 days, and only if your profile viewing setting displays your name and headline. Premium shows the full list for up to 365 days. Anyone browsing in private mode appears as "LinkedIn Member" either way, even to Premium subscribers. That is from LinkedIn's own help documentation.</p>
+
+<p>So the figure at the top is a count. What people do with a count is write a story about who is behind it, and that story runs flattering. Then they optimize for an audience that was never there.</p>
+
+<h2>Two reasons you get profile views but no messages</h2>
+
+<p>Failure one: the wrong people are viewing you. Peers, competitors, colleagues, job seekers in your field, the occasional bot. Views go up, nothing happens, because nobody looking has a reason to buy, hire or refer. That is a targeting problem, and profile polish will not fix it.</p>
+
+<p>Failure two: the right people are viewing you and leaving. A headhunter, a board contact, a prospect halfway through evaluating three vendors. They open the page, read for a few seconds, close it. That is a conversion problem, and it is fixable, because the page is the only thing between the view and the message.</p>
+
+<p>Profile views but no messages is almost always one of these two, not both. Find out which before you touch anything.</p>
+
+<p>Open the viewers LinkedIn does show you, one at a time, for a month. A trickle of names still gives you titles, companies and seniority. Wrong titles means the work is upstream, in who you are reaching. Right titles and a silent inbox means the profile is doing the losing.</p>
+
+<p>LinkedIn also surfaces aggregate insights, like where your viewers work and how they found you. I will not tell you which of those are free, because LinkedIn's own help pages contradict each other on it. Open the page in your account and look. What is not in dispute: Premium adds the full named list, filters, a trend graph and 365 days of history.</p>
+
+<h2>Check whether they can even message you</h2>
+
+<p>This is the step almost nobody checks, and mechanically it is the biggest one.</p>
+
+<p>LinkedIn's messaging documentation is direct. For free, you can message your 1st-degree connections, plus fellow group members inside a group page. Everyone else needs InMail, which LinkedIn calls a premium feature for messaging a member you are not connected to, with a set number of credits per subscription. A sender can receive a credit back if the recipient accepts it.</p>
+
+<p>Read that from the sender's side. A stranger holding limited credits is deciding whether you are worth spending one on, and only gets it back if you accept it. Your profile is not just being read. It is being priced.</p>
+
+<p>Two settings remove the toll. Open Profile is a Premium feature on your side, and LinkedIn's description is that it lets anyone contact a Premium member for free, even outside the sender's network. A Service Page is the free version of the same idea: LinkedIn states any member can create one for free, that any member can message you for free about your services and that clients can contact providers regardless of connection degree. Some Service Page extras need a paid plan. The message path does not.</p>
+
+<p>If you sell consulting, advisory, coaching or property and have no Service Page, you have left a free inbound channel switched off and then blamed your headline.</p>
+
+<h2>What a visitor sees before they reach your experience</h2>
+
+<p>LinkedIn's Featured section FAQ states the load-bearing half plainly: your Activity section is located just below your Featured section. The other half you can confirm on any profile in ten seconds. Featured, when a profile has one, sits below About. So a visitor scrolls top card, About, Featured if it exists, then Activity. Experience comes after all of that.</p>
+
+<p>Your recent posts and comments sit above your career. This is not a new change, which is part of why it goes unnoticed.</p>
+
+<p>LinkedIn documents that the Activity section shows posts, comments, articles and profile activity, and hides it entirely after 360 days with no activity. That is the quiet failure. The loud one is worse: a section full of reshares, congratulations and likes on other people's posts.</p>
+
+<p>My reading, after ten years of watching which executive profiles turned views into inbound, is that this is where most senior visits die. Not the headline. Not the About paragraph. The visitor reaches the part of the page that answers "is this person still active, and do they think anything?" and finds an empty room or an echo of other people. They never reach Experience.</p>
+
+<p>LinkedIn publishes no data on how fast people abandon a profile. The nearest research is Jakob Nielsen's 2011 analysis for the Nielsen Norman Group of <a href="https://www.nngroup.com/articles/how-long-do-users-stay-on-web-pages/" target="_blank" rel="noopener noreferrer">how long users stay on web pages</a>, which found the risk of leaving is highest in the first ten seconds and only flattens after roughly thirty. Web pages, not LinkedIn profiles, and fifteen years old, so treat it as a shape rather than a number.</p>
+
+<h2>What a viewer has to conclude before they write</h2>
+
+<p>Three questions get answered in the top third of the page. All three have to land.</p>
+
+<p><strong>What is this person for?</strong> Not their job title, which the top card already gives. The specific problem they are known for. If your About opens with a career summary, the first two visible lines are spent on information the viewer already has.</p>
+
+<p><strong>Are they still in this?</strong> This is the Activity section doing its job. Two posts a month is enough. A feed of reshares is not, because a reshare tells a stranger nothing about how you think. Write in your own sentences, and be there in the comments afterward, where <a href="/blog/linkedin-golden-hour">the golden hour decides whether the post travels at all</a>. Do not get louder to fill the silence: there is a whole category of <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">tactics that raise your impressions while lowering what people think of you</a>.</p>
+
+<p><strong>What happens if I write?</strong> Most profiles never answer this. Say it somewhere visible: what you want to hear about, and what you will do with it. "If you are rebuilding a commercial team in DACH, that is the conversation I take" outperforms any call to action starting with "feel free to reach out."</p>
+
+<h2>If it turns out to be a targeting problem</h2>
+
+<p>Then the profile is not where the work is. It is upstream, in what you are visible for and to whom, starting with the line every viewer reads first. That is a separate craft and we have <a href="/blog/linkedin-headline-formula">covered the headline in its own piece</a>.</p>
+
+<p>One thing to skip if you are employed and senior: the public Open to Work frame. "All LinkedIn members" adds the #OpenToWork photo frame and includes recruiters and people at your current company. "Recruiters only" limits it to LinkedIn Recruiter users, and LinkedIn says outright it cannot guarantee complete privacy. Most advice says switch it on. For a sitting executive, the public version signals availability to the people whose opinion costs the most, and it was never why your inbox is quiet.</p>
+
+<h2>Where LinkedScore fits, honestly</h2>
+
+<p>All of this is checkable by hand. Open your profile logged out, look at what fills the first two screens and ask the three questions as the stranger deciding whether to spend a credit on you.</p>
+
+<p>Almost nobody manages it, because you cannot read your own profile as a stranger. That is what we built <a href="/">LinkedScore</a> for. It reads your profile the way a viewer does rather than the way you wrote it, then returns a score and a plan. It cannot tell you who viewed you, since LinkedIn exposes that to nobody but you. Use it for the conversion half. The targeting half needs your own viewer data. If you would rather have someone read the result with you, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
+
+<h2>Frequently asked questions</h2>
+
+<p><strong>How many LinkedIn profile views should I be getting?</strong><br />There is no published benchmark, and anyone quoting one is guessing, because LinkedIn does not release view distributions by seniority or industry. Direction beats level: a count that moves the week you post and flattens the weeks you do not tells you where your visibility comes from.</p>
+
+<p><strong>Why do recruiters view my LinkedIn profile and never message me?</strong><br />Two boring reasons. Either they were sourcing for a role you did not fit and the view was the screening step, or they have limited InMail and spent those credits on candidates whose profiles made the odds look better.</p>
+
+<p><strong>Does LinkedIn Premium get you more messages?</strong><br />Mechanically it can. Open Profile lets anyone contact you without spending a credit, and the full named viewer list is a real upgrade if a month of your visible viewers did not tell you enough. It does not make anyone want to write. That part is still the page.</p>
+
+<p><strong>Should I post more on LinkedIn to get more messages?</strong><br />More is the wrong axis. What a visitor needs is evidence that a real person with opinions is behind the profile, and a couple of posts you actually stand behind do that better than a dozen forgettable ones. Volume without a point just fills the section with noise.</p>
+
+<p><strong>Does viewing other people's LinkedIn profiles get you messages back?</strong><br />It gets you views back, which is not the same thing and is exactly the confusion this article is about. A view you provoked by browsing is the weakest attention there is. Commenting well on that person's post works better, because it arrives with a sample of your thinking attached.</p>`
+},
+{
 slug: "what-is-the-social-selling-index",
 title: `What Is the Social Selling Index? How LinkedIn's SSI Actually Works`,
 metaTitle: "What Is the Social Selling Index? SSI Explained",
