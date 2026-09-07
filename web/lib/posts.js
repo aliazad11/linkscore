@@ -4,9 +4,12 @@ slug: "linkedin-ssi-discontinued",
 title: `LinkedIn Is Discontinuing Free SSI Access. Here Is the Evidence`,
 metaTitle: "LinkedIn SSI Discontinued: What I Saw on My Dashboard",
 date: "2026-08-28",
+updated: "2026-09-07",
 image: "/ssi-discontinued.jpg",
 excerpt: `A red banner replaced my SSI score on August 27, 2026. What LinkedIn is doing to the Social Selling Index, what the paper trail shows and what you lose.`,
 html: `<p>On August 27, 2026 I opened my Social Selling Index dashboard signed in on my own account and found a red banner where the score used to be: "Your access to the Social Selling Index (SSI) page will be discontinued soon. SSI is a Sales Navigator feature. Get Sales Navigator to retain access to SSI." Under it, no score. Just "Sorry, it looks like we don't have data available for you right now. Please come back at a later time!" My read: you are losing almost nothing, and the way LinkedIn is closing this down tells you more than the number ever did.</p>
+
+<p><strong>Update, September 7, 2026.</strong> "Soon" has arrived, at least for my account. The dashboard no longer shows a banner over a score. It now shows only an empty state that reads "You do not have access to SSI" and, underneath, "Your access to the Social Selling Index (SSI) has been discontinued." If yours says the same, nothing is broken. The shutdown has simply completed.</p>
 
 <h2>What the banner actually says, and what it does not</h2>
 
@@ -100,7 +103,7 @@ html: `<p>On August 27, 2026 I opened my Social Selling Index dashboard signed i
 
 <h2>Frequently asked questions</h2>
 
-<p><strong>Is LinkedIn discontinuing the Social Selling Index?</strong><br />For free users it looks that way. The banner has now been documented on at least two accounts: a Belgian trainer published it in French on August 17, 2026 and I saw it in English on August 27. Guides describing normal free access were still being revised in mid July, so the rollout appears to have started between mid July and early August. There is still no LinkedIn announcement and no date, so "soon" is all anyone has. Check your own dashboard.</p>
+<p><strong>Is LinkedIn discontinuing the Social Selling Index?</strong><br />For free users it looks that way. The banner has now been documented on at least two accounts: a Belgian trainer published it in French on August 17, 2026 and I saw it in English on August 27. Guides describing normal free access were still being revised in mid July, so the rollout appears to have started between mid July and early August. There is still no LinkedIn announcement, and on September 7 my dashboard moved from the warning banner to a full lockout reading "You do not have access to SSI". Check your own dashboard.</p>
 
 <p><strong>Do I need Sales Navigator to see my SSI now?</strong><br />That is the direction the banner points, though the cutoff is unpublished. The reading is that the dashboard is not being deleted, it is moving behind the subscription.</p>
 

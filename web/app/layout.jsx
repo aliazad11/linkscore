@@ -1,6 +1,5 @@
 import "./globals.css";
 import PostHogInit from "./posthog-init";
-import { Analytics } from "@vercel/analytics/next";
 
 export const metadata = {
   metadataBase: new URL("https://www.linkedscore.app"),
@@ -28,7 +27,11 @@ export default function RootLayout({ children }) {
           }).replace(/</g, "\\u003c") }}
         />
         <PostHogInit />
-        <Analytics />
+        {/* Server-rendered on purpose: the injected @vercel/analytics component never fired
+            through the proxy (0 events against 84 GSC clicks), and a plain script cannot be
+            killed by a hydration error. Served by the linkscore-app project via the rewrite,
+            so blog views land in that project's dashboard under /blog paths. */}
+        <script defer src="/_vercel/insights/script.js" />
         <header className="site-header"><div className="container"><a href="https://www.linkedscore.app/" className="logo"><img src="/logo.png" alt="LinkedScore" /></a><nav className="header-nav"><a href="/blog" className="muted">Blog</a><a href="https://www.linkedscore.app/" className="cta cta-sm">Get your free score</a></nav></div></header>
         {children}
         <footer><div className="container"><span>LinkedScore. Practical LinkedIn growth.</span><span className="foot-links"><a href="https://www.linkedscore.app/headline-analyzer">Headline Analyzer</a><a href="https://www.linkedscore.app/privacy.html">Privacy</a><a href="https://www.linkedscore.app/terms.html">Terms</a></span></div></footer>
