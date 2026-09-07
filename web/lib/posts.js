@@ -1,5 +1,68 @@
 const posts = [
 {
+slug: "linkedin-ssi-alternatives",
+title: `Your SSI Is Gone. Here Is What to Track Instead`,
+metaTitle: "LinkedIn SSI Alternatives: What to Track Instead",
+date: "2026-09-07",
+image: "/ssi-alternatives.jpg",
+excerpt: `Free SSI access is gone and LinkedIn is not replacing it for individuals. Whether you can still see your score and the four signals worth tracking instead.`,
+html: `<p>Free access to the Social Selling Index is gone. If your dashboard now reads "You do not have access to SSI", nothing you did caused it, and no successor score for individuals has been announced. I documented the shutdown itself, with dated sightings and the archive trail, in <a href="/blog/linkedin-ssi-discontinued">the previous investigation</a>. This page answers the question that comes next: what do you track instead? My answer is a fifteen minute monthly audit built on four signals, and after looking at what the old number was actually made of, I will argue you should not want a replacement score at all.</p>
+
+<h2>Can you still see your SSI anywhere?</h2>
+
+<p>Only through Sales Navigator, as far as LinkedIn's own wording goes. The rollout banner called SSI a Sales Navigator feature, and the Help Center describes the score as visible to a subscriber's team and admin. On my own account the lockout completed within eleven days of the first warning. The exact banner text, the dates and the documentation trail are all in <a href="/blog/linkedin-ssi-discontinued">the shutdown piece</a>, so I will not repeat them here.</p>
+
+<p>Should you subscribe to keep the number? Run the buyer's math. If prospecting is your job, Sales Navigator was already worth evaluating on its own terms, and the score rides along. If prospecting is not your job, you would be paying rent on a mirror: a private readout of your own activity that nobody else was looking at.</p>
+
+<h2>Is LinkedIn replacing the SSI with something else?</h2>
+
+<p>Nothing has been announced for individuals. LinkedIn's SSI resources now point toward AI features inside Sales Navigator, and the channels where the company normally announces retirements and successors have stayed quiet. If an individual-facing score ships, this page gets an update note the day I can verify it. Plan on the assumption that it will not.</p>
+
+<h2>Why a replacement score is the wrong goal</h2>
+
+<p>Look at what fed the old number before you go shopping for a new one. As <a href="/blog/what-is-the-social-selling-index">the full pillar breakdown</a> shows, LinkedIn graded attendance: how many days you showed up, how many searches you ran, how often your invitations were accepted, how much you posted and reacted. A few inputs reached further, endorsements and the followers your articles earned, but the bulk of the meter moved when you moved. LinkedIn itself now writes that the effort behind high scores <a href="https://business.linkedin.com/sell/resources/SSI">"can distract people from closing deals"</a>.</p>
+
+<p>So the failure was not that the number died. The failure was the question it asked. Usage is easy to measure and almost meaningless to a career. The question worth asking has always been harder to score: did anyone's mind change because of you this month? No dashboard hands you that answer. Four observable signals get you close.</p>
+
+<h2>The monthly authority audit: four signals, fifteen minutes</h2>
+
+<p>This framework is my judgment, built from ten years in corporate social media (including running it at QIAGEN) and an executive LinkedIn program that passed 3.5 million impressions. No composite score ever told us whether that work was landing. Checks like these did. I sketched the four signals at the end of the shutdown investigation. What follows is the full audit. Run them once a month, write four numbers in a note and watch the trend, not the level.</p>
+
+<p><strong>1. Reply quality.</strong> Open your last ten posts and list the job titles of the people who commented. Now put that list next to the three roles you most need to reach: the buyer, the hiring manager, the editor, whoever pays off your goal. Count the overlaps. Ten warm comments from peers are pleasant and worth almost nothing strategically. A single reply from a target role is the event you are publishing for. What good looks like: at least one target-role interaction per posting month. Red flag: your comment section is entirely other creators.</p>
+
+<p><strong>2. Private spread.</strong> Public reactions are the cheapest currency on the platform. The expensive currency is a person deciding a specific colleague needs your post: a repost with their own commentary, or a direct message that mentions something you published. Count those events for the month. What good looks like: any. They are rare and they mean more than a hundred reactions. Red flag: high reaction counts with zero private spread, which usually means you are producing scroll candy.</p>
+
+<p><strong>3. Quoted inbound.</strong> Each time a conversation starts in your inbox, note whether the opener references something you wrote, and which piece. This is the closest observable thing to an authority score, because it means your content did the selling before you entered the room. Track it quarterly and watch which topics generate it, because that tells you what to write more of. Red flag: months of publishing with inbound that never mentions your content, which means the content is consumed but not attributed, or not consumed.</p>
+
+<p><strong>4. Profile and posts telling one story.</strong> Open your profile in a private browser window, read the top card, then read your three latest posts in a row. Ask the only question a stranger asks: do these describe the same person? Sharp posts on top of a profile written for a different job is the most common mismatch I see, and it quietly kills conversions, which is how people end up with <a href="/blog/linkedin-profile-views-but-no-messages">views that never turn into messages</a>. What good looks like: a stranger could guess your positioning from either half alone and get the same answer.</p>
+
+<p>Why monthly and not daily: these numbers are small on purpose. Daily checking turns them into another meter to feed, which is the exact habit the SSI trained and the exact habit worth breaking. Publish about twice a month with something you stand behind, defend <a href="/blog/linkedin-golden-hour">the first hour after each post</a> and let the audit tell you quarterly whether the strategy is working.</p>
+
+<h2>What LinkedIn still gives you for free</h2>
+
+<p>Your own analytics survived the SSI. LinkedIn still shows you how each post performed and still counts your profile views, with the usual free-tier limits on who exactly viewed you. I covered <a href="/blog/linkedin-profile-views-but-no-messages">what the free viewer data does and does not include</a> separately. One caution earned the hard way: feature boundaries on LinkedIn move without notice, as the SSI just demonstrated, so treat any page describing what is free as a snapshot and check your own account.</p>
+
+<p>Your posting time is also still your own data. The generic best-time charts were never worth much, and <a href="/blog/linkedin-golden-hour">your own audience tells you when it shows up</a>.</p>
+
+<h2>Where LinkedScore fits, honestly</h2>
+
+<p>The four signals above are free and manual, and the one thing they cannot do is read your profile the way a stranger reads it, because you already know what you meant. That is the piece I built <a href="/">LinkedScore</a> for. It analyzes your profile and what you share with it, then returns a score and a concrete plan. Free, no card, and you see a preview of your result before the email step that unlocks the full report. It is not an SSI clone: the LinkedIn Score is computed from your profile rather than your SSI, there is no activity meter inside it and nothing in it rewards being louder. If you still have your four pillar numbers from a Sales Navigator seat it will read those too, but it does not need them.</p>
+
+<p>And if you would rather go through the result with me, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
+
+<h2>Frequently asked questions</h2>
+
+<p><strong>Is there a free replacement for the LinkedIn SSI?</strong><br />LinkedIn has not shipped one and has announced none. What remains free is LinkedIn's own post and profile analytics, the four manual signals above and third-party analyzers, including ours. Nothing free recreates the old 0 to 100 number, and given what that number measured, nothing should.</p>
+
+<p><strong>Can Sales Navigator users still see their SSI?</strong><br />That is the direction of LinkedIn's own wording, which calls SSI a Sales Navigator feature and describes the score as visible to a subscriber's team and admin. I have not tested a Sales Navigator seat myself, so verify on your own subscription before you rely on it.</p>
+
+<p><strong>Will my SSI score come back?</strong><br />There is no indication it will for free accounts. No announcement, no date and no successor for individuals has been published. If that changes, this page gets an update note the day I can verify it.</p>
+
+<p><strong>Does losing the SSI hurt my reach?</strong><br />I have found no LinkedIn page, live or archived, that describes the SSI as an input to feed distribution, search ranking or recruiter search, and I went through those sources in <a href="/blog/linkedin-ssi-discontinued">the shutdown investigation</a>. A number nobody else could see is gone. Your reach did not depend on it.</p>
+
+<p><strong>How do I measure my LinkedIn presence without the SSI?</strong><br />Run the monthly audit above: whether target roles reply to your posts, whether posts spread privately rather than just collecting likes, whether inbound messages quote your content and whether your profile matches what you post. Four numbers, fifteen minutes, all free.</p>`
+},
+{
 slug: "linkedin-ssi-discontinued",
 title: `LinkedIn Is Discontinuing Free SSI Access. Here Is the Evidence`,
 metaTitle: "LinkedIn SSI Discontinued: What I Saw on My Dashboard",
@@ -83,17 +146,7 @@ html: `<p>On August 27, 2026 I opened my Social Selling Index dashboard signed i
 
 <h2>What to measure instead</h2>
 
-<p>This section is my judgment, not documentation. I led corporate social at QIAGEN and built its executive LinkedIn program past 3.5 million impressions, and no composite score ever told us whether it was working. Four signals did.</p>
-
-<p>Who replies, not how many. Ten comments from the wrong function are worth less than one reply from the person you have been trying to reach all year.</p>
-
-<p>Whether posts get saved and forwarded rather than liked. A like is a reflex. A share into a private message means someone decided a specific colleague needed to see it.</p>
-
-<p>Whether inbound conversations quote you. When a stranger opens with a line you wrote three weeks ago, your positioning is doing the work.</p>
-
-<p>Whether your profile says what your posts say. The failure I see most is sharp posts sitting above a profile that describes a different person, which is how people end up collecting <a href="/blog/linkedin-profile-views-but-no-messages">profile views and no messages</a>.</p>
-
-<p>None of that needed a score. Neither does the rest of how I work. Post about twice a month rather than daily. Be there in the comments while the conversation is alive, which is <a href="/blog/linkedin-golden-hour">the hour that actually matters</a>. Earn the click with your first three lines.</p>
+<p>This section is my judgment, not documentation. I led corporate social at QIAGEN and built its executive LinkedIn program past 3.5 million impressions, and no composite score ever told us whether it was working. Four signals did: who replies, whether posts spread privately, whether inbound quotes you and whether your profile matches your posts. I have since expanded them into <a href="/blog/linkedin-ssi-alternatives">a fifteen minute monthly audit with concrete drills</a>, so I will keep this to the sketch and let that piece do the work.</p>
 
 <h2>Where LinkedScore fits</h2>
 
