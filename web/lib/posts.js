@@ -1,5 +1,86 @@
 const posts = [
 {
+slug: "linkedin-premium-ssi-access",
+title: `Will LinkedIn Premium Bring Your SSI Back?`,
+metaTitle: "Will LinkedIn Premium Bring Your SSI Back? | LinkedScore",
+date: "2026-09-15",
+image: "/linkedin-premium-ssi-access.jpg",
+excerpt: `No. LinkedIn's Premium plans do not mention the Social Selling Index on any tier. What a fully unlocked Premium account shows, what Sales Navigator costs and how far the lockout has spread.`,
+html: `<p>If your Social Selling Index page has gone dark, the obvious next thought is that you can buy your way back in. LinkedIn's own notice points that way: it calls SSI a Sales Navigator feature and tells you to get Sales Navigator to keep it. So the practical question is which subscription actually restores the number, and whether upgrading to Premium is enough. It is not. A LinkedIn account with Premium All-in-One active, every feature unlocked, still shows no score. Here is what can be verified, what cannot and what the search data says about how far this has spread.</p>
+
+<h2>What a fully unlocked Premium account shows</h2>
+
+<p>On September 15, 2026, on a signed-in LinkedIn account, the Premium panel reads "All-in-One" under Plan Details. That is LinkedIn's most complete consumer bundle. InMail, who viewed your profile, daily prospect suggestions, saved prospects, boosting credit, job promotion credit, all switched on. To be precise, that plan was running as a free trial rather than a paid month, with every feature of the plan available.</p>
+
+<p>On the same day, on the same account, <a href="https://www.linkedin.com/sales/ssi">linkedin.com/sales/ssi</a> renders two lines and no score:</p>
+
+<p><strong>"You do not have access to SSI"</strong><br /><strong>"Your access to the Social Selling Index (SSI) has been discontinued."</strong></p>
+
+<p>Read the tense. Nearly every write-up of this story, including <a href="/blog/linkedin-ssi-discontinued">the first LinkedScore report on it</a>, quotes the red warning banner that says access "will be discontinued soon". That is a warning about something coming. This is the finished state, written in the past tense, and that exact wording does not appear on any published page found so far.</p>
+
+<h2>Premium is not the answer, and it never was</h2>
+
+<p>Here is the part that trips people up. It is easy to assume LinkedIn took a feature away from subscribers. It did not, because Premium never carried SSI in the first place. LinkedIn's <a href="https://premium.linkedin.com/small-business/compare-plans">Premium plan comparison</a> does not mention it: a search of that page for "SSI", for "Social Selling" and for "Sales Navigator" returns zero hits. Not once, on any tier.</p>
+
+<p>So the score was never a Premium benefit that got revoked. It was a free feature that happened to keep working while you paid LinkedIn for other things. That distinction matters if you are sitting with a credit card out, because it means upgrading Premium, or upgrading within Premium, changes nothing about SSI.</p>
+
+<p>All-in-One is the clearest test of that. It even has a section labeled Selling, with fifteen daily prospect suggestions and saved prospects, which look like Sales Navigator features. They are not the same entitlement. Opening linkedin.com/sales/home on that account leads to a switcher page carrying the parameter <code>guest_login_sales_nav</code> and the message "Sorry, this option is unavailable." As far as Sales Navigator is concerned, the holder of LinkedIn's fullest consumer plan is a guest.</p>
+
+<h2>Then does Sales Navigator restore it?</h2>
+
+<p>This is where the honest answer is thinner than the confident posts you will read.</p>
+
+<p>LinkedIn's banner says SSI is a Sales Navigator feature. That is LinkedIn's claim, and it is the only reason anyone believes a subscription helps. But LinkedIn's <a href="https://business.linkedin.com/sell/sales-navigator/compare-plans">Sales Navigator plan comparison</a>, updated August 1, 2026, has no Social Selling Index row in it. Not for Core, not for Advanced, not for Advanced Plus. LinkedIn is pointing at a product whose own feature table does not list the thing you would be buying it for.</p>
+
+<p>LinkedScore does not hold a Sales Navigator license, so that claim is untested here. The closest thing to first-hand evidence comes from Polish LinkedIn and Sales Navigator trainer Rafał Szymański, who published on September 7 and updated on September 9. He has held a Sales Navigator license since the 2015 beta, he still sees his score and he pushes back on the idea that the page is dead at all. In his account the address still works, no redirect and no error. That is one seat, and a grandfathered one, which is not the same as proof that a license bought today would restore anything.</p>
+
+<p>Price, since you will ask. LinkedIn's comparison page lists its cheapest Sales Navigator plan at US$119.99 or EUR 120.99 per month, and the page itself calls those figures estimates that may exclude value-added tax and are subject to change. Treat none of that as the number your account will be quoted, and think hard before spending it on the strength of a feature table that does not mention the feature.</p>
+
+<h2>How far has this actually gone?</h2>
+
+<p>There is a real disagreement in the field about whether this is a warning or a completed rollout, and part of it can be settled with data rather than opinion.</p>
+
+<p>People who hit the lockout screen do what anyone does with a confusing message. They paste it into Google. That makes the search volume on the exact wording a rough gauge of how many people are seeing it. In the 28 days to September 12, 2026, Google Search Console shows linkedscore.app appearing 310 times for the exact phrase "your access to the social selling index (ssi) has been discontinued." and another 298 times for the variant that begins "you do not have access to ssi". That is the past-tense wording, not the warning banner.</p>
+
+<p>Impressions are not a headcount, and nothing here pretends otherwise. They measure how often one small site surfaced for that phrase, so the real number of people seeing the message is larger, not smaller. The useful conclusion is narrow and solid: enough people are seeing the completed message, right now, to generate steady search demand. This is past the warning stage for a lot of accounts, even while some accounts still render a score.</p>
+
+<h2>What LinkedIn has and has not said</h2>
+
+<p>There is still no announcement. No help-center retirement notice, no release note, no dated cutoff. The article that actually explains how the score works, "How Sales Navigator SSI is Calculated", was still labeled last updated seven years ago on September 15, 2026, and it carries no banner and no mention that anything is changing.</p>
+
+<p>Meanwhile LinkedIn's marketing page for the score, now titled <a href="https://business.linkedin.com/sell/resources/SSI">From Social Selling Index (SSI) to AI</a>, describes it in the past tense. The exact sentence is "It allowed LinkedIn users to compare their efforts to competitors and others in their network." The rest of that page is an argument for Sales Navigator's AI tooling, aimed at sales leaders who use SSI as a team metric, so it should not be read as a formal deprecation notice. Worth noting: the same page still carries a live "Get your SSI score" button pointing at the dashboard that now reports access has been discontinued.</p>
+
+<p>That combination, past-tense copy plus a working button plus no announcement, is the whole character of this rollout. It is being done quietly and unevenly.</p>
+
+<h2>Credit where it belongs</h2>
+
+<p>LinkedScore is not the first to report this from a Premium account. UK LinkedIn writer John Espirian got there a month earlier, on August 15, 2026, in episode 499 of his Informed podcast. His words: "I've got a Premium Business account. In fact, actually I've now got an All-in-One Premium account... So, even I'm getting that message." Belgian trainer <a href="https://www.xavierdegraux.be">Xavier Degraux</a> has tracked the rollout through three versions of the same article since August 2025, and Noleen Thompson at LadyBugz confirmed on August 30 that the score was genuinely gone on a free account, not merely warned about.</p>
+
+<p>What this piece adds is the finished state, dated, from a fully unlocked Premium plan, plus search data showing it is no longer rare.</p>
+
+<h2>So what should you actually do</h2>
+
+<p>If prospecting is your job and you were already weighing Sales Navigator on its own merits, evaluate it on those merits and treat the score as a possible bonus that LinkedIn has not documented. If prospecting is not your job, there is nothing here to buy. Premium will not do it, and no page from LinkedIn promises that any tier will.</p>
+
+<p>The better move is to stop shopping for a replacement number. The <a href="/blog/linkedin-ssi-alternatives">fifteen minute monthly audit</a> that replaces it is built on four signals anyone can check for free, and the short version is that the old score measured attendance while those four measure whether the right people believe you. For the background on what SSI actually counted, there is <a href="/blog/what-is-the-social-selling-index">the full pillar breakdown</a>.</p>
+
+<p>And for a read on your profile that does not depend on any LinkedIn score, that is what <a href="/">LinkedScore</a> does. It analyzes your profile and what you share with it, then returns a score and a concrete plan. Free, no card and you see a preview before the email step. It is not an SSI clone: nothing in it rewards being louder.</p>
+
+<p>If LinkedIn publishes an actual announcement, or if a newly purchased Sales Navigator seat turns out to restore the score, this page gets an update note as soon as that can be verified.</p>
+
+<h2>Frequently asked questions</h2>
+
+<p><strong>Will LinkedIn Premium bring my SSI back?</strong><br />No. LinkedIn's Premium plan comparison does not mention the Social Selling Index, Sales Navigator or social selling on any tier. On an account with Premium All-in-One fully unlocked, checked September 15, 2026, the SSI page reads "Your access to the Social Selling Index (SSI) has been discontinued." Premium is not the entitlement this tracks.</p>
+
+<p><strong>Does Sales Navigator still show SSI?</strong><br />That is what LinkedIn's notice implies, but LinkedIn's own Sales Navigator comparison table has no Social Selling Index row on any tier. LinkedScore holds no license, so it is untested here. Rafał Szymański, who has held one since 2015, reported on September 7, 2026 that he still sees his score. A grandfathered seat is not proof that a new purchase restores it, so verify before you buy.</p>
+
+<p><strong>How much does Sales Navigator cost?</strong><br />LinkedIn's comparison page, updated August 1, 2026, lists its cheapest plan at US$119.99 or EUR 120.99 per month. LinkedIn describes those figures as estimates that may exclude value-added tax and are subject to change, so check what your own account is quoted.</p>
+
+<p><strong>Why do some people still see a score?</strong><br />There is no published cutoff date, and the rollout has reached accounts at different times. Some people hold a Sales Navigator license. Others have simply not been reached yet. If you can still see yours, treat it as temporary rather than as evidence that nothing is happening.</p>
+
+<p><strong>Has LinkedIn officially announced this?</strong><br />No. There is no help-center retirement notice, no release note and no dated cutoff. The help article explaining how the score is calculated was still labeled last updated seven years ago on September 15, 2026, with no mention of any change.</p>`
+},
+{
 slug: "linkedin-ssi-alternatives",
 title: `Your SSI Is Gone. Here Is What to Track Instead`,
 metaTitle: "LinkedIn SSI Alternatives: What to Track Instead",
