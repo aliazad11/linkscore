@@ -2652,6 +2652,17 @@ export default function App() {
     // The engine requires a short-lived signed funnel token (anti-abuse gate). Fetch one
     // just-in-time; on a 403 (expired/stale token) refresh it once and retry.
     const getToken = async () => { try { const tr = await fetch("/api/funnel-token"); const td = await tr.json().catch(() => ({})); return (td && td.token) || ""; } catch (e) { return ""; } };
+    // A persistent per-browser client id lets the server budget runs per PERSON instead
+    // of per IP, so a classroom or an office behind one NAT address is not treated as
+    // a single abuser (a whole class was rate-limited on 2026-09-22). Random, no PII.
+    let clientId = "";
+    try {
+      clientId = localStorage.getItem("ls_client_v1") || "";
+      if (!clientId) {
+        clientId = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+        localStorage.setItem("ls_client_v1", clientId);
+      }
+    } catch (e) {}
     // One request key per funnel run, persisted BEFORE the call: if the user refreshes
     // during the wait, the server replays the already-paid generation for this key
     // instead of billing a second one. Cleared on result/reset.
@@ -2665,7 +2676,7 @@ export default function App() {
     } catch (e) {}
     const callEngine = async (token) => fetch("/api/generate-plan", {
       method:"POST",
-      headers:{ "Content-Type":"application/json", "x-funnel-token": token, "x-request-key": reqKey },
+      headers:{ "Content-Type":"application/json", "x-funnel-token": token, "x-request-key": reqKey, "x-client-id": clientId },
       body: JSON.stringify({ messages:[{ role:"user", content:messageContent }], cohort: cohort || null, lang: locale || null }),
     });
     let res = await callEngine(await getToken());
