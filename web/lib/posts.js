@@ -262,6 +262,7 @@ slug: "linkedin-profile-views-but-no-messages",
 title: `Why Your LinkedIn Profile Gets Views but No Messages`,
 metaTitle: "LinkedIn Profile Views but No Messages: Why",
 date: "2026-08-13",
+updated: "2026-09-24",
 image: "/profile-views.jpg",
 excerpt: `Views are a count, not interest. The two reasons nobody writes to you, why many viewers cannot message you at all and what sits above your experience.`,
 html: `<p>A large share of your profile views were never going anywhere, whatever your profile said. Curiosity clicks from people whose posts you commented on. Automation. Someone checking whether they already know you before accepting a request. No version of your About section converts those.</p>
@@ -284,7 +285,7 @@ html: `<p>A large share of your profile views were never going anywhere, whateve
 
 <p>Open the viewers LinkedIn does show you, one at a time, for a month. A trickle of names still gives you titles, companies and seniority. Wrong titles means the work is upstream, in who you are reaching. Right titles and a silent inbox means the profile is doing the losing.</p>
 
-<p>LinkedIn also surfaces aggregate insights, like where your viewers work and how they found you. I will not tell you which of those are free, because LinkedIn's own help pages contradict each other on it. Open the page in your account and look. What is not in dispute: Premium adds the full named list, filters, a trend graph and 365 days of history.</p>
+<p>LinkedIn also surfaces aggregate insights, like where your viewers work and how they found you. Which of those are free is deliberately not stated here, because LinkedIn's own help pages contradict each other on it. Open the page in your account and look. What is not in dispute: Premium adds the full named list, filters, a trend graph and 365 days of history.</p>
 
 <h2>Check whether they can even message you</h2>
 
@@ -322,7 +323,7 @@ html: `<p>A large share of your profile views were never going anywhere, whateve
 
 <h2>If it turns out to be a targeting problem</h2>
 
-<p>Then the profile is not where the work is. It is upstream, in what you are visible for and to whom, starting with the line every viewer reads first. That is a separate craft and we have <a href="/blog/linkedin-headline-formula">covered the headline in its own piece</a>.</p>
+<p>Then the profile is not where the work is. It is upstream, in what you are visible for and to whom, starting with the line every viewer reads first. That is a separate craft, and the headline is <a href="/blog/linkedin-headline-formula">covered in its own piece</a>.</p>
 
 <p>One thing to skip if you are employed and senior: the public Open to Work frame. "All LinkedIn members" adds the #OpenToWork photo frame and includes recruiters and people at your current company. "Recruiters only" limits it to LinkedIn Recruiter users, and LinkedIn says outright it cannot guarantee complete privacy. Most advice says switch it on. For a sitting executive, the public version signals availability to the people whose opinion costs the most, and it was never why your inbox is quiet.</p>
 
@@ -330,7 +331,7 @@ html: `<p>A large share of your profile views were never going anywhere, whateve
 
 <p>All of this is checkable by hand. Open your profile logged out, look at what fills the first two screens and ask the three questions as the stranger deciding whether to spend a credit on you.</p>
 
-<p>Almost nobody manages it, because you cannot read your own profile as a stranger. That is what we built <a href="/">LinkedScore</a> for. It reads your profile the way a viewer does rather than the way you wrote it, then returns a score and a plan. It cannot tell you who viewed you, since LinkedIn exposes that to nobody but you. Use it for the conversion half. The targeting half needs your own viewer data. If you would rather have someone read the result with you, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
+<p>Almost nobody manages it, because you cannot read your own profile as a stranger. That is what <a href="/">LinkedScore</a> was built for. It reads your profile the way a viewer does rather than the way you wrote it, then returns a score and a plan. It cannot tell you who viewed you, since LinkedIn exposes that to nobody but you. Use it for the conversion half. The targeting half needs your own viewer data. If you would rather have someone read the result with you, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
 
 <h2>Frequently asked questions</h2>
 
@@ -429,31 +430,32 @@ slug: "linkedin-keyword-affinity-score",
 title: `The LinkedIn Keyword Affinity Score Does Not Exist. Here Is What Does.`,
 metaTitle: "LinkedIn Keyword Affinity Score Calculation: Debunked",
 date: "2026-08-02",
+updated: "2026-09-24",
 image: "/keyword-affinity.jpg",
 excerpt: `Every page ranking for "LinkedIn keyword affinity score calculation" is explaining a metric that does not exist. I checked the docs, traced the fake formula to its source and laid out what actually gets your profile found.`,
-html: `<p>Let me start by conceding something. "LinkedIn keyword affinity score" sounds completely plausible. LinkedIn is a search engine with a ranking algorithm, algorithms score things and keywords are what they score. If someone told you a hidden number measures how strongly your profile is tied to "supply chain" or "growth marketing", you would believe them. I almost did.</p>
+html: `<p>Start with a concession. "LinkedIn keyword affinity score" sounds completely plausible. LinkedIn is a search engine with a ranking algorithm, algorithms score things and keywords are what they score. If someone told you a hidden number measures how strongly your profile is tied to "supply chain" or "growth marketing", you would believe them. Most people do.</p>
 
-<p>So before writing this, I did what I do before publishing any claim: I checked. I searched LinkedIn's Help Center and the Recruiter documentation. I went through the Marketing Labs certification materials and the skill assessment answer banks that get dumped online. I read the pages currently ranking for this exact phrase.</p>
+<p>So before this was written, the claim was checked the way every claim on this site is checked. LinkedIn's Help Center and the Recruiter documentation were searched. The Marketing Labs certification materials and the skill assessment answer banks that get dumped online were read. So were the pages currently ranking for this exact phrase.</p>
 
-<p>Here is the honest answer, which nobody ranking for this keyword will give you. There is no LinkedIn keyword affinity score. Not in your analytics, not in Recruiter, not in any certification exam, not anywhere. The "calculation" people are searching for appears to have been invented by a content farm in July 2026. But underneath the fake metric sits a real question that deserves a real answer: how does LinkedIn decide whether your profile shows up when someone searches for what you do? That part I can help with. I spent more than ten years running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in my region, and today I run executive LinkedIn programs.</p>
+<p>Here is the honest answer, which nobody ranking for this keyword will give you. There is no LinkedIn keyword affinity score. Not in your analytics, not in Recruiter, not in any certification exam, not anywhere. The "calculation" people are searching for appears to have been invented by a content farm in July 2026. But underneath the fake metric sits a real question that deserves a real answer: how does LinkedIn decide whether your profile shows up when someone searches for what you do? That part has a real answer. It comes from more than ten years of running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in its region, and from running executive LinkedIn programs today.</p>
 
 <h2>The keyword affinity score is not a real LinkedIn metric</h2>
 
-<p>I want to be precise here, because precision is the whole point of this article.</p>
+<p>Precision matters here, because precision is the whole point of this article.</p>
 
-<p>LinkedIn does not show, name or document anything called a keyword affinity score. A search of LinkedIn's help documentation returns nothing for the term. The official Marketing Labs certification index does not mention it. I even checked the largest public answer dump for LinkedIn's skill assessments: the word "affinity" appears exactly zero times in the SEO quiz file. If this score were an exam topic, a recruiter-facing number or a creator metric, it would leave a trace somewhere. It leaves none.</p>
+<p>LinkedIn does not show, name or document anything called a keyword affinity score. A search of LinkedIn's help documentation returns nothing for the term. The official Marketing Labs certification index does not mention it. Even the largest public answer dump for LinkedIn's skill assessments was checked: the word "affinity" appears exactly zero times in the SEO quiz file. If this score were an exam topic, a recruiter-facing number or a creator metric, it would leave a trace somewhere. It leaves none.</p>
 
 <p>The page ranking first for the keyword admits this. Buried in it is this line: "LinkedIn does not publicly disclose a formal metric called a 'keyword affinity score.'" That is the top result conceding, in its own words, that the thing it explains does not officially exist. The rest of that page is educated guessing dressed up as a guide.</p>
 
 <h2>Where the "calculation" actually came from</h2>
 
-<p>Here is my reading of how this keyword was born. My reading, because I cannot prove intent, only publication dates and page contents.</p>
+<p>Here is a reading of how this keyword was born. A reading, because intent cannot be proven, only publication dates and page contents.</p>
 
 <p>In early July 2026, two low-profile blogs published companion pieces within weeks of each other. One, a WordPress themes blog, explains how the score supposedly works while quietly admitting no such official metric exists. The other, a Python tutorials blog of all things, publishes an exact formula as if it were fact: Keyword Affinity Score = (Placement Score × 0.4) + (Frequency % × 10 × 0.2) + (Relevance Score × 0.4), plus a keyword density calculation on the side.</p>
 
 <p>Those 40/20/40 weights have no source. No LinkedIn documentation, no engineering blog post, no research paper, nothing. Someone, or more likely something, made the numbers up. And the "calculation" modifier in the search query mirrors that article's title almost word for word.</p>
 
-<p>A keyword with a few hundred monthly searches, near-zero difficulty and a results page made of two no-name AI blogs published in the same month is, in my experience, the signature of a content loop: programmatic articles create tracking noise, tools report the noise as demand and new articles chase it. You searched for a metric that was invented by the pages you were about to land on. Welcome to the internet in 2026.</p>
+<p>A keyword with a few hundred monthly searches, near-zero difficulty and a results page made of two no-name AI blogs published in the same month is the signature of a content loop: programmatic articles create tracking noise, tools report the noise as demand and new articles chase it. You searched for a metric that was invented by the pages you were about to land on. Welcome to the internet in 2026.</p>
 
 <h2>What "affinity" actually means inside LinkedIn</h2>
 
@@ -467,10 +469,10 @@ html: `<p>Let me start by conceding something. "LinkedIn keyword affinity score"
 
 <p>Now the useful part. Strip away the fake score and the real question remains. LinkedIn is a search engine. Recruiters, buyers and partners type words into it every day, and your profile either surfaces or it does not.</p>
 
-<p>After a decade of building executive profiles, here is what I have seen move retrieval, in rough order of weight:</p>
+<p>After a decade of building executive profiles, here is what moves retrieval, in rough order of weight:</p>
 
 <ol>
-<li><strong>Your headline.</strong> It is the most visible keyword real estate you own and it travels with you into every search result and comment. If your target phrase is not here, you are invisible for it. I break down exactly how to structure it in <a href="/blog/linkedin-headline-formula">the headline formula</a>.</li>
+<li><strong>Your headline.</strong> It is the most visible keyword real estate you own and it travels with you into every search result and comment. If your target phrase is not here, you are invisible for it. Exactly how to structure it is in <a href="/blog/linkedin-headline-formula">the headline formula</a>.</li>
 <li><strong>Your job titles.</strong> Recruiter search leans heavily on structured fields, and your current title is the most structured field of all. "Marketing Lead" is searchable. "Chief Storytelling Wizard" is not.</li>
 <li><strong>Your Skills section.</strong> Skills are literal search filters on the recruiter side. Fill the section with the terms people would actually filter by, not the ones that flatter you.</li>
 <li><strong>Your About opening.</strong> The first two or three sentences should state, in plain language, what you do and for whom. Not a quote. Not a childhood story.</li>
@@ -480,7 +482,7 @@ html: `<p>Let me start by conceding something. "LinkedIn keyword affinity score"
 
 <h2>A keyword audit you can run in ten minutes</h2>
 
-<p>If you want a score, here is one you can compute honestly. This is my heuristic, built from years of profile work. It is not LinkedIn's math and I will not pretend it is. That is the entire difference between a checklist and a fabricated formula.</p>
+<p>If you want a score, here is one you can compute honestly. This is a LinkedScore heuristic, built from years of profile work. It is not LinkedIn's math and it does not pretend to be. That is the entire difference between a checklist and a fabricated formula.</p>
 
 <ul>
 <li>Pick the one search phrase you most want to be found for. One. If you cannot choose, that is finding number one.</li>
@@ -497,7 +499,7 @@ html: `<p>Let me start by conceding something. "LinkedIn keyword affinity score"
 
 <p>People hunt for secret metrics because a secret metric feels like a shortcut. Find the hidden score, reverse-engineer it, win. But LinkedIn does not reward people who decode formulas. It rewards people whose positioning is so coherent that every system, algorithmic or human, reaches the same conclusion about them. That is built with one clear phrase, placed where it counts, backed by one or two genuinely strong posts a month. Not with density spreadsheets.</p>
 
-<p>If you want to know how your actual profile reads, not how a made-up formula scores it, <a href="/">run the free LinkedScore analysis</a>. It reads your real profile and tells you where the gaps are. And if you want to work through it live, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with me</a>.</p>
+<p>If you want to know how your actual profile reads, not how a made-up formula scores it, <a href="/">run the free LinkedScore analysis</a>. It reads your real profile and tells you where the gaps are. And if you want to work through it live, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with Ali</a>.</p>
 
 <h2>Frequently asked questions</h2>
 
@@ -516,22 +518,15 @@ slug: "what-is-a-good-linkedin-ssi-score",
 title: `What Is a Good LinkedIn SSI Score? An Honest Read of All Four Pillars`,
 metaTitle: "What Is a Good LinkedIn SSI Score? Honest Benchmarks",
 date: "2026-07-30",
-updated: "2026-08-28",
+updated: "2026-09-24",
 image: "/ssi-score.jpg",
 excerpt: "SSI runs 0 to 100 across four pillars and LinkedIn never says what a good score is. An honest benchmark, plus why free access now looks to be ending.",
-html: `<p>Every week someone opens their Social Selling Index for the first time, sees a 43 or a 61 or a 74, and asks the same question. That is getting harder, because <a href="/blog/linkedin-ssi-discontinued">free access to the dashboard looks to be ending</a>, but the question is worth answering while the numbers are still around. Is that good? The short answer: SSI runs from 0 to 100, built from <a href="/blog/what-is-the-social-selling-index">four pillars</a> worth 25 points each. Most professionals who use LinkedIn actively land somewhere in the middle band. Scores above 70 are uncommon and usually belong to people in sales roles who live inside Sales Navigator. But the number on its own tells you less than you think, because a meaningful part of SSI measures how much you use LinkedIn, not how well you are positioned on it.</p>
-<p>That distinction is the whole article. Let me unpack it.</p>
-<h2>What the SSI actually is</h2>
-<p>The Social Selling Index is LinkedIn's own 0 to 100 score, originally built to sell Sales Navigator to sales teams. For a decade any logged-in member could check it free at <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a>, and it updated daily. LinkedIn now <a href="/blog/linkedin-ssi-discontinued">appears to be moving that access behind Sales Navigator</a>.</p>
-<p>The score is the sum of four pillars, each worth up to 25 points:</p>
-<ul>
-<li><strong>Establish your professional brand.</strong> Profile completeness and the content you publish. Photo, headline, About, experience, plus whether you post and whether anyone engages with it.</li>
-<li><strong>Find the right people.</strong> How actively you search for and view the right profiles. This pillar leans heavily on search behavior, and it is the one Sales Navigator users max out almost by accident.</li>
-<li><strong>Engage with insights.</strong> Whether you share, comment and react, and whether your activity starts conversations.</li>
-<li><strong>Build relationships.</strong> Connections, especially with senior people, and whether your invitations get accepted.</li>
-</ul>
+html: `<p>Every week someone opens their Social Selling Index for the first time, sees a 43 or a 61 or a 74, and asks the same question. That is getting harder, because since the summer of 2026 <a href="/blog/linkedin-ssi-discontinued">most accounts cannot see the score at all</a>, but the question is worth answering for anyone who still has a number, or an old screenshot of one. Is that good? The short answer: SSI runs from 0 to 100, built from <a href="/blog/what-is-the-social-selling-index">four pillars</a> worth 25 points each. Most professionals who use LinkedIn actively land somewhere in the middle band. Scores above 70 are uncommon and usually belong to people in sales roles who live inside Sales Navigator. But the number on its own tells you less than you think, because a meaningful part of SSI measures how much you use LinkedIn, not how well you are positioned on it.</p>
+<p>That distinction is the whole article.</p>
+<h2>The score in one paragraph</h2>
+<p>The Social Selling Index is LinkedIn's own 0 to 100 score, the sum of four pillars worth 25 points each: professional brand, finding the right people, engaging with insights and building relationships. What LinkedIn says feeds each pillar, and where the score stands after the 2026 withdrawal, is covered in <a href="/blog/what-is-the-social-selling-index">the full breakdown of what the Social Selling Index is</a>. This page is about the bands.</p>
 <h2>So what counts as a good score?</h2>
-<p>LinkedIn does not publish an official benchmark for what a good SSI is, which is why every answer you find online is somebody's reading. Here is mine, from running profile audits across executives, founders, consultants and job seekers:</p>
+<p>LinkedIn does not publish an official benchmark for what a good SSI is, which is why every answer you find online is somebody's reading. Here is LinkedScore's, from running profile audits across executives, founders, consultants and job seekers:</p>
 <ul>
 <li><strong>Under 40:</strong> you are barely using the platform. Usually an incomplete profile plus long silences. Nothing is broken, there is simply no signal yet.</li>
 <li><strong>40 to 60:</strong> the typical range for an active professional with a complete profile who engages sometimes. Most people who care enough to check their SSI are here.</li>
@@ -541,23 +536,21 @@ html: `<p>Every week someone opens their Social Selling Index for the first time
 <p>Treat those bands as a reading of typical patterns, not a grading scale handed down from LinkedIn. The more useful move is to look at how the points split across the four pillars, because two people with the same 58 can have completely different problems.</p>
 <h2>The uncomfortable truth about SSI</h2>
 <p>Here is the part most SSI guides skip. Two of the four pillars, finding people and engaging, are largely usage meters. They go up when you spend more time searching, viewing and reacting. They do not particularly care whether that activity builds your reputation or quietly spends it.</p>
-<p>Which means you can raise your SSI with exactly the kind of activity that hurts your authority. Reacting to everything in your feed, running filler polls, resharing viral clips. The score climbs, and the audience that matters thinks less of you with every notification. I wrote about that trade in detail in <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">the five tactics that quietly kill your authority</a>, and SSI is one reason people fall into it. The metric rewards motion. Your reputation rewards judgment. LinkedIn has cooled on the number too, for its own reasons, and <a href="/blog/linkedin-ssi-discontinued">free access to the dashboard now looks to be ending</a>.</p>
+<p>Which means you can raise your SSI with exactly the kind of activity that hurts your authority. Reacting to everything in your feed, running filler polls, resharing viral clips. The score climbs, and the audience that matters thinks less of you with every notification. That trade is covered in detail in <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">the five tactics that quietly kill your authority</a>, and SSI is one reason people fall into it. The metric rewards motion. Your reputation rewards judgment. LinkedIn has cooled on the number too, for its own reasons, and <a href="/blog/linkedin-ssi-discontinued">free access to the dashboard ended in 2026</a>.</p>
 <p>The brand pillar is the one that mostly measures something real, because it is anchored in your profile itself. And that is also where most non-sales professionals are leaving the easiest points, and the most reputation, on the table.</p>
 <h2>How to raise it without becoming spam</h2>
 <p><strong>Start with the brand pillar.</strong> A complete profile is the cheapest 20-plus points on the board and the only part of SSI a stranger actually sees. Real photo, a banner that fits your industry, an About section that says who you help and how, and a headline that does more than state your job title. If yours is a title and a company name, <a href="/blog/linkedin-headline-formula">the headline formula</a> is the place to start.</p>
 <p><strong>Make search a habit, not a binge.</strong> The find-people pillar responds to regular, targeted searching. Ten minutes looking up the actual people you want in your network beats an hour of aimless scrolling, for the score and for your pipeline.</p>
 <p><strong>Comment with a take.</strong> The engage pillar counts reactions, but comments that say something a peer could disagree with are what start conversations, and conversations are what the pillar is really trying to measure. Five thoughtful comments a week outperform fifty congrats.</p>
 <p><strong>Send invitations people want to accept.</strong> The relationships pillar rewards accepted connections, especially senior ones. A one-line personalized note referencing something real keeps your acceptance rate, and this pillar, healthy.</p>
-<p>Notice what is not on the list: posting every day. A high SSI does not require it, and your audience does not want it. One or two strong posts a month, given a real first hour of your attention, do more for the brand pillar than daily filler. That first hour is its own game, which I covered in <a href="/blog/linkedin-golden-hour">the LinkedIn golden hour</a>.</p>
+<p>Notice what is not on the list: posting every day. A high SSI does not require it, and your audience does not want it. One or two strong posts a month, given a real first hour of your attention, do more for the brand pillar than daily filler. That first hour is its own game, covered in <a href="/blog/linkedin-golden-hour">the LinkedIn golden hour</a>.</p>
 <h2>Where SSI fits in an honest assessment</h2>
 <p>SSI is one useful, self-reported signal. It is not a verdict on your positioning, because it cannot read quality. It cannot tell you whether your About section actually says anything, whether your headline is findable or whether your last ten posts built trust or spent it.</p>
-<p>That is exactly how we treat it at LinkedScore. The analyzer takes your four pillar numbers if you still have them and reads them against your actual profile, and the gap between the two is usually the diagnosis. A 65 SSI sitting on top of an empty About section is one of the most common patterns we see: plenty of activity, nothing underneath it. The score says active. The profile says unfinished.</p>
+<p>That is exactly how LinkedScore treats it. The analyzer takes your four pillar numbers if you still have them and reads them against your actual profile, and the gap between the two is usually the diagnosis. A 65 SSI sitting on top of an empty About section is one of the most common patterns in LinkedScore audits: plenty of activity, nothing underneath it. The score says active. The profile says unfinished.</p>
 <p>If you want that read on your own profile, <a href="/">run the free LinkedScore analysis</a>. Upload your profile, add your pillar scores if your dashboard still shows them, and you get an honest read of what your profile actually communicates, with the SSI breakdown alongside it when those numbers are available.</p>
 <h2>Frequently asked questions</h2>
 <p><strong>What is a good SSI score on LinkedIn?</strong><br />There is no official benchmark from LinkedIn. In practice, 40 to 60 is typical for an active professional, 60 to 75 signals consistent activity, and 75-plus is rare outside full-time sales roles. The pillar breakdown matters more than the total.</p>
-<p><strong>How do I check my SSI score?</strong><br />Visit <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a> while logged in to LinkedIn. Free access looks like it is going away: on August 27, 2026 my own dashboard showed a banner saying SSI is a Sales Navigator feature, with no score under it. Read <a href="/blog/linkedin-ssi-discontinued">what LinkedIn is doing to the SSI</a>, then open yours.</p>
-<p><strong>How is the LinkedIn SSI calculated?</strong><br />LinkedIn scores four pillars, each from 0 to 25: establishing your professional brand, finding the right people, engaging with insights and building relationships. The pillar values come from your profile completeness and your activity, and the four together add up to your 0 to 100 SSI.</p>
-<p><strong>How often does the SSI update?</strong><br />Daily, for anyone who can still open the dashboard, which is the part now in question. Meaningful activity showed up within a day, which made SSI a quick feedback loop for the habits behind each pillar, even though the number itself says nothing about quality.</p>
+<p><strong>How do I check my SSI score?</strong><br />Visit <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a> while logged in to LinkedIn. Since the summer of 2026 accounts without a Sales Navigator license see a lockout message instead of a score, and Premium does not restore it. Read <a href="/blog/linkedin-ssi-discontinued">what LinkedIn did to the SSI</a> and <a href="/blog/linkedin-premium-ssi-access">whether any subscription brings it back</a>, then open yours.</p>
 <p><strong>Does a higher SSI mean more reach for my posts?</strong><br />LinkedIn has promoted correlations between social selling activity and outcomes, but it has never confirmed SSI as a direct input to the feed algorithm. Treat it as a reflection of your habits, not a lever that boosts distribution by itself.</p>
 <p><strong>Can chasing SSI hurt my personal brand?</strong><br />Yes. Two of the four pillars reward volume of activity, so you can push the number up with reactive, low-value engagement that makes senior readers take you less seriously. Raise the score through profile quality and real conversations instead.</p>`,
 },
@@ -566,9 +559,10 @@ slug: "creative-linkedin-tactics-that-kill-your-authority",
 title: `5 "Creative" LinkedIn Tactics That Quietly Kill Your Authority`,
 metaTitle: "Creative LinkedIn Tactics That Kill Your Authority",
 date: "2026-06-12",
+updated: "2026-09-24",
 image: "/creative-tactics.jpg",
 excerpt: "These 5 LinkedIn tactics work for reach but quietly cost you trust. Here is the line between the legitimate version and the bait version of each.",
-html: `<p>Let me start by conceding the thing most posts like this pretend is not true. These tactics work. The glamour shot gets likes. The poll gets votes. The trending-name post gets reach. If they did not work, nobody would do them, and smart people would not keep reaching for them.</p>
+html: `<p>Here is the thing most posts like this pretend is not true. These tactics work. The glamour shot gets likes. The poll gets votes. The trending-name post gets reach. If they did not work, nobody would do them, and smart people would not keep reaching for them.</p>
 <p>So this is not a list of things that fail. It is a list of things that succeed at the wrong thing. They buy reach, and they pay for it with trust. Those are two different currencies, and most people on LinkedIn never notice they are spending one to earn the other until the bill comes due.</p>
 <p>The short version, if you read one paragraph: posting glamour shots, fake-discovering viral videos, forcing trending names into office metaphors, dramatizing obvious advice and running filler polls all reliably raise your impressions while slowly lowering what people think of you. Each one has a legitimate version and a bait version, and the gap between them is the whole game. For a creator chasing reach the trade can be fine. For a senior leader whose next deal depends on being taken seriously, it is expensive.</p>
 <h2>Reach and trust are not the same currency</h2>
@@ -591,13 +585,13 @@ html: `<p>Let me start by conceding the thing most posts like this pretend is no
 <p><strong>The legitimate version:</strong> a real question. A poll where the answers would genuinely change how you advise people or what you build is a research tool, and a good one.</p>
 <p><strong>Where it tips:</strong> the weekly tap-farm. "How do you survive Monday mornings? Mainlining coffee, meditation while pretending to work, hiding in the supply closet, plotting your next vacation" costs the reader one tap and tells you nothing you can use. Run one every week and you teach your audience to treat your profile like a slot machine, not a source. Polls are not the problem. Polls with no question inside them are.</p>
 <h2>So who can actually afford this trade?</h2>
-<p>Look at the five together and the same exchange sits under each one. Reach in, trust out. Whether that is a good deal depends entirely on what you are trying to build. LinkedIn even ships a number that rewards the busy side of this trade, which is exactly why I wrote <a href="/blog/what-is-a-good-linkedin-ssi-score">an honest read of the SSI score</a>.</p>
+<p>Look at the five together and the same exchange sits under each one. Reach in, trust out. Whether that is a good deal depends entirely on what you are trying to build. LinkedIn even ships a number that rewards the busy side of this trade, which is exactly why LinkedScore published <a href="/blog/what-is-a-good-linkedin-ssi-score">an honest read of the SSI score</a>.</p>
 <p>If you are a creator whose business is attention, spending a little trust for a lot of reach can genuinely pay. If you are a senior B2B executive, the math flips. Your reach is not the asset, your credibility is, and it is the thing your next client, hire or board contact reads before they ever speak to you. Your profile is already positioning you. The question is whether it is positioning you as someone with judgment or someone performing for the feed.</p>
 <h2>The line, and a worked example</h2>
 <p>The fix is not to post more seriously. It is to keep the version of each tactic that carries a point and drop the version that does not.</p>
 <p>Take the worst of the five, the filler poll, and make it real. Instead of "How do you survive Monday mornings," ask the question you actually need answered: "For those of you leading hybrid teams, what is the one meeting you have killed this year and did anyone miss it?" Same format, one tap, but now the answers tell you something, the comments are worth reading, and you look like someone running a real inquiry instead of farming votes. That is the whole move. Keep the format, put a point inside it.</p>
 <p>Post less, say more. Twice a month with something a peer could actually argue with beats twice a week of filler, both for the reader and, now, for the algorithm. And when you do post something real, give it the best possible start by showing up in the first hour, which is the whole idea behind <a href="/blog/linkedin-golden-hour">the LinkedIn golden hour</a>.</p>
-<p>If you want to see what your current profile is actually signaling, reach or authority, that is exactly what LinkedScore was built to read. You can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session and walk through it with me</a>.</p>
+<p>If you want to see what your current profile is actually signaling, reach or authority, that is exactly what LinkedScore was built to read. You can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session and walk through it with Ali</a>.</p>
 <h2>Frequently asked questions</h2>
 <p><strong>Do these LinkedIn tactics actually work?</strong><br />Yes, for reach. They reliably raise impressions, likes and follows, which is why smart people keep using them. The catch is that they tend to lower trust at the same time, and for a senior leader trust is the more valuable currency.</p>
 <p><strong>Are LinkedIn polls bad for your personal brand?</strong><br />Not by default. A poll that asks a real question, where the answers would change your thinking or your advice, is a genuine research tool. A random weekly poll run to farm taps is the version that costs you.</p>
@@ -609,12 +603,12 @@ html: `<p>Let me start by conceding the thing most posts like this pretend is no
 slug: "linkedin-golden-hour",
 title: "The LinkedIn Golden Hour That Gets Your Posts Seen",
 date: "2026-06-08",
-updated: "2026-08-28",
+updated: "2026-09-24",
 image: "/golden-hour.jpg",
 excerpt: "Most dead LinkedIn posts are not bad. They are badly timed. Here's how the golden hour works and how to find the window that fits your audience, not an average.",
 html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no comments, the post just sits there while you refresh the page and pretend you are not.</p>
 <p>Most people blame the content. Usually that is not the problem. The problem is the hour you hit publish.</p>
-<p>I have spent years running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in my region. The most underrated lever I have seen, by far, is timing. I have watched the same post die in the morning and take off that evening. Same words. Same image. Different hour.</p>
+<p>Years of running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in its region point to one underrated lever, by far: timing. The same post can die in the morning and take off that evening. Same words. Same image. Different hour.</p>
 <p>LinkedIn has a golden hour, and almost nobody uses it the way they should. Here is what it actually is, why the generic "best time to post" charts will let you down and how to find the window that works for your audience specifically.</p>
 <h2>What the LinkedIn golden hour actually is</h2>
 <p>The LinkedIn golden hour is the first 60 to 90 minutes after you publish a post. In that window the algorithm decides how far your post will travel.</p>
@@ -624,14 +618,14 @@ html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no 
 <p>Search "best time to post on LinkedIn" and you get a wall of confident charts. The studies behind the big ones are real and worth respecting. Buffer analyzed 4.8 million posts. Sprout Social looked at two billion engagements. They mostly land on the same window: Tuesday to Thursday, roughly 10 a.m. to noon, with Wednesday as the strongest day.</p>
 <p>So post Wednesday at 11 and you are set, right? Not quite.</p>
 <p>That window is an average across millions of accounts. It is not your audience. And the gap matters more than most people think.</p>
-<p>The audience I built for a diagnostics company behaves nothing like the audience a startup founder is building. Scientists and lab professionals open LinkedIn at different moments than founders, recruiters or real estate agents do. A generic chart points you at the average professional checking their phone mid-morning. If your people are surgeons, shift workers, founders three time zones away or executives who only open the app once the kids are asleep, the average is simply the wrong answer for you.</p>
+<p>The audience built for a diagnostics company behaves nothing like the audience a startup founder is building. Scientists and lab professionals open LinkedIn at different moments than founders, recruiters or real estate agents do. A generic chart points you at the average professional checking their phone mid-morning. If your people are surgeons, shift workers, founders three time zones away or executives who only open the app once the kids are asleep, the average is simply the wrong answer for you.</p>
 <p>It is also a moving target. Buffer's 2026 numbers show those peak windows drifting later into the day, with late afternoon and evening now pulling some of the strongest engagement they have measured. The "safe" mid-morning slot gets more crowded and less special every year.</p>
 <p>Treat the charts as a starting point. They make a terrible finishing point.</p>
 <h2>So when is the best time to post on LinkedIn in 2026?</h2>
 <p>If you only want the short version for 2026, here it is. The research consensus still points at Tuesday to Thursday, mid-morning, with Wednesday as the strongest single day. The newer wrinkle is the drift: Buffer's 2026 numbers show engagement windows sliding later into the day, with late afternoon and early evening now pulling some of the strongest results they have measured. Mid-morning is not wrong. It is just crowded.</p>
 <p>So treat 2026's answer as a two-window test. Start with Tuesday to Thursday around mid-morning, run the same content type into a late afternoon slot for a few weeks and let your own analytics call the winner. The chart gives you a starting grid. Your audience gives you the answer.</p>
 <h2>How to find your own golden hour</h2>
-<p>This is the part the charts skip. Finding your window is not complicated. It just takes a little attention. Here is the process I use.</p>
+<p>This is the part the charts skip. Finding your window is not complicated. It just takes a little attention. Here is the process.</p>
 <ol>
 <li><strong>Read your own data first.</strong> LinkedIn already tells you when your audience is active and which posts landed. Look at your own analytics, not a blog's chart. Your best past posts hold a clue about when your people actually show up. While you are in there, glance at <a href="/blog/what-is-a-good-linkedin-ssi-score">your SSI score</a> too if your account still shows it, since <a href="/blog/linkedin-ssi-discontinued">free access to that dashboard looks to be ending</a>. It is a useful read of your habits as long as you know what it does and does not measure.</li>
 <li><strong>Start from the baseline, then test.</strong> Use Tuesday to Thursday mid-morning as your hypothesis, not your conclusion. Pick two or three candidate windows and post into them over a few weeks.</li>
@@ -662,11 +656,12 @@ html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no 
 slug: "linkedin-headline-formula",
 title: "The LinkedIn Headline Formula That Gets You Found",
 date: "2026-06-01",
+updated: "2026-09-24",
 image: "/headline-formula.jpg",
 excerpt: "Your headline is the most-read line on your profile. Here is a simple formula that makes it searchable and clear.",
 html: `<p>Open any comment thread on LinkedIn. Under every name sits one line of text. That line follows you everywhere on the platform: search results, the feed, connection requests and every comment you leave. Most people fill it with their job title and move on. That is the most expensive default on LinkedIn.</p>
-<p>I run an executive LinkedIn program for a living. When I open a profile, the headline is where I start. Not because it is hard to fix. Because it is the highest-leverage line on the page, and almost everyone spends it on a title that says nothing.</p>
-<p>Here is the LinkedIn headline formula I use, how it changes by situation and the mistakes that quietly keep good people invisible.</p>
+<p>In an executive LinkedIn program, every profile review starts at the headline. Not because it is hard to fix. Because it is the highest-leverage line on the page, and almost everyone spends it on a title that says nothing.</p>
+<p>Here is the LinkedIn headline formula LinkedScore uses, how it changes by situation and the mistakes that quietly keep good people invisible.</p>
 <h2>What your headline actually does</h2>
 <p>Three jobs, all at once.</p>
 <p><strong>It gets you found.</strong> LinkedIn search leans hard on your headline. When a buyer types "fractional CFO SaaS" or a founder searches for "B2B content strategist," the words in that line help decide whether you appear at all. A headline that only says "Managing Director" will not show up for the searches that matter to you.</p>
@@ -697,7 +692,7 @@ html: `<p>Open any comment thread on LinkedIn. Under every name sits one line of
 <h2>The three-second test</h2>
 <p>Rewrite the line, read it out loud and ask one question: would the person you want to reach understand what you do for them in three seconds? Then check it where it actually lives. Find one of your own recent comments and read the line under your name as a stranger would. That single glance is how most of LinkedIn will ever meet you.</p>
 <p>A strong headline also raises the return on everything else you do here. Your posts earn more profile visits when the line under your name gives people a reason to click, which is exactly when <a href="/blog/linkedin-golden-hour">the golden hour</a> starts paying you back. And it anchors you while you avoid <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">the tactics that buy reach at the cost of trust</a>. It is also the fastest way to lift the brand pillar of <a href="/blog/what-is-a-good-linkedin-ssi-score">your SSI score</a>, the only pillar a stranger can actually see.</p>
-<p>Not sure what your headline is telling people right now? Run it through the <a href="https://www.linkedscore.app/headline-analyzer">free LinkedIn Headline Analyzer</a> for an instant 0 to 100 score, or let LinkedScore read your full profile and hand you a rewrite in your own voice. Or <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session and we will rewrite it together</a>.</p>
+<p>Not sure what your headline is telling people right now? Run it through the <a href="https://www.linkedscore.app/headline-analyzer">free LinkedIn Headline Analyzer</a> for an instant 0 to 100 score, or let LinkedScore read your full profile and hand you a rewrite in your own voice. Or <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session and rewrite it with Ali</a>.</p>
 <h2>Frequently asked questions</h2>
 <p><strong>What is the LinkedIn headline formula?</strong><br />Who you help, the outcome you create and one piece of proof or a niche. In practice: I help [audience] get [outcome], [proof]. Plain words your audience would actually search for.</p>
 <p><strong>How long can a LinkedIn headline be?</strong><br />Up to 220 characters. You do not need them all. Put the audience and outcome first, because in most placements only the beginning shows before the line is cut off.</p>
