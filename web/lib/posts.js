@@ -2,10 +2,11 @@ const posts = [
 {
 slug: "linkedin-premium-ssi-access",
 title: `Will LinkedIn Premium Bring Your SSI Back?`,
-metaTitle: "Will LinkedIn Premium Bring Your SSI Back? | LinkedScore",
+metaTitle: "SSI Access Discontinued: Will LinkedIn Premium Restore It?",
 date: "2026-09-15",
+updated: "2026-09-24",
 image: "/linkedin-premium-ssi-access.jpg",
-excerpt: `No. LinkedIn's Premium plans do not mention the Social Selling Index on any tier. What a fully unlocked Premium account shows, what Sales Navigator costs and how far the lockout has spread.`,
+excerpt: `"You do not have access to SSI" and Premium will not fix it: LinkedIn's plan comparison never lists the score, the Sales Navigator table has no SSI row and here is what each plan costs.`,
 html: `<p>If your Social Selling Index page has gone dark, the obvious next thought is that you can buy your way back in. LinkedIn's own notice points that way: it calls SSI a Sales Navigator feature and tells you to get Sales Navigator to keep it. So the practical question is which subscription actually restores the number, and whether upgrading to Premium is enough. It is not. A LinkedIn account with Premium All-in-One active, every feature unlocked, still shows no score. Here is what can be verified, what cannot and what the search data says about how far this has spread.</p>
 
 <h2>What a fully unlocked Premium account shows</h2>
@@ -346,39 +347,82 @@ html: `<p>A large share of your profile views were never going anywhere, whateve
 {
 slug: "what-is-the-social-selling-index",
 title: `What Is the Social Selling Index? How LinkedIn's SSI Actually Works`,
-metaTitle: "What Is the Social Selling Index? SSI Explained",
+metaTitle: "What Is the Social Selling Index? LinkedIn SSI Explained (2026 Update)",
 date: "2026-08-02",
-updated: "2026-08-28",
+updated: "2026-09-24",
 image: "/social-selling-index.jpg",
-excerpt: `LinkedIn's official 0 to 100 score, which now looks to be moving behind Sales Navigator. How the four pillars work and why half of it is a usage meter.`,
-html: `<p>Let me start by conceding something. The Social Selling Index is real. It is not a growth hacker's invention or some third party vanity tool. It is an official LinkedIn metric, it lives on an official LinkedIn page and for years every member could see it. That is now in doubt: LinkedIn <a href="/blog/linkedin-ssi-discontinued">appears to be moving the dashboard behind Sales Navigator</a>, and when I checked mine in August 2026 the score was gone.</p>
-<p>Here is the flip. Almost everyone who finds their score misreads what it measures. I have spent more than ten years running social media for a life sciences company, a global tech brand and one of the biggest e-commerce platforms in my region, and today I run executive LinkedIn programs and build LinkedScore. In that time I have watched plenty of smart professionals treat the SSI as a grade for their personal brand. It is not that. It is mostly a meter of how much you use LinkedIn. Understanding that difference is the whole game, so let me walk you through the mechanics properly.</p>
-<h2>What the Social Selling Index actually is</h2>
-<p>The Social Selling Index, or SSI, is LinkedIn's own score for how well you practice what it calls social selling. It runs from 0 to 100 and it is built from four sub-scores, one for each of LinkedIn's four social selling pillars. Each pillar is worth up to 25 points. Add the four together and you have your total.</p>
-<p>The name gives away the origin. LinkedIn built this metric for salespeople. It lives on the Sales Solutions side of the platform and it exists, at least in part, to make the case for Sales Navigator. LinkedIn has long promoted correlations between social selling activity and better sales outcomes, which is exactly what you would expect from the company selling the tools. That does not make the score useless for the rest of us. It just means you should read it knowing who it was designed for.</p>
-<h2>Where to check your SSI</h2>
-<p>Go to linkedin.com/sales/ssi while logged in to LinkedIn. For a decade the dashboard was free for every member, with no Sales Navigator and no premium plan required. That is changing. On August 27, 2026 my own dashboard carried a banner saying access will be discontinued soon and that SSI is a Sales Navigator feature, with no score under it. I wrote down what I saw and what LinkedIn's own pages now say in <a href="/blog/linkedin-ssi-discontinued">LinkedIn is discontinuing free SSI access</a>. Open yours and look before you rely on anything below.</p>
-<p>While it still loads for you, the dashboard shows three things: your total score out of 100, the four pillar bars out of 25 each and two comparisons. The comparisons are the interesting part. LinkedIn ranks you against people in your industry and against people in your own network, both as percentiles. Read those with care. Most LinkedIn members are largely passive, so in my reading a flattering percentile mostly tells you that you are more active than a quiet crowd. It feels like a compliment. It is closer to a participation ribbon.</p>
-<h2>The four pillars, one by one</h2>
-<p>LinkedIn names the four pillars: establish your professional brand, find the right people, engage with insights and build relationships. Here is what each one is, plus my honest reading of what actually moves it, based on years of watching these numbers respond to real behavior.</p>
-<p><strong>Establish your professional brand (0 to 25).</strong> This is the pillar closest to what you and I would call personal branding. In my experience it responds to profile completeness, a real photo, a headline that says something, a filled About section, rich media on your profile and, above all, publishing content that earns engagement. If you care about authority rather than pipeline, this is the pillar to watch.</p>
-<p><strong>Find the right people (0 to 25).</strong> This is prospecting. My reading is that it rewards searching for people, viewing profiles and generally behaving like someone researching accounts, and that it climbs fastest for people who use Sales Navigator's search tools. For a salesperson that is fair. For an executive or a consultant it is mostly noise. This pillar is a usage meter, and I will come back to that.</p>
-<p><strong>Engage with insights (0 to 25).</strong> This one tracks whether you share content and interact with other people's content. Posts, comments, reactions, shares. It is the pillar your engagement habits feed. One habit matters more than the rest in my experience: staying in the conversation right after you publish and replying to every comment while the discussion is alive. I have written about why that window matters in <a href="/blog/linkedin-golden-hour">the LinkedIn golden hour</a>.</p>
-<p><strong>Build relationships (0 to 25).</strong> This is your network pillar. My reading is that it responds to connecting with people, particularly senior people, and having those requests accepted. Growing a relevant network nudges it up. Mass-inviting strangers is the fastest way to game it and also the fastest way to fill your feed with people you do not care about.</p>
-<h2>The honest part: half the score is a usage meter</h2>
-<p>Now the part LinkedIn's own material will not tell you. Look at the four pillars again with cold eyes. Find the right people measures whether you use LinkedIn's search products. Build relationships largely measures whether you send connection requests that land. Neither says anything about whether your profile is credible, whether your writing is any good or whether the right people trust you. Half of the index, 50 of the 100 points, is essentially a meter of how intensively you use the platform.</p>
-<p>The other two pillars are better, but they still read activity, not quality. The index registers that you posted, not whether the post said anything. It registers that you commented, not whether the comment was worth reading. A mediocre daily poster can outscore a sharp professional who publishes twice a month, and I see exactly that pattern in my work all the time. The SSI is an input meter. Authority is an output. In my experience they correlate loosely at best.</p>
-<p>This is why I tell the executives I work with to hold the score lightly. Post less, say more. One or two strong posts a month, written with a real point of view, will do more for your actual standing than thirty forgettable ones, even if the thirty produce a prettier SSI curve.</p>
+excerpt: `LinkedIn's official 0 to 100 score, what LinkedIn's own Help Center says feeds each of the four pillars, why half of it is a usage meter and where the score stands after the 2026 withdrawal.`,
+html: `<p>The Social Selling Index, or SSI, is LinkedIn's own score of how well a member practices what LinkedIn calls social selling. It runs from 0 to 100 and is the sum of four sub-scores, one for each of LinkedIn's four social selling pillars, each worth up to 25 points. It is a real, official LinkedIn metric. It was free for every member from 2015 until the summer of 2026, and as of September 2026 accounts without a Sales Navigator license can no longer see it. This page explains what the score is, what LinkedIn's own documentation says feeds it, where it stands now and how much weight it deserves.</p>
+
+<h2>Social Selling Index: the short definition</h2>
+
+<p>LinkedIn's current page describes the SSI as "a metric from 0 to 100 that indicates how well social sellers establish a professional brand, find the right prospects, engage with key insights, and build relationships on LinkedIn." LinkedIn's Help Center puts it more plainly: "LinkedIn's SSI is a measure that ranks a company or individual's utilization of LinkedIn as a selling tool."</p>
+
+<p>The second sentence is the honest one. The word is utilization. The score was built for salespeople, it lives on the Sales Solutions side of LinkedIn and it exists, in part, to make the case for Sales Navigator. Per LinkedIn's 2015 launch post, it "was developed by identifying a group of top performing sales professionals, analyzing their usage habits on LinkedIn, and determining how they use LinkedIn to drive successful outcomes." Usage habits, studied on salespeople, then shown to everyone. That origin explains most of what follows.</p>
+
+<h2>Can you still see your Social Selling Index?</h2>
+
+<p>For accounts without a Sales Navigator license, no. For a decade the dashboard at linkedin.com/sales/ssi was free for every member. Since the summer of 2026, every account without a Sales Navigator license that LinkedScore has checked sees a lockout reading "You do not have access to SSI" instead of a score. The dated sightings, the banner text and LinkedIn's silence about it are documented in <a href="/blog/linkedin-ssi-discontinued">the report on LinkedIn discontinuing free SSI access</a>.</p>
+
+<p>Upgrading to Premium does not bring it back, and whether a Sales Navigator license does, what it costs and what is verified versus assumed is answered in <a href="/blog/linkedin-premium-ssi-access">Will LinkedIn Premium Bring Your SSI Back?</a>. The rest of this page describes the score as LinkedIn documents it, so you can judge what you actually lost.</p>
+
+<h2>The four pillars, and what LinkedIn says feeds each one</h2>
+
+<p>LinkedIn names the four pillars: establish your professional brand, find the right people, engage with insights and build relationships. The one LinkedIn page still live that itemizes the inputs is a Help Center article titled <a href="https://www.linkedin.com/help/sales-navigator/answer/a105145/how-sales-navigator-ssi-is-calculated">How Sales Navigator SSI is Calculated</a>, stamped "Last updated: 7 years ago". Its list is worth reading in full, because it is the source for every claim below.</p>
+
+<p><strong>Establish your professional brand (0 to 25).</strong> LinkedIn lists "The completeness of your LinkedIn profile, including the endorsements you've received" and "Articles you've published and the number of followers resulting from your articles". This is the pillar closest to personal branding, and the only one where other people's judgment enters at all: endorsements are colleagues vouching for you, and article followers are readers choosing to stay.</p>
+
+<p><strong>Find the right people (0 to 25).</strong> LinkedIn lists "People searches", "Profile views" and "Days active". This is prospecting, measured as motion: how often you search, how many profiles you open, how many days you show up. For a salesperson that is reasonable. For an executive, a consultant or a job seeker it is a usage meter and nothing more.</p>
+
+<p><strong>Engage with insights (0 to 25).</strong> LinkedIn lists shares, likes, comments and reshares, "Messages sent and the response rate" and groups joined. This is the pillar your posting and commenting habits feed. It counts that you posted and that you commented. It does not read what you wrote.</p>
+
+<p><strong>Build relationships (0 to 25).</strong> LinkedIn lists connections and "The acceptance rate of your connection requests". Growing a relevant network nudges it up. Mass-inviting strangers is the fastest way to game it, and also the fastest way to fill a feed with people you do not care about.</p>
+
+<p>The same article adds one input that only applies to subscribers: "As a Sales Navigator user, the data associated with your use of Sales Navigator will also be used in your SSI score". For the people the metric was built around, part of the score has always measured use of the paid product.</p>
+
+<h2>Half the score is a usage meter</h2>
+
+<p>Read the four lists together with cold eyes. Find the right people measures whether you use LinkedIn's search. Build relationships largely measures whether your connection requests land. Neither says anything about whether your profile is credible, whether your writing is any good or whether the right people trust you. Fifty of the hundred points are a meter of how intensively you use the platform.</p>
+
+<p>The other two pillars are better, but they still count activity, not quality. The index registers that you posted, not whether the post said anything. It registers that you commented, not whether the comment was worth reading. A mediocre daily poster can outscore a sharp professional who publishes twice a month. The SSI is an input meter. Authority is an output. They correlate loosely at best, and LinkedIn itself now says so: its current SSI page states that "A high SSI score doesn’t always represent the efficacy of a sales person or correlate with measurable sales outcomes."</p>
+
+<h2>How the dashboard read the score</h2>
+
+<p>While it loaded, the dashboard showed three things: the total out of 100, the four pillar bars out of 25 each and two percentile comparisons, one against people in your industry and one against your own network. The comparisons tended to flatter, because they ranked activity against a network in which many members rarely post. A high percentile mostly said you were more active than a quiet crowd. It felt like a compliment and was closer to a participation ribbon. The dashboard described the score as updated daily, which trained the daily-checking habit the whole metric quietly rewarded.</p>
+
 <h2>Does the SSI affect your reach?</h2>
-<p>LinkedIn has never confirmed that SSI is an input to feed ranking. Plenty of gurus imply otherwise, usually while selling an engagement routine. My reading is that the causation runs the other way. The behaviors that lift your SSI, publishing, commenting, connecting, are behaviors the feed responds to anyway. So the score and your reach can rise together without one causing the other. The SSI is the shadow on the wall, not the thing casting it. I have since read every LinkedIn-owned page about SSI I could find, including the Help Center article that itemizes the inputs, and none of them claims the score feeds distribution, search ranking or recruiter search. <a href="/blog/linkedin-ssi-discontinued">The sources are listed here</a>.</p>
-<h2>How I would actually use the SSI</h2>
-<p>Used correctly, the SSI was a habit mirror, not a scoreboard. Monthly was always often enough, and that matters less now that free access is in question. Treat the professional brand pillar as the one honest signal in the set. Ignore the prospecting pillar entirely unless you are actually in sales. If the engagement pillar is flat, ask whether you have been invisible between posts, because genuine comments on other people's work count for presence too. And never let the number talk you into posting filler. The index cannot tell the difference between noise and substance. Your audience can.</p>
-<p>The deeper question the SSI cannot answer is what your profile is actually signaling to the people who look you up. That is the question I built LinkedScore to answer. If you want to see how your positioning reads to a decision maker, <a href="/">run the free LinkedScore analysis</a>. And if you want to work on it together, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with me</a> directly.</p>
+
+<p>No LinkedIn page that could be found documents the SSI as an input to anything. Every LinkedIn-owned page about the score that could be found, the dashboard, the current SSI page, the Help Center article, the 2015 announcement and the archived landing page, admin guide and tip sheet, describes it as an output computed from your activity. None of them claims it influences feed distribution, search ranking, recruiter search or profile visibility. The behaviors that raised the score, publishing, commenting and connecting, are behaviors the feed responds to on their own, so the score and reach could rise together without one causing the other. The SSI was the shadow on the wall, not the thing casting it. That is also why there is no documented reason losing the dashboard should change your reach.</p>
+
+<h2>A short history, in LinkedIn's own words</h2>
+
+<p>August 3, 2015: LinkedIn publishes <a href="https://www.linkedin.com/business/sales/blog/modern-selling/get-your-score-linkedin-makes-the-social-selling-index-available-for-everyone">Get Your Score: LinkedIn Makes the Social Selling Index Available for Everyone</a>, announcing that "SSI is available to anyone interested in understanding and improving their social selling efforts." The post is still live and carries no retraction or correction note.</p>
+
+<p>Mid-2025: the SSI landing page is retitled <a href="https://business.linkedin.com/sell/resources/SSI">From Social Selling Index (SSI) to AI</a>. It describes the score in the past tense, "It allowed LinkedIn users to compare their efforts to competitors and others in their network", and points sales leaders toward AI features inside Sales Navigator.</p>
+
+<p>2026: LinkedIn's SSI tip sheet and admin guide are taken down or redirected between spring and August, the paywall banner appears on the dashboard in the summer and by September it gives way to a full lockout on the accounts without a Sales Navigator license that LinkedScore has checked. The archive trail and LinkedIn's silence about all of it are in <a href="/blog/linkedin-ssi-discontinued">the shutdown report</a>.</p>
+
+<h2>How much weight the score deserves</h2>
+
+<p>Used well, the SSI was a habit mirror, not a scoreboard. Monthly was often enough. The professional brand pillar was the one honest signal in the set. The prospecting pillar was noise for anyone not in sales. A flat engagement pillar usually meant silence between posts, and genuine comments on other people's work count for presence too. The number could never tell the difference between noise and substance, and an audience always can.</p>
+
+<p>Now that the dashboard is gone for most members and no successor score for individuals has been announced, the practical question is what to watch instead. <a href="/blog/linkedin-ssi-alternatives">Your SSI Is Gone. Here Is What to Track Instead</a> sets out a fifteen minute monthly audit built on four signals that read outcomes rather than activity. And the question the SSI never asked, what your profile actually signals to the people who look you up, is what <a href="/">LinkedScore</a> answers. It reads your profile and your positioning, returns a score and a concrete plan and does not compute, estimate or replace the SSI. If you would rather work through the result with Ali, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
+
 <h2>Frequently asked questions</h2>
-<p><strong>What is a good Social Selling Index?</strong><br />There is no universal pass mark and the honest answer depends on your industry and your goals, so I wrote a separate piece on <a href="/blog/what-is-a-good-linkedin-ssi-score">what actually counts as a good SSI score</a>.</p>
-<p><strong>Is SSI only for salespeople?</strong><br />No, though that is changing. Any member could see a score for years, and free access to it now looks to be going away, so the metric is heading back toward the salespeople it was built for. It was designed for them, which is why two of its four pillars reward prospecting and outreach. If you are not in sales, weight the professional brand pillar most heavily and read the rest loosely.</p>
-<p><strong>Does SSI affect my reach?</strong><br />LinkedIn has never confirmed SSI as a feed ranking input. My reading is that the behaviors that raise the score are also behaviors the feed rewards, so the two tend to move together without one causing the other.</p>
-<p><strong>How often does the Social Selling Index update?</strong><br />It updated daily, and for members who can still see it that has not changed. What is in doubt is the seeing: on August 27, 2026 my own dashboard showed a banner about access ending and no score under it. Open linkedin.com/sales/ssi and check yours.</p>`
+
+<p><strong>What is the Social Selling Index on LinkedIn?</strong><br />LinkedIn's official 0 to 100 score of how well a member practices social selling, built from four pillars worth 25 points each: professional brand, finding the right people, engaging with insights and building relationships. LinkedIn's Help Center calls it a measure of a member's "utilization of LinkedIn as a selling tool."</p>
+
+<p><strong>How is the Social Selling Index calculated?</strong><br />LinkedIn's Help Center lists the inputs per pillar: profile completeness and endorsements, articles published and the followers they earn, people searches, profile views, days active, shares, likes, comments, messages sent and their response rate, groups joined, connections and connection acceptance rate. Sales Navigator activity also counts for subscribers. The exact weighting has never been published.</p>
+
+<p><strong>Where can I see my Social Selling Index?</strong><br />The dashboard was at linkedin.com/sales/ssi. Since summer 2026 it returns a lockout message on accounts without a Sales Navigator license, and Premium does not restore it. Check your own dashboard; the current state is documented in <a href="/blog/linkedin-ssi-discontinued">the shutdown report</a>.</p>
+
+<p><strong>What is a good Social Selling Index?</strong><br />There is no universal pass mark and the answer depends on industry and goal, so the score bands are covered separately in <a href="/blog/what-is-a-good-linkedin-ssi-score">what actually counts as a good SSI score</a>.</p>
+
+<p><strong>Is SSI only for salespeople?</strong><br />It was designed for them, which is why two of its four pillars reward prospecting and outreach, and in 2026 it is heading back to them: LinkedIn now calls it a Sales Navigator feature. If you are not in sales, the professional brand pillar was the only one worth reading closely.</p>
+
+<p><strong>Does SSI affect my reach?</strong><br />No LinkedIn page found, live or archived, describes the SSI as an input to feed distribution, search ranking or recruiter search. The behaviors that raised the score are behaviors the feed rewards on their own, so the two moved together without one causing the other.</p>
+
+<p><strong>How often did the Social Selling Index update?</strong><br />The dashboard described the score as updated daily, for members who could see it. Since the 2026 withdrawal the question is no longer the update frequency but the access itself.</p>`
 },
 {
 slug: "linkedin-keyword-affinity-score",
