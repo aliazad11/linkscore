@@ -14,7 +14,11 @@ const hits = new Map();
 function rateOk(ip) {
   const now = Date.now();
   const windowMs = 60000;
-  const max = 5;
+  // 20, not 5: a classroom, a coworking floor or a corporate office sits behind ONE
+  // IP. On 2026-09-22 a French business-school class of ~15 hit the old cap of 5 and
+  // 41 of their runs died with "Too many requests". The durable per-client budget
+  // below is what stops one person hammering; this is only the burst guard.
+  const max = 20;
   const arr = (hits.get(ip) || []).filter((t) => now - t < windowMs);
   arr.push(now);
   hits.set(ip, arr);
@@ -258,7 +262,23 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: "No completed analysis for this session." });
   }
 
-  if (!(await durableRateOk(ip, 8, SERVICE_KEY, "generate-plan"))) {
+  // Two durable budgets instead of one per-IP cap (the per-IP cap of 8/hour blocked a
+  // whole classroom on 2026-09-22, since shared networks present as a single IP):
+  //   - per CLIENT: 8 runs/hour keyed by the browser's persistent client id, so one
+  //     person cannot hammer the engine no matter how many IPs they hop through
+  //   - per IP: 40 runs/hour as a farm ceiling for scripted abuse from one address
+  // A caller that sends no client id (old client, curl, bot) keeps the strict 8/hour
+  // per IP, so stripping the header never buys more budget than before.
+  const rawClient = req.headers["x-client-id"];
+  const clientId = (typeof rawClient === "string" && /^[a-zA-Z0-9-]{8,64}$/.test(rawClient)) ? rawClient : null;
+  if (clientId) {
+    if (!(await durableRateOk("client:" + clientId, 8, SERVICE_KEY, "generate-plan/client"))) {
+      return res.status(429).json({ error: "You've reached the hourly analysis limit. Please try again later." });
+    }
+    if (!(await durableRateOk(ip, 40, SERVICE_KEY, "generate-plan/ip"))) {
+      return res.status(429).json({ error: "This network has reached its hourly analysis limit. Please try again later." });
+    }
+  } else if (!(await durableRateOk(ip, 8, SERVICE_KEY, "generate-plan"))) {
     return res.status(429).json({ error: "You've reached the hourly analysis limit. Please try again later." });
   }
 

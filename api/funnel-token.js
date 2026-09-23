@@ -13,7 +13,9 @@ function rateOk(ip) {
   const arr = (hits.get(ip) || []).filter((t) => now - t < 60000);
   arr.push(now);
   hits.set(ip, arr);
-  return arr.length <= 30;
+  // 60/minute per IP: a class or an office behind one IP fetches a token per run and
+  // one more per 403 retry; 30 was tight for a room of 15 (2026-09-22).
+  return arr.length <= 60;
 }
 
 export default async function handler(req, res) {
