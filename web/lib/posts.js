@@ -1,5 +1,51 @@
 const posts = [
 {
+slug: "why-linkedin-discontinued-ssi",
+title: `Why LinkedIn Discontinued the SSI, in LinkedIn's Own Words`,
+metaTitle: "Why LinkedIn Discontinued the SSI Score",
+date: "2026-09-29",
+image: "/why-linkedin-discontinued-ssi.jpg",
+excerpt: `LinkedIn did explain why it killed free SSI access. The reason sits on its own SSI page, retitled "From SSI to AI", and it has been public since 2025.`,
+html: `<p>The lockout screen is two lines long and explains nothing. "You do not have access to SSI. Your access to the Social Selling Index (SSI) has been discontinued." No reason, no date, no link to a notice. So people do the obvious thing and paste the sentence into Google. Over the 28 days to September 27, 2026, <a href="https://www.linkedscore.app/blog/linkedin-ssi-discontinued">that exact wording</a> and its close variants drew more than a thousand search impressions to LinkedScore, making it the single biggest source of search traffic to the site, which is a rough gauge of how many people are hitting the same wall.</p>
+<p>Here is the part that has gone mostly unremarked. LinkedIn did explain itself. Not in a help article, not in a release note, but on its own Social Selling Index page, which it quietly retitled "From SSI to AI." The explanation has been sitting in public for close to a year.</p>
+<h2>Why LinkedIn discontinued the SSI, in short</h2>
+<p>LinkedIn discontinued free SSI access because, in its own words, "the SSI score no longer accurately reflects the modern sales environment." That sentence is on LinkedIn's official SSI resource page, reachable today from LinkedIn's own navigation under Resources, Social Selling Index. LinkedIn did not replace the score with a better score. It replaced it with Sales Navigator AI features, which means anyone who is not a B2B seller with a Sales Navigator seat was left with no replacement at all.</p>
+<h2>What LinkedIn actually says</h2>
+<p>The page headline is "From SSI to AI," and under it, "What's next for the Social Selling Index." The opening pitch is four words long: "Less scoring, more selling."</p>
+<p>The reasoning is stated plainly. SSI "has been the go-to metric for sales professionals on LinkedIn," a "badge of honor signaling credibility and connection." Then the turn: "But as buyer behaviors shift and sales cycles become increasingly complex, the SSI score no longer accurately reflects the modern sales environment."</p>
+<p>Then it goes further than an explanation. It becomes a change-management guide for sales leaders who need to wean a team off the number. One section is titled "How to persuade sales teams to adopt AI-powered solutions." Its first step: "Ask your team, 'What defines true sales success?'" Another passage anticipates the resistance directly, noting that some leaders and sellers "may be reluctant to abandon SSI scores as a performance measure because it feels safe and familiar."</p>
+<p>Read that as what it is. This is not a company that mislaid a feature. This is a company that decided the metric was a liability, wrote a deck about it and published the deck.</p>
+<h2>The button that still asks for a score you cannot get</h2>
+<p>On the same page, LinkedIn still runs a call to action that reads "Get your SSI score." It links to linkedin.com/sales/ssi.</p>
+<p>On September 29, 2026, on a signed-in account, that link lands on the two-line notice quoted at the top of this article. LinkedIn's own marketing page invites you to collect a number, and the destination tells you your access to it has been discontinued.</p>
+<p>That contradiction is the most honest summary of this whole episode. One team retired the metric. Another team never updated the page pointing at it. There was no coordinated announcement because there does not appear to have been a coordinated anything.</p>
+<h2>This was not sudden</h2>
+<p>The shutdown felt abrupt because the notice arrived without warning for most accounts. The reasoning did not.</p>
+<p>LinkedIn's "no longer accurately reflects the modern sales environment" line was already being quoted in the trade press by October 27, 2025, when SmartCompany reported that LinkedIn had killed the SSI and replaced it with AI. That is roughly eleven months before the lockout screens appeared at scale in September 2026.</p>
+<p>The old Sales Navigator admin guide tells the same story in miniature. As recently as May 2026 its archived copy still opened with "Learn how to oversee your team's performance on the Social Selling Index," complete with coaching tips. By late August 2026 that URL no longer served its own page. It redirects to "From SSI to AI."</p>
+<p>What LinkedIn never published, and still has not published, is a dated retirement notice. The explanation page carries no publication date. There is no help-center article announcing a cutoff. That gap is the reason so many people assume nothing was ever said.</p>
+<h2>The replacement is a product, not a measurement</h2>
+<p>Ask what LinkedIn offers instead of the score and the answer is a feature list, not a metric. The page points to Lead Finder for prospecting, Message Assist for outreach, Relationship Map and TeamLink for working an account's stakeholders. Useful things, arguably. None of them is a number you can check on a Tuesday to see whether your positioning improved.</p>
+<p>This is a category change that mostly went unnoticed. SSI was a mirror. You looked at it and it told you something about yourself, however crudely. The replacement is a toolkit. It tells you nothing about yourself, and it costs money.</p>
+<p>For a sales team with a budget, that trade might be fine. <a href="https://www.linkedscore.app/blog/linkedin-premium-ssi-access">Upgrading a Premium plan does not restore the score</a>, so the only route LinkedIn points at is a Sales Navigator seat. LinkedIn's argument that chasing a score pulls sellers away from closing is not a stupid argument, and plenty of practitioners have made the same point for years.</p>
+<h2>What this means if you are not a salesperson</h2>
+<p>Here is where LinkedIn's answer stops working.</p>
+<p>Every replacement on that page assumes a B2B seller inside a sales organization with a Sales Navigator license. The executive building credibility before a funding round is not that. Neither is the consultant whose pipeline is inbound, the founder who is the company's only public face or the job seeker trying to understand why a well-written profile is not getting replies.</p>
+<p>Those people used SSI for something it was never designed for and still did adequately. It was the only free, official, repeatable read LinkedIn offered on whether a profile was working. It was a bad instrument, and <a href="https://www.linkedscore.app/blog/what-is-the-social-selling-index">half of it really measured how much time you spent on the platform</a>, but it existed and it was consistent.</p>
+<p>LinkedIn's position, stated on its own page, is that this audience should stop scoring and start selling. For anyone whose job is not selling, that is not advice. It is a shrug.</p>
+<p>So the honest guidance has not changed since the score went dark. <a href="https://www.linkedscore.app/blog/linkedin-ssi-alternatives">Stop looking for a single number to replace it</a>, because LinkedIn has said clearly that it is not building one. Track the handful of signals that actually move: whether the right people find the profile, whether they reply and whether the positioning says the thing it is supposed to say. Those were always the outcomes the score was a proxy for.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Why did LinkedIn discontinue the SSI?</strong> By LinkedIn's own account, because "the SSI score no longer accurately reflects the modern sales environment" as buyer behavior and sales cycles change. The statement appears on LinkedIn's SSI resource page, now titled "From SSI to AI."</p>
+<p><strong>Did LinkedIn ever announce it?</strong> Not as a retirement notice. There is no dated help-center announcement and no release note. The explanation lives on a marketing resource page that carries no publication date.</p>
+<p><strong>What replaced the SSI?</strong> No score replaced it. LinkedIn points users toward Sales Navigator AI features such as Lead Finder, Message Assist and Relationship Map, which are tools rather than a measurement.</p>
+<p><strong>When exactly did access end?</strong> LinkedIn has published no cutoff date. Accounts lost access at different times, and the notice wording changed from a warning about future discontinuation to a past-tense statement that access has been discontinued.</p>
+<p><strong>Can Sales Navigator subscribers still see a score?</strong> LinkedIn's notice describes SSI as a Sales Navigator feature, and some long-standing license holders report the page still works for them. LinkedScore does not hold a Sales Navigator license, so that claim is untested here. LinkedIn's own Sales Navigator plan comparison does not list SSI as a feature of any tier.</p>
+<h2>Where that leaves you</h2>
+<p>LinkedIn answered the question. The answer is that it no longer believes a single score should describe a professional's presence, and it is not going to publish one.</p>
+<p>That is a defensible position for a sales platform. It is a less comfortable one for the many people who are not selling anything and still need to know whether their profile is doing its job.</p>
+<p>If that is the actual question, it is worth an hour with someone who reads profiles for a living. <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a> and get a straight read on what your positioning is currently saying.</p>`
+},
+{
 slug: "linkedin-premium-ssi-access",
 title: `Will LinkedIn Premium Bring Your SSI Back?`,
 metaTitle: "SSI Access Discontinued: Will LinkedIn Premium Restore It?",
