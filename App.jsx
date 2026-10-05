@@ -2518,7 +2518,11 @@ export default function App() {
     if (!userData.firstName.trim()) e.firstName = "Required";
     if (!userData.lastName.trim()) e.lastName = "Required";
     if (!userData.jobTitle.trim()) e.jobTitle = "Required";
-    if (!userData.linkedinUrl.trim()||!userData.linkedinUrl.toLowerCase().includes("linkedin.com/in/")) e.linkedinUrl = "Enter your LinkedIn profile URL (linkedin.com/in/...)";
+    // The profile URL only feeds the lead row (save-plan users.linkedin_url); the engine
+    // never reads it, so an organic visitor who does not want to paste it is not blocked.
+    // Validate the format only when something was typed.
+    const lu = userData.linkedinUrl.trim();
+    if (lu && !lu.toLowerCase().includes("linkedin.com/in/")) e.linkedinUrl = "Enter your LinkedIn profile URL (linkedin.com/in/...)";
     setFormErrors(e);
     if (Object.keys(e).length) {
       // On a phone the submit button sits below the fold; without this the tap
@@ -3278,7 +3282,7 @@ export default function App() {
             {formErrors.jobTitle&&<p style={s.err}>{formErrors.jobTitle}</p>}
           </div>
           <div>
-            <label style={s.label}>{t("lbl_linkedin")}</label>
+            <label style={s.label}>{t("lbl_linkedin")} <span style={{ color:"#c8c7dd", fontWeight:400 }}>{t("ssi_optional")}</span></label>
             <input className={`field-input${formErrors.linkedinUrl?" error":""}`} value={userData.linkedinUrl} onChange={e=>setUserData({...userData,linkedinUrl:e.target.value})} placeholder="linkedin.com/in/yourname" />
             {formErrors.linkedinUrl&&<p style={s.err}>{formErrors.linkedinUrl}</p>}
           </div>
