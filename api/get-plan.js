@@ -2,14 +2,19 @@ export const config = { maxDuration: 30 };
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 
+// Unlock attempts are cheap (one Supabase read + patch) and need a valid plan UUID, so
+// the limiter is keyed per plan and per browser, with a generous per-IP ceiling: a
+// classroom or an office shares one IP, and the old 20/min per IP would have turned a
+// professor saying "now enter your email" into a wall of 429s (same failure class as
+// the generate-plan limiter fixed in PR #56).
 const hits = new Map();
-function rateOk(ip) {
+function rateOk(key, max) {
   const now = Date.now();
   const windowMs = 60000;
-  const max = 20;
-  const arr = (hits.get(ip) || []).filter((t) => now - t < windowMs);
+  const arr = (hits.get(key) || []).filter((t) => now - t < windowMs);
   arr.push(now);
-  hits.set(ip, arr);
+  hits.set(key, arr);
+  if (hits.size > 5000) { for (const [k, v] of hits) { if (!v.length || now - v[v.length - 1] > windowMs) hits.delete(k); } }
   return arr.length <= max;
 }
 
@@ -34,7 +39,7 @@ export default async function handler(req, res) {
 
   const fwd = req.headers["x-forwarded-for"] || "";
   const ip = (typeof fwd === "string" ? fwd.split(",")[0].trim() : "") || "unknown";
-  if (!rateOk(ip)) return res.status(429).json({ error: "Too many requests" });
+  if (!rateOk("ip:" + ip, 150)) return res.status(429).json({ error: "Too many requests" });
 
   const body = req.body || {};
   const planId = body.planId;
@@ -42,6 +47,10 @@ export default async function handler(req, res) {
 
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!planId || typeof planId !== "string" || !UUID_RE.test(planId)) return res.status(400).json({ error: "Missing planId" });
+  if (!rateOk("plan:" + planId, 12)) return res.status(429).json({ error: "Too many requests" });
+  const rawClient = req.headers["x-client-id"];
+  const clientId = (typeof rawClient === "string" && /^[a-zA-Z0-9-]{8,64}$/.test(rawClient)) ? rawClient : null;
+  if (clientId && !rateOk("client:" + clientId, 30)) return res.status(429).json({ error: "Too many requests" });
   if (!validEmail(email)) return res.status(400).json({ error: "A valid email is required" });
   const cleanEmail = email.trim().toLowerCase();
 
