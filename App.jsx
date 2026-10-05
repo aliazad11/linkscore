@@ -2709,9 +2709,11 @@ export default function App() {
         });
       }
       if (pid && pid._error) throw new Error(pid._error);
+      let gateClientId = "";
+      try { gateClientId = localStorage.getItem("ls_client_v1") || ""; } catch (e) {}
       const gateRes = await fetch("/api/get-plan", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "x-client-id": gateClientId },
         body: JSON.stringify({ planId: pid, email: email })
       });
       if (!gateRes.ok) { const gd = await gateRes.json().catch(()=>({})); throw new Error((gd && gd.error) || ("HTTP " + gateRes.status)); }
@@ -2794,6 +2796,9 @@ export default function App() {
         } catch(e) { console.log("Email error:", e); }
       })();
     } catch(e) {
+      // Until now a failed unlock left no trace in analytics, so "generated but never
+      // unlocked" could not be told apart from "tried to unlock and hit an error".
+      track("unlock_failed", { cohort, planId: (planRef.current && !planRef.current._error) ? planRef.current : null, error: String((e && e.message) || "").slice(0, 120) });
       setEmailError(localizeError(e && e.message));
     }
     clearTimeout(slowTimer);
