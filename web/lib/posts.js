@@ -1,5 +1,65 @@
 const posts = [
 {
+slug: "linkedin-page-pin-post-removed",
+title: `You Can No Longer Pin a Post on Your LinkedIn Company Page`,
+metaTitle: "How to Pin a Post on a LinkedIn Company Page (You Cannot)",
+date: "2026-10-12",
+image: "/linkedin-page-pin-post-removed.jpg?v=20261012",
+excerpt: `LinkedIn removed post pinning from Pages and never fixed its own help center. What replaced it holds six posts and refuses jobs, events and targeted posts.`,
+html: `<p>Search for how to pin a post on a LinkedIn company page and the results hand you a click path. Page posts. The Posts tab. The More icon. Pin to top. LinkedIn's own help center still publishes that procedure in full.</p>
+<p>Open your admin view and follow it. The menu item is not there.</p>
+<h2>How to pin a post on a LinkedIn company page</h2>
+<p>You cannot. LinkedIn removed post pinning from Pages and documents the removal itself. The replacement is the Featured section. It holds up to six posts, sits on the Home tab instead of the top of the Posts feed and cannot hold job posts, event posts or targeted posts.</p>
+<p>The clearest statement sits on the LinkedIn Help article "Troubleshoot posts on your LinkedIn Page" (answer a732049), stamped "Last updated: 11 months ago" when it was checked on September 29, 2026. Under the heading "Can't pin posts" it reads, verbatim:</p>
+<p>"You can no longer pin posts on your LinkedIn Page. All posts that you had pinned earlier are now available from the Featured section on your Home tab of your LinkedIn Page. As an admin, although you can't pin any posts, you can feature up to six posts on your LinkedIn Page."</p>
+<p>Pinning is gone, in the present tense, on LinkedIn's own domain. The old pins moved into Featured.</p>
+<h2>Why the help center still shows you the Pin to top button</h2>
+<p>Because LinkedIn never cleaned up the old article. "Pin posts on your LinkedIn Page" (answer a547158) is still live, still stamped "Last updated: 1 year ago" and it contradicts itself on a single screen.</p>
+<p>At the top sits a banner: "The ability to pin a post on your LinkedIn Page is being discontinued. You can instead feature a post to help members find and engage with your Page posts more easily."</p>
+<p>Directly below that banner the article prints the complete working procedure. It still tells admins to open the Page super or content admin view, click Page posts, click the Posts tab, click the More icon and select "Pin to top" or "Un-pin from top". It still prints the old limits in one breath: "As an admin, you can pin a maximum of one post at a time. To highlight more than one post, you can feature up to three posts in the Featured section of your Page."</p>
+<p>Both halves matter. One says the feature is being discontinued. The other teaches a dead procedure and an outdated number. That stale article is served across five of LinkedIn's help centers, checked on September 29, 2026: the main LinkedIn Help, Marketing Solutions, Recruiter, Learning and Sales Navigator. The obsolete instructions are easy to land on from any of them.</p>
+<p>The contradiction resolves on the timestamps, all read on September 29, 2026:</p>
+<ul>
+<li>a547158, 1 year ago: pinning "is being discontinued".</li>
+<li>a732049, 11 months ago: "You can no longer pin posts".</li>
+<li>a567075, the Page posts FAQ, 2 months ago: pinning is absent entirely. Asked how to get more engagement, it answers that "you can feature posts in your page's Featured section, or boost the post."</li>
+<li>a1658061, 1 month ago: featuring only, six posts, exclusions spelled out.</li>
+</ul>
+<p>The two most recently updated of the four describe a product with no pin in it. The page that still describes pinning carries the oldest stamp of the four. It is an artifact, not instructions.</p>
+<h2>No announcement turned up</h2>
+<p>No changelog entry and no product blog post turned up for this change. Word of it came from admins who opened the menu and found an absence.</p>
+<p>A page admin posted on October 16, 2025 at 14:32 UTC that LinkedIn appeared to have removed the pin post feature for company pages, describing the admin menu as "no option to pin, no unpin, nothing." That sighting sits alongside the 11-month stamp the troubleshooting article carried on September 29, 2026.</p>
+<p>This is not a test or a pilot that might be reversed. It is a shipped removal, stated in the present tense on LinkedIn's troubleshooting page and corroborated by two more recently maintained pages that describe only featuring. The only thing pending is LinkedIn correcting its own stale article, so archive those pages if you need the contradiction on record. LinkedIn has form here. It retired the Social Selling Index dashboard on the member side with similar quiet, covered in <a href="https://www.linkedscore.app/blog/linkedin-ssi-discontinued">the SSI discontinuation timeline</a>.</p>
+<h2>Featured is not a renamed pin</h2>
+<p>Four differences decide whether Featured can do the pin's job.</p>
+<p><strong>Placement.</strong> A pinned post sat at the top of the Posts feed, in the stream a visitor scrolls. LinkedIn describes Featured differently: "Featured posts appear at the top of your page's Home tab in the Featured section." Different tab, different module.</p>
+<p><strong>Count.</strong> The current figure is six. a1658061, the most recently updated of the four, opens with "As a LinkedIn Page super admin, you can feature up to six posts to help members find and engage with your page posts more easily." Anything still repeating three is quoting the stale page.</p>
+<p><strong>Who can do it.</strong> The pinning procedure opened with "Go to your Page super or content admin view." The featuring procedure opens with "Go to your page super admin view." If a content admin owned the pinned post, check whether they still hold the permission.</p>
+<p><strong>What it can hold.</strong> This is the one that hurts.</p>
+<h2>The three exclusions: job posts, event posts and targeted posts</h2>
+<p>LinkedIn states it plainly on a1658061, under Important to know: "You cannot feature job posts, event posts, and targeted posts on your LinkedIn Page."</p>
+<p>Read that list against what a page would want kept permanently visible. Open roles. Webinar and conference registration. Region-specific announcements. None of the three can move into Featured.</p>
+<p>A second gotcha sits on the same page: "Using a post URL from a profile will feature the post on your personal profile, and not on your page."</p>
+<h2>The replacement play, by post type</h2>
+<p><strong>A flagship announcement.</strong> Publish it as an ordinary Page post, untargeted, then feature it. LinkedIn's own steps run from the page super admin view: Edit page, the Featured tab, Manage featured, then Select below a post. The faster route is the More icon on the post, then Feature.</p>
+<p><strong>An open role.</strong> The job post cannot be featured. Write a normal Page post about the role with the link to the job inside it and feature that post instead. You lose the native job unit and gain a permanent slot.</p>
+<p><strong>An event.</strong> Same pattern. Publish a standard post pointing to the event and feature that.</p>
+<p><strong>A targeted post.</strong> Targeting and permanence are now mutually exclusive on a Page. That tension predates the change: the old pinning article warned that "If you target a post to a specific audience, the targeting will be disregarded if you pin the post to the top of the Page." Featured refuses the post outright. If reach to one segment matters more, target it and let it flow down the feed. If permanence matters more, publish an untargeted version and feature that.</p>
+<p>The troubleshooting article also lists why Page posts stop being visible, including that "Your post was created over a year ago or your Page has exceeded 500 posts." Audit the six slots on a schedule.</p>
+<h2>Page mechanics are only half of it</h2>
+<p>A page with six perfectly chosen featured posts still converts through individuals. If the executives attached to it get profile traffic and nothing happens, the problem sits on the <a href="https://www.linkedscore.app/blog/linkedin-profile-views-but-no-messages">profile views without messages</a> side, not the Page side. And before anyone fakes a pin by reposting the same announcement weekly, read what <a href="https://www.linkedscore.app/blog/creative-linkedin-tactics-that-kill-your-authority">tactics like that cost in authority</a>.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Can you still pin a post on a LinkedIn company page?</strong> No. LinkedIn's troubleshooting article states "You can no longer pin posts on your LinkedIn Page." Pin to top and Un-pin from top are gone from the admin view.</p>
+<p><strong>How many posts can a LinkedIn Page feature?</strong> Six. LinkedIn's featuring article, the most recently updated cited here, addresses a Page super admin and says you "can feature up to six posts". Three appears on the stale pinning article.</p>
+<p><strong>Why does LinkedIn's help center still explain how to pin?</strong> Because the old article was never removed. It carries a banner saying pinning is being discontinued while printing the full click path below it, and the same article is served across five of LinkedIn's help centers. Anything summarizing it inherits the error.</p>
+<p><strong>What happened to posts that were already pinned?</strong> LinkedIn migrated them. Previously pinned posts "are now available from the Featured section on your Home tab of your LinkedIn Page." Nothing was deleted. The placement moved.</p>
+<p><strong>Can you feature a job post or an event post?</strong> No. LinkedIn states that job posts, event posts and targeted posts cannot be featured. Publish a standard Page post linking to the job or the event, then feature that.</p>
+<h2>The short version</h2>
+<p>Pinning is gone from LinkedIn Pages. It left without an announcement around October 2025, LinkedIn still publishes the dead procedure in five of its help centers and the replacement is narrower than the thing it replaced. Six slots instead of a maximum of one pin is the upgrade. Losing job posts, event posts and targeted posts from the permanent shelf is the downgrade.</p>
+<p>Audit your Featured section this week. Check who still holds the permission to change it, replace anything older than a year and decide, post by post, whether targeting or permanence wins.</p>
+<p>Want a second pair of eyes on how your page and the profiles around it perform? <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a>.</p>`
+},
+{
 slug: "linkedin-collaborative-posts",
 title: `LinkedIn Collaborative Posts: Every Rule, Who Has Them and What Collaborators See`,
 metaTitle: "LinkedIn Collaborative Posts: Rules, Rollout and Analytics",
