@@ -1,5 +1,59 @@
 const posts = [
 {
+slug: "are-linkedin-impressions-accurate",
+title: `LinkedIn Changed How Mobile Ad Impressions Are Counted in August 2026`,
+metaTitle: "Are LinkedIn Impressions Accurate? The Aug 2026 Ad Change",
+date: "2026-10-14",
+image: "/are-linkedin-impressions-accurate.jpg?v=20261014",
+excerpt: `LinkedIn changed how mobile ad impressions are counted in August 2026 and page one still prints the old rule. What LinkedIn's own help pages really say.`,
+html: `<p>LinkedIn's Sponsored Content viewability help page carries one dated sentence: "In August 2026, we're evolving how Sponsored Content views or impressions on mobile devices are counted."</p>
+<p>Search for how LinkedIn counts impressions and page one returns 2026 guides that still print the rule LinkedIn replaced. The change is small and checkable, and it exposes something bigger: your impression count is not one metric measured one way.</p>
+<h2>Are LinkedIn impressions accurate?</h2>
+<p>LinkedIn impressions are estimates, not counts, and LinkedIn says so in its own documentation. Three help pages carry the hedge. The member post analytics page states "Please note that the numbers in your post analytics are estimates and may not be precise." The Page content analytics page defines the metric, on its desktop tab, as "The number of times your post was shown on LinkedIn. This number is an estimate and may not be precise." The Creator analytics FAQ is broader still: "Note: All numbers displayed are estimates and may not be precise."</p>
+<p>Underneath the hedge sits a second problem. Paid and organic impressions are defined differently. Desktop and mobile are measured against different thresholds, and LinkedIn changed the mobile Sponsored Content threshold in August 2026. An impression total is directionally useful and not precise at the unit level. Report it as a trend, not a hard figure.</p>
+<h2>What LinkedIn changed in August 2026</h2>
+<p>The new mobile rule, quoted from LinkedIn's help page: "For mobile devices, we'll count an impression event if either (a) at least 50% of the ad, or (b) at least 300dp of the ad, is in view for 300 milliseconds (ms)."</p>
+<p>The 300dp clause is the new part. LinkedIn's stated reason: "This update provides a more accurate way to count impressions for ads, specifically for content that exceeds two times the height of the device." On desktop, LinkedIn's wording is that "there's currently no change" and it still counts an impression event "if at least 50% of the ad is in view for 1 second." LinkedIn also describes the mobile change in the present progressive, so read the rollout as in progress rather than closed.</p>
+<p>LinkedIn fences the blast radius on the same page. The measurement change "doesn't impact the frequency with which your ads are shown, the number of member accounts that have been impressed by your ads, or engagement with your content in the news feed." What moved is the count, not the delivery.</p>
+<p>This is the Sponsored Content standard, so it governs paid placements, not your organic posts. The same page keeps the old rule on record: "in March 2018, we had started counting impressions for Sponsored Content when your Sponsored Content ad was at least 50% in view on a device screen or browser window for at least one second on desktop or 300ms on mobile." That 2018 sentence is what the guides on page one still quote as current.</p>
+<p>No entry for the change appears on LinkedIn's Recent Marketing API Changes page. It sits on a help page instead. LinkedIn has form here: the public Social Selling Index dashboard went the same quiet way, which is why <a href="https://www.linkedscore.app/blog/linkedin-ssi-discontinued">LinkedIn's SSI discontinuation</a> caught the industry flat-footed.</p>
+<h2>The ad impression fires when the ad leaves the screen</h2>
+<p>One line on the same page inverts the usual picture: "Keep in mind, impression events are fired once the ad is no longer 50% in view for desktop or 50% or 300dp in view for mobile."</p>
+<p>The event is logged on exit, not on entry. What gets counted is a completed exposure, which depends on scroll behavior, not on whether anyone read a word. The same page notes one exception: "For Sponsored Content ads shown on the LinkedIn Audience Network, an impression is counted when the ad renders on the partner's page."</p>
+<h2>Desktop and mobile are not the same metric</h2>
+<p>For Sponsored Content, the mobile bar is 300 milliseconds and the desktop bar is a full second. Mobile clears it in under a third of the time desktop needs, for identical creative. So if your audience skews mobile and a peer's skews desktop, your Sponsored Content impression totals were never like for like.</p>
+<p>Organic carries its own split inside a single help page. On LinkedIn's Page content analytics page the desktop tab defines impressions with no viewability threshold at all, while the mobile tab attaches a duration threshold and a click. Same page, two definitions.</p>
+<p>Methodology moves numbers too. In October 2025, LinkedIn told Marketing API partners that an accuracy fix to the Ad Analytics dwell time metric meant "reported Dwell Time may increase by approximately 25%."</p>
+<h2>A click counts as an impression, on one page at least</h2>
+<p>LinkedIn's Page content analytics help page defines impressions, in its mobile section, this way: "Shows the number of views your content receives when it's at least 50 percent on the screen for 300 milliseconds or more, or when it's clicked."</p>
+<p>Read that last clause again. A click registers an impression with no viewing threshold to clear. The wording sits on the mobile tab of that page, so do not generalize it to every LinkedIn surface.</p>
+<p>The member side is stranger still. LinkedIn's post analytics page for individual members sets no viewability threshold at all. Its definition runs nine words: "Number of times your post was shown on LinkedIn." No percentage, no duration. The 50 percent for 300 milliseconds rule that page one attaches to personal posts does not appear on the page describing personal posts.</p>
+<h2>What happened the last time the count was wrong</h2>
+<p>In November 2020, LinkedIn disclosed that it had found and fixed two measurement issues that may have overreported Sponsored Content impression and video view metrics. Reporting at the time put the scope at more than 418,000 customers over a period exceeding two years, with more than 90 percent seeing an impact of less than $25.</p>
+<p>Advertisers led by TopDevz and Noirefy filed a class action. LinkedIn agreed to a settlement fund of $6,625,000, and the court granted final approval on January 28, 2025, covering United States advertisers who bought LinkedIn advertising between January 1, 2015 and May 31, 2023.</p>
+<p>None of that means your current numbers are inflated. It means the figure is code output. Code has bugs, and the platform itself caught these.</p>
+<h2>What to report beside the impression total</h2>
+<p>LinkedScore's founder, Ali Azad, reported more than 3.5 million impressions as the headline number for a corporate executive program. It was the right headline for that room and the wrong number to be judged on alone. Four metrics in LinkedIn's member post analytics carry tighter definitions:</p>
+<ul>
+<li><strong>Members reached.</strong> Distinct members and Pages that saw your post. LinkedIn notes it "does not include repeat views."</li>
+<li><strong>Profile viewers from this post.</strong> Distinct members and Page admins who viewed your profile from the post. An action, not an exposure.</li>
+<li><strong>Followers gained from this post.</strong> A result attributable to one piece of content.</li>
+<li><strong>Visits to links in this post.</strong> Clicks on an external link, including repeat clicks.</li>
+</ul>
+<p>Video counts differently. LinkedIn's member analytics page defines video views as "The total number of times your video was watched for two or more continuous seconds, including replays." Several ranking guides say three seconds. LinkedIn's page says two.</p>
+<p>The board deck rule is simple. Impressions are context. The four metrics above are results. State the pull date, label the total an estimate and the slide survives the question. If your pattern is big impression counts and no pipeline, the diagnosis is in <a href="https://www.linkedscore.app/blog/linkedin-profile-views-but-no-messages">profile views but no messages</a>, and the replacement metrics are in the <a href="https://www.linkedscore.app/blog/linkedin-ssi-alternatives">LinkedIn SSI alternatives</a> breakdown.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Are LinkedIn impressions accurate?</strong> No, and LinkedIn does not claim they are. Its help pages call the numbers estimates that "may not be precise." They are reliable for direction, unreliable at the individual unit and defined differently across paid, organic, desktop and mobile.</p>
+<p><strong>What changed about LinkedIn impressions in August 2026?</strong> LinkedIn added a second qualifying condition for Sponsored Content on mobile. An impression now counts if either at least 50 percent of the ad or at least 300dp of the ad is in view for 300 milliseconds. On desktop, LinkedIn says there is currently no change, so the bar stays at 50 percent for 1 second.</p>
+<p><strong>Does a click count as a LinkedIn impression?</strong> On the mobile section of LinkedIn's Page content analytics help page, yes. The definition ends with "or when it's clicked." That wording is specific to that page, so treat it as documented for Page content analytics, not as a universal rule.</p>
+<p><strong>Is the 50 percent for 300 milliseconds rule still correct?</strong> Only in places. It is no longer the complete Sponsored Content mobile rule after August 2026. It was never the desktop rule, and it does not appear on LinkedIn's post analytics page for members.</p>
+<p><strong>Why are your impressions higher than your reach?</strong> Impressions count every display, including repeats to the same person. Members reached counts distinct members and Pages and excludes repeat views. One viewer who sees your post five times is five impressions and one member reached.</p>
+<h2>The number is fine. The certainty is not.</h2>
+<p>Impressions are a real signal of distribution. They are also an estimate, produced by a rule LinkedIn edits on a help page and applies differently to paid and organic content. Presenting it as a hard result means standing behind something LinkedIn's own documentation will not.</p>
+<p>The fix takes one line in your reporting template: label the figure an estimate, date it and put an outcome metric beside it. That habit also keeps people off the <a href="https://www.linkedscore.app/blog/creative-linkedin-tactics-that-kill-your-authority">tactics that quietly kill their authority</a>.</p>
+<p>Want your LinkedIn numbers read against the metrics that predict pipeline? <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a>.</p>`
+},
+{
 slug: "linkedin-page-pin-post-removed",
 title: `You Can No Longer Pin a Post on Your LinkedIn Company Page`,
 metaTitle: "How to Pin a Post on a LinkedIn Company Page (You Cannot)",
