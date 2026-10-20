@@ -2,6 +2,7 @@ export const config = { maxDuration: 300 };
 
 import { verifyToken, allowedOrigin } from "./_auth.js";
 import { durableRateOk, hashKey } from "./_ratelimit.js";
+import { todayContext } from "./_date.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 
@@ -153,7 +154,7 @@ async function scrubFabrications(messages, plan, apiKey, signal) {
         // output truncated, failed to parse, and silently returned the UNSCRUBBED plan —
         // quietly disabling the anti-fabrication pass exactly on the biggest reports.
         max_tokens: 16000,
-        system: "You are a strict fact-checker and JSON API. Output ONLY a raw JSON object. Start with { end with }.",
+        system: "You are a strict fact-checker and JSON API. Output ONLY a raw JSON object. Start with { end with }. " + todayContext(),
         messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }, { role: "assistant", content: "{" }],
       }),
       signal,
@@ -310,7 +311,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model: "claude-sonnet-4-5-20250929",
           max_tokens: 24000,
-          system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }.",
+          system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }. " + todayContext(),
           messages: messagesWithPrefill,
         }),
         signal: controller.signal,

@@ -5,6 +5,7 @@
 // plus a plain-English note on why it goes there. Signed-in only (paid LLM calls). Node runtime.
 import { readSession, allowedOrigin } from "./_auth.js";
 import { durableRateOk } from "./_ratelimit.js";
+import { todayContext } from "./_date.js";
 
 // In-memory backstop (per lambda instance) under the durable per-account cap below:
 // a free magic-link account must not be a scriptable proxy onto our Anthropic key.
@@ -62,7 +63,7 @@ async function callClaude(key, system, content, maxTokens) {
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system, messages: [{ role: "user", content }] }),
+    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, system: system + " " + todayContext(), messages: [{ role: "user", content }] }),
   });
   if (!r.ok) { const e = await r.text().catch(() => ""); console.error("[polish-post] " + r.status + " " + e); return null; }
   const d = await r.json().catch(() => null);

@@ -7,6 +7,8 @@ export const config = { maxDuration: 60 };
 // persist or forward the headline anywhere except the single Anthropic call
 // that scores it. Error logs carry status codes only, never the input.
 
+import { todayContext } from "./_date.js";
+
 const GOALS = ["Clients", "A better job", "Investors", "Followers"];
 
 // Best-effort in-memory throttle: 10 requests per IP per 10 minutes. It lives
@@ -90,7 +92,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "claude-sonnet-4-5-20250929",
         max_tokens: 700,
-        system: "You are a strict JSON API. Output ONLY a raw JSON object. Start with { and end with }.",
+        system: "You are a strict JSON API. Output ONLY a raw JSON object. Start with { and end with }. " + todayContext(),
         messages: [
           { role: "user", content: [{ type: "text", text: buildPrompt(headline, goal) }] },
           { role: "assistant", content: "{" },
