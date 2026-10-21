@@ -405,6 +405,11 @@ export default async function handler(req, res) {
     const rawVf = (hadPostImages && plan && typeof plan.voice_fingerprint === "string") ? plan.voice_fingerprint.trim() : "";
     const voiceFingerprint = (rawVf && rawVf.length >= 20 && !NO_VOICE.test(rawVf)) ? rawVf.slice(0, 1500) : null;
     if (plan && typeof plan === "object") delete plan.voice_fingerprint;
+    // Underscore keys are server-owned stamps (_reqkey, _cohort, _lang, _had_*, and the
+    // payment stamp _paid that only api/stripe-webhook.js writes). The prompt is
+    // client-controlled, so a model-emitted underscore key must never reach storage:
+    // strip them all here, before the server adds its own below.
+    if (plan && typeof plan === "object") { for (const k of Object.keys(plan)) if (k.charAt(0) === "_") delete plan[k]; }
     // Tag the stored plan with the run's request key so a refreshed client replays
     // this result instead of paying for a second generation (see idempotency above).
     if (reqKey && plan && typeof plan === "object") plan._reqkey = reqKey;

@@ -14,9 +14,9 @@ const HREFLANG = LANDING_LOCALES
 
 // English source strings that get swapped for localized copies in each page's <head>.
 // Must match index.html's <title> exactly — the locale swap is a literal string replace.
-const EN_TITLE = 'LinkedScore | Free AI LinkedIn Profile Analyzer & Score'
-const EN_DESC = 'Free AI LinkedIn profile analyzer: get your LinkedIn Score, an SSI breakdown and a personalized growth plan with profile rewrites and a 30-day roadmap.'
-const EN_DESC_SHORT = 'Free AI LinkedIn profile analyzer: your LinkedIn Score and growth plan.'
+const EN_TITLE = 'LinkedScore | AI LinkedIn Profile Analyzer & Score'
+const EN_DESC = 'AI LinkedIn profile analyzer: get your LinkedIn Score, an SSI breakdown and a personalized growth plan with profile rewrites and a 30-day roadmap.'
+const EN_DESC_SHORT = 'AI LinkedIn profile analyzer: your LinkedIn Score and growth plan.'
 
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 

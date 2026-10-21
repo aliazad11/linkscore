@@ -320,7 +320,7 @@ html: `<p>LinkedIn collaborative posts were announced globally on July 23, 2026.
 
 <p>One more thing the feature does not change. The LinkedScore reading of the platform has not moved: publish rarely and stand behind every post. A collaborative post is a credibility signal, a point one commenter on the launch announcement made and PPC Land recorded, and credibility signals get cheaper every time they are used. Five names on a post nobody needed is <a href="/blog/creative-linkedin-tactics-that-kill-your-authority">the kind of tactic that reads as noise</a>. One name that belongs there is the whole point.</p>
 
-<p>If you want to know what a new reader sees when a collaborative post lands them on your profile, <a href="/">LinkedScore</a> reads it the way a stranger does and returns a score and a concrete plan, free, before any email step. And if you would rather talk it through, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
+<p>If you want to know what a new reader sees when a collaborative post lands them on your profile, <a href="/">LinkedScore</a> reads it the way a stranger does and returns a score and a concrete plan. And if you would rather talk it through, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
 
 <h2>Frequently asked questions</h2>
 
@@ -561,7 +561,7 @@ html: `<p>If your Social Selling Index page has gone dark, the obvious next thou
 
 <p>The better move is to stop shopping for a replacement number. The <a href="/blog/linkedin-ssi-alternatives">fifteen minute monthly audit</a> that replaces it is built on four signals anyone can check for free, and the short version is that the old score measured attendance while those four measure whether the right people believe you. For the background on what SSI actually counted, there is <a href="/blog/what-is-the-social-selling-index">the full pillar breakdown</a>.</p>
 
-<p>And for a read on your profile that does not depend on any LinkedIn score, that is what <a href="/">LinkedScore</a> does. It analyzes your profile and what you share with it, then returns a score and a concrete plan. Free, no card and you see a preview before the email step. It is not an SSI clone: nothing in it rewards being louder.</p>
+<p>And for a read on your profile that does not depend on any LinkedIn score, that is what <a href="/">LinkedScore</a> does. It analyzes your profile and what you share with it, then returns a score and a concrete plan. You see a preview before you unlock the full report. It is not an SSI clone: nothing in it rewards being louder.</p>
 
 <p>If LinkedIn publishes an actual announcement, or if a newly purchased Sales Navigator seat turns out to restore the score, this page gets an update note as soon as that can be verified.</p>
 
@@ -625,13 +625,13 @@ html: `<p>Free access to the Social Selling Index is gone, and it is not only fr
 
 <h2>Where LinkedScore fits, honestly</h2>
 
-<p>The four signals above are free and manual, and the one thing they cannot do is read your profile the way a stranger reads it, because you already know what you meant. That is the gap <a href="/">LinkedScore</a> fills. It analyzes your profile and what you share with it, then returns a score and a concrete plan. Free, no card and you see a preview of your result before the email step that unlocks the full report. It is not an SSI clone: the LinkedIn Score is computed from your profile rather than your SSI, there is no activity meter inside it and nothing in it rewards being louder. If you still have your four pillar numbers from a Sales Navigator seat it will read those too, but it does not need them.</p>
+<p>The four signals above are free and manual, and the one thing they cannot do is read your profile the way a stranger reads it, because you already know what you meant. That is the gap <a href="/">LinkedScore</a> fills. It analyzes your profile and what you share with it, then returns a score and a concrete plan. You see a preview of your result before you unlock the full report. It is not an SSI clone: the LinkedIn Score is computed from your profile rather than your SSI, there is no activity meter inside it and nothing in it rewards being louder. If you still have your four pillar numbers from a Sales Navigator seat it will read those too, but it does not need them.</p>
 
 <p>And if you would rather walk through the result with Ali, you can <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session</a>.</p>
 
 <h2>Frequently asked questions</h2>
 
-<p><strong>Is there a free replacement for the LinkedIn SSI?</strong><br />LinkedIn has not shipped one and has announced none. What remains free is LinkedIn's own post and profile analytics, the four manual signals above and third-party analyzers, including this one. Nothing free recreates the old 0 to 100 number, and given what that number measured, nothing should.</p>
+<p><strong>Is there a free replacement for the LinkedIn SSI?</strong><br />LinkedIn has not shipped one and has announced none. What remains free is LinkedIn's own post and profile analytics and the four manual signals above. Nothing free recreates the old 0 to 100 number, and given what that number measured, nothing should.</p>
 
 <p><strong>Will LinkedIn Premium bring my SSI back?</strong><br />No. LinkedIn's Premium plan comparison does not mention the Social Selling Index, Sales Navigator or social selling on any tier, and a fully unlocked Premium All-in-One account still shows the lockout message. The evidence is in <a href="/blog/linkedin-premium-ssi-access">the piece on Premium and SSI access</a>.</p>
 
@@ -995,7 +995,7 @@ html: `<p>Start with a concession. "LinkedIn keyword affinity score" sounds comp
 
 <p>People hunt for secret metrics because a secret metric feels like a shortcut. Find the hidden score, reverse-engineer it, win. But LinkedIn does not reward people who decode formulas. It rewards people whose positioning is so coherent that every system, algorithmic or human, reaches the same conclusion about them. That is built with one clear phrase, placed where it counts, backed by one or two genuinely strong posts a month. Not with density spreadsheets.</p>
 
-<p>If you want to know how your actual profile reads, not how a made-up formula scores it, <a href="/">run the free LinkedScore analysis</a>. It reads your real profile and tells you where the gaps are. And if you want to work through it live, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with Ali</a>.</p>
+<p>If you want to know how your actual profile reads, not how a made-up formula scores it, <a href="/">run the LinkedScore analysis</a>. It reads your real profile and tells you where the gaps are. And if you want to work through it live, <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">book a session with Ali</a>.</p>
 
 <h2>Frequently asked questions</h2>
 
@@ -1043,7 +1043,7 @@ html: `<p>Every week someone opens their Social Selling Index for the first time
 <h2>Where SSI fits in an honest assessment</h2>
 <p>SSI is one useful, self-reported signal. It is not a verdict on your positioning, because it cannot read quality. It cannot tell you whether your About section actually says anything, whether your headline is findable or whether your last ten posts built trust or spent it.</p>
 <p>That is exactly how LinkedScore treats it. The analyzer takes your four pillar numbers if you still have them and reads them against your actual profile, and the gap between the two is usually the diagnosis. A 65 SSI sitting on top of an empty About section is one of the most common patterns in LinkedScore audits: plenty of activity, nothing underneath it. The score says active. The profile says unfinished.</p>
-<p>If you want that read on your own profile, <a href="/">run the free LinkedScore analysis</a>. Upload your profile, add your pillar scores if your dashboard still shows them, and you get an honest read of what your profile actually communicates, with the SSI breakdown alongside it when those numbers are available.</p>
+<p>If you want that read on your own profile, <a href="/">run the LinkedScore analysis</a>. Upload your profile, add your pillar scores if your dashboard still shows them, and you get an honest read of what your profile actually communicates, with the SSI breakdown alongside it when those numbers are available.</p>
 <h2>Frequently asked questions</h2>
 <p><strong>What is a good SSI score on LinkedIn?</strong><br />There is no official benchmark from LinkedIn. In practice, 40 to 60 is typical for an active professional, 60 to 75 signals consistent activity, and 75-plus is rare outside full-time sales roles. The pillar breakdown matters more than the total.</p>
 <p><strong>How do I check my SSI score?</strong><br />Visit <a href="https://www.linkedin.com/sales/ssi" target="_blank" rel="noopener noreferrer">linkedin.com/sales/ssi</a> while logged in to LinkedIn. Since the summer of 2026 accounts without a Sales Navigator license see a lockout message instead of a score, and Premium does not restore it. Read <a href="/blog/linkedin-ssi-discontinued">what LinkedIn did to the SSI</a> and <a href="/blog/linkedin-premium-ssi-access">whether any subscription brings it back</a>, then open yours.</p>

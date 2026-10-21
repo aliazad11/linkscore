@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
             killed by a hydration error. Served by the linkscore-app project via the rewrite,
             so blog views land in that project's dashboard under /blog paths. */}
         <script defer src="/_vercel/insights/script.js" />
-        <header className="site-header"><div className="container"><a href="https://www.linkedscore.app/" className="logo"><img src="/logo.png" alt="LinkedScore" /></a><nav className="header-nav"><a href="/blog" className="muted">Blog</a><a href="https://www.linkedscore.app/" className="cta cta-sm">Get your free score</a></nav></div></header>
+        <header className="site-header"><div className="container"><a href="https://www.linkedscore.app/" className="logo"><img src="/logo.png" alt="LinkedScore" /></a><nav className="header-nav"><a href="/blog" className="muted">Blog</a><a href="https://www.linkedscore.app/" className="cta cta-sm">Get your score</a></nav></div></header>
         {children}
         <footer><div className="container"><span>LinkedScore. Practical LinkedIn growth.</span><span className="foot-links"><a href="https://www.linkedscore.app/headline-analyzer">Headline Analyzer</a><a href="https://www.linkedscore.app/privacy.html">Privacy</a><a href="https://www.linkedscore.app/terms.html">Terms</a></span></div></footer>
       </body>

@@ -29,7 +29,7 @@ export default function Blog() {
       </p>
       <p>
         New articles land a few times a month. Start with any card below, or{" "}
-        <a href="https://www.linkedscore.app/" style={{ color: "var(--gold)" }}>run the free analysis</a>{" "}
+        <a href="https://www.linkedscore.app/" style={{ color: "var(--gold)" }}>run the analysis</a>{" "}
         first and read with your own score in hand.
       </p>
       <ul className="post-list">
