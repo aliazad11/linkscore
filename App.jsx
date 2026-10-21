@@ -2043,6 +2043,119 @@ export default function App() {
   const [accountTab, setAccountTab] = useState("overview"); // overview | create | reports
   const [cohort, setCohort] = useState(null);
   const planRef = useRef(null);
+  // Paid unlock (Stripe Payment Link). payCfg comes from /api/pay-status: the paywall is
+  // on only when the server can verify payments. payReturnRef holds the state of a
+  // visitor coming back from Stripe (?paid=1&session_id=...) until the report unlocks.
+  const [payCfg, setPayCfg] = useState(null);
+  const [payStage, setPayStage] = useState("");
+  const payReturnRef = useRef(null);
+  const payResumeDoneRef = useRef(false);
+  const payAutoRef = useRef(false);
+  const payPendingRef = useRef(false); // one honest "already paid?" wait, then the next click goes to checkout
+  const [payNeeded, setPayNeeded] = useState(false); // the server answered 402 even if /api/pay-status failed
+  const [payConsent, setPayConsent] = useState(false); // express consent to immediate delivery (withdrawal waiver)
+  const payStageRef = useRef("");
+  useEffect(() => { payStageRef.current = payStage; }, [payStage]);
+  useEffect(() => { setPayConsent(false); }, [planId]); // consent is per report, never pre-ticked
+  useEffect(() => {
+    // Cancel on Stripe + browser Back restores this page from bfcache with the button still
+    // "Opening secure checkout". Reset it and remember the checkout was abandoned, so the
+    // next click goes straight back to checkout instead of waiting for a payment.
+    const onShow = (e) => {
+      if (!e.persisted || payStageRef.current !== "redirect") return;
+      setPayStage(""); setLoading(false); setLoadingSlow(false);
+      // A session id is written only by a Stripe SUCCESS redirect, so that checkout was paid,
+      // not abandoned: never mark it, or the next click would charge the buyer again.
+      try { const p = JSON.parse(localStorage.getItem("ls_pay_v1") || "null"); if (p && !p.sessionId) localStorage.setItem("ls_pay_v1", JSON.stringify({ ...p, abandoned: true })); } catch (e2) {}
+      track("checkout_abandoned", {});
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
+  useEffect(() => {
+    let on = true;
+    fetch("/api/pay-status").then((r) => r.json()).then((d) => { if (on) setPayCfg(d && typeof d === "object" ? d : { enabled: false }); }).catch(() => { if (on) setPayCfg({ enabled: false }); });
+    return () => { on = false; };
+  }, []);
+  useEffect(() => {
+    let sp;
+    try { sp = new URLSearchParams(window.location.search); } catch (e) { return; }
+    const fromUrl = sp.get("paid") === "1";
+    const rawSid = fromUrl ? (sp.get("session_id") || "") : "";
+    let sessionId = /^cs_(live|test)_[A-Za-z0-9]+$/.test(rawSid) ? rawSid : "";
+    let pend = null;
+    try { pend = JSON.parse(localStorage.getItem("ls_pay_v1") || "null"); } catch (e) { pend = null; }
+    if (fromUrl) {
+      // Read once, then drop the query: Back or a refresh later must not re-run the unlock
+      // from history.
+      try { window.history.replaceState(window.history.state, "", window.location.pathname); } catch (e) {}
+      // A pending record that cannot belong to this session (an abandoned checkout, or one
+      // already bound to another session) must not decide which plan this payment unlocks.
+      if (pend && (pend.abandoned || (pend.sessionId && sessionId && pend.sessionId !== sessionId))) pend = null;
+    } else {
+      // No redirect params: resume only a recent return that was still confirming.
+      if (!pend || !pend.sessionId || pend.abandoned || Date.now() - (pend.ts || 0) > 2 * 60 * 60 * 1000) return;
+      sessionId = pend.sessionId;
+    }
+    if (!pend && !sessionId) return;
+    let done = null;
+    try { done = JSON.parse(localStorage.getItem("ls_paid_done_v1") || "null"); } catch (e) { done = null; }
+    if (done && sessionId && done.sid === sessionId) {
+      // Unlocked AND saved on this device: open the saved report instead of unlocking twice.
+      // A marker without a saved report means the save never finished: unlock again below
+      // (get-plan releases a paid or already-unlocked plan).
+      if (done.savedPlanId) { try { window.location.replace("/plan/" + done.savedPlanId); } catch (e) {} return; }
+      try { localStorage.removeItem("ls_paid_done_v1"); } catch (e) {}
+    }
+    if (fromUrl && sessionId) {
+      // Keep the session for a refresh mid-confirmation, also on a device with no pending
+      // checkout (the payment email opened in a fresh browser).
+      try { pend = { ...(pend || {}), sessionId, ts: (pend && pend.ts) || Date.now() }; localStorage.setItem("ls_pay_v1", JSON.stringify(pend)); } catch (e) {}
+    }
+    let snap = null;
+    try { snap = JSON.parse(localStorage.getItem("ls_funnel_v1") || "null"); } catch (e) { snap = null; }
+    const useSnapshot = !!(snap && pend && pend.planId && snap.planId === pend.planId);
+    payReturnRef.current = { sessionId, pend, useSnapshot, planId: (pend && pend.planId) || null, email: (pend && pend.email) ? String(pend.email).trim().toLowerCase() : null };
+    track("payment_returned", { planId: (pend && pend.planId) || null, has_session: !!sessionId, from_url: fromUrl });
+    if (pend && pend.locale && pend.locale !== locale) setLocale(pend.locale);
+    if (pend && pend.email) setEmail(pend.email);
+    const toPaywall = (id) => { if (payReturnRef.current) payReturnRef.current.planId = id; planRef.current = id; setPlanId(id); setPhase("paywall"); };
+    if (useSnapshot) {
+      // The snapshot effect offers the paywall resume and the effect after resumeFunnel
+      // accepts it. If that never happens, fall back to the bare plan id.
+      const fb = setTimeout(() => { if (!payResumeDoneRef.current) { payResumeDoneRef.current = true; setSavedProgress(null); toPaywall(pend.planId); } }, 2500);
+      return () => clearTimeout(fb);
+    }
+    if (pend && pend.planId) { toPaywall(pend.planId); return; }
+    // Another device or cleared storage: the webhook-stored session maps back to the plan.
+    // Show a confirming spinner, not the marketing homepage, while it resolves.
+    setPayStage("confirm");
+    setPhase((p) => (p === "intro" ? "loading" : p));
+    let on = true;
+    (async () => {
+      const t0 = Date.now();
+      while (on && Date.now() - t0 < 90000) {
+        try {
+          const r = await fetch("/api/pay-status?session_id=" + encodeURIComponent(sessionId));
+          const d = await r.json();
+          if (d && d.paid && d.planId) {
+            if (!on) return;
+            if (d.email) { setEmail((p) => p || d.email); if (payReturnRef.current) payReturnRef.current.email = String(d.email).trim().toLowerCase(); }
+            setPayStage("");
+            toPaywall(d.planId);
+            return;
+          }
+        } catch (e) {}
+        await new Promise((res) => setTimeout(res, 3000));
+      }
+      if (!on) return;
+      payReturnRef.current = null;
+      setPayStage("timeout");
+      track("payment_return_timeout", { has_session: true });
+    })();
+    return () => { on = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const pdfPlainRef = useRef(""); // extracted PDF text for deterministic scoring; "" = no measurement
   const pdfRunRef = useRef(0);   // upload generation token: stale extractions are discarded
   const measuredRef = useRef(null); // deterministic measurement for the current run; blended CLIENT-side in finalizePlan (server stays out of scoring - it broke prod)
@@ -2322,6 +2435,17 @@ export default function App() {
     setSavedProgress(null);
     setPhase(snap.target);
   };
+
+  // Back from Stripe with this run's snapshot: resume straight into the paywall (no
+  // "Continue your analysis" click), where the auto-unlock below takes over.
+  useEffect(() => {
+    const pr = payReturnRef.current;
+    if (!pr || !pr.useSnapshot || payResumeDoneRef.current || !savedProgress) return;
+    payResumeDoneRef.current = true;
+    if (savedProgress.target === "paywall") resumeFunnel();
+    else if (pr.pend && pr.pend.planId) { setSavedProgress(null); planRef.current = pr.pend.planId; setPlanId(pr.pend.planId); setPhase("paywall"); }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedProgress]);
 
   // DEV ONLY: ?mockplan=1 renders the report UI instantly with a canned plan (no funnel, no API
   // call), so report-level UI like the session offer card can be reviewed without generating a
@@ -2693,8 +2817,9 @@ export default function App() {
     return data.planId;
   };
 
-  const handlePaywall = async () => {
+  const handlePaywall = async (opts) => {
     if (loading) return;
+    const fromPayment = !!(opts && opts.fromPayment === true);
     if (!email.includes("@")||!email.includes(".")) { setEmailError(t("err_email_invalid")); return; }
     setEmailError(""); setLoading(true); setLoadingSlow(false);
     // After 8s of waiting, swap the button label to an honest "still analyzing" so a
@@ -2715,20 +2840,85 @@ export default function App() {
       if (pid && pid._error) throw new Error(pid._error);
       let gateClientId = "";
       try { gateClientId = localStorage.getItem("ls_client_v1") || ""; } catch (e) {}
-      const gateRes = await fetch("/api/get-plan", {
+      const callGate = () => fetch("/api/get-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json", "x-client-id": gateClientId },
         body: JSON.stringify({ planId: pid, email: email })
       });
+      let gateRes = await callGate();
+      if (gateRes.status === 402) {
+        const gd402 = await gateRes.clone().json().catch(() => ({}));
+        setPayNeeded(true);
+        const pr = payReturnRef.current;
+        let pend402 = null;
+        try { pend402 = JSON.parse(localStorage.getItem("ls_pay_v1") || "null"); } catch (e) { pend402 = null; }
+        // A stored session id for this plan is proof of a completed checkout on this device:
+        // such a buyer only ever waits for the webhook, never gets sent to pay again.
+        const paidHere = !!(pend402 && pend402.planId === pid && pend402.sessionId && Date.now() - (pend402.ts || 0) < 14 * 24 * 60 * 60 * 1000);
+        const returning = fromPayment || !!(pr && pr.planId === pid) || paidHere;
+        const recentlyPaying = !!(pend402 && pend402.planId === pid && !pend402.abandoned && Date.now() - (pend402.ts || 0) < 14 * 24 * 60 * 60 * 1000);
+        if (returning || (recentlyPaying && !payPendingRef.current)) {
+          // A payment for this plan may be in flight: wait for the webhook (cheap session
+          // lookups, then one unlock call) instead of sending them to checkout again.
+          setPayStage("confirm");
+          const sid = (pr && pr.sessionId) || (pend402 && pend402.sessionId) || "";
+          const budget = returning ? 60000 : 12000;
+          const t0 = Date.now();
+          while ((gateRes.status === 402 || gateRes.status === 429) && Date.now() - t0 < budget) {
+            await new Promise((r) => setTimeout(r, sid ? 2500 : 6000));
+            if (sid) {
+              const ps = await fetch("/api/pay-status?session_id=" + encodeURIComponent(sid)).then((r) => r.json()).catch(() => null);
+              if (!ps || !ps.paid) continue;
+              if (ps.planId && ps.planId !== pid) {
+                // This session paid for a different report than the one on screen (a stale
+                // pending checkout on this device). Restart cleanly on the paid one.
+                try { localStorage.removeItem("ls_pay_v1"); } catch (e) {}
+                track("payment_plan_mismatch", {});
+                window.location.replace("/?paid=1&session_id=" + encodeURIComponent(sid));
+                return;
+              }
+            }
+            try { gateRes = await callGate(); } catch (e) { continue; } // one dropped request must not abort the wait
+          }
+          setPayStage("");
+          if (gateRes.status === 402 || gateRes.status === 429) {
+            track("payment_pending_timeout", { cohort, planId: pid, returning });
+            payPendingRef.current = true;
+            throw new Error(returning ? "payment_pending" : "payment_pending_or_pay");
+          }
+          track("payment_confirmed", { cohort, planId: pid });
+        } else {
+          const link = (payCfg && payCfg.enabled && payCfg.link) || (gd402 && gd402.link) || "";
+          if (!link) throw new Error("payment_unavailable");
+          if (!payConsent) throw new Error("pay_consent_required");
+          try { localStorage.setItem("ls_pay_v1", JSON.stringify({ planId: pid, email: email.trim(), locale, ts: Date.now(), consent: true })); } catch (e) {}
+          track("checkout_started", { cohort, planId: pid, consent: true });
+          payStageRef.current = "redirect";
+          setPayStage("redirect");
+          setTimeout(() => { if (payStageRef.current === "redirect" && document.visibilityState === "visible") { payStageRef.current = ""; setPayStage(""); setLoading(false); setLoadingSlow(false); } }, 15000);
+          clearTimeout(slowTimer);
+          window.location.assign(link + "?client_reference_id=" + encodeURIComponent(pid) + "&prefilled_email=" + encodeURIComponent(email.trim()) + "&locale=" + encodeURIComponent(locale));
+          return; // keep the button in its loading state while the browser leaves for Stripe
+        }
+      }
       if (!gateRes.ok) { const gd = await gateRes.json().catch(()=>({})); throw new Error((gd && gd.error) || ("HTTP " + gateRes.status)); }
       const gateData = await gateRes.json();
       const result = gateData.plan;
       if (!result) throw new Error("Could not load your plan. Please try again.");
+      // A paid return in a fresh browser has no snapshot: take the run's language, cohort
+      // and attachment flags from the server stamps so the report matches the gate.
+      const prRun = payReturnRef.current;
+      const bareReturn = !!(prRun && !prRun.useSnapshot && !(prRun.pend && prRun.pend.planId));
+      const runLocale = (bareReturn && typeof result._lang === "string" && result._lang) || locale;
+      const runCohort = cohort || (typeof result._cohort === "string" ? result._cohort : null);
+      if (runLocale !== locale) setLocale(runLocale);
+      if (runCohort && runCohort !== cohort) setCohort(runCohort);
+      const srvHadPdf = result._had_pdf === true, srvHadPosts = result._had_posts === true;
       result.critical_rules = FOUNDER_RULES;
-      const revInputs = { cohort: cohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
-      const hadPosts = (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadPostsSnapRef.current;
-      const hadProfile = !!(pdfText && pdfText.trim()) || hadPosts || hadProfileSnapRef.current;
-      const finalized = finalizePlan(result, revInputs, locale, hadProfile, hadPosts, measuredRef.current);
+      const revInputs = { cohort: runCohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
+      const hadPosts = (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadPostsSnapRef.current || srvHadPosts;
+      const hadProfile = !!(pdfText && pdfText.trim()) || hadPosts || hadProfileSnapRef.current || srvHadPdf;
+      const finalized = finalizePlan(result, revInputs, runLocale, hadProfile, hadPosts, measuredRef.current);
       setPlan(finalized);
 
       // Reveal the report NOW. Persisting and emailing used to run serially before
@@ -2737,6 +2927,11 @@ export default function App() {
       identify(email);
       track("plan_unlocked", { cohort, planId: pid || null, score: (finalized && finalized.score) || null, had_profile: hadProfile });
       setPhase("result");
+      // The pending record stays until the report is saved: if the save fails or the tab
+      // dies first, a refresh or the payment email link can still unlock it again.
+      const paidSid = (payReturnRef.current && payReturnRef.current.sessionId) || "";
+      payReturnRef.current = null;
+      payPendingRef.current = false;
 
       (async () => {
         // Persist user + plan via the server (service key), so the browser never
@@ -2751,8 +2946,8 @@ export default function App() {
               first_name: userData.firstName,
               job_title: userData.jobTitle,
               linkedin_url: userData.linkedinUrl,
-              plan_data: { ...finalized, _locale: locale },
-              cohort: cohort || null,
+              plan_data: { ...finalized, _locale: runLocale },
+              cohort: runCohort || null,
               quiz_answers: answers,
               special_note: specialNote || null,
               ssi_scores: {
@@ -2767,6 +2962,7 @@ export default function App() {
           savedPlanId = saveData.planId || null;
           if (savedPlanId) {
             setPlanId(savedPlanId);
+            try { localStorage.removeItem("ls_pay_v1"); if (paidSid) localStorage.setItem("ls_paid_done_v1", JSON.stringify({ sid: paidSid, planId: pid, savedPlanId })); } catch (e) {}
             // Put the saved report's URL in the bar: a phone user who refreshes or
             // backgrounds the tab reloads their report instead of a blank landing.
             try { window.history.replaceState({}, "", "/plan/" + savedPlanId); } catch (e) {}
@@ -2780,7 +2976,7 @@ export default function App() {
         // Send email via serverless function (needs savedPlanId, so it stays chained).
         console.log("Sending email with planId:", savedPlanId);
         try {
-          const cardImg = (function(){ var p = cardImagePath(cohort, finalized.score, locale, userData.firstName); return p ? "https://www.linkedscore.app" + p : ""; })();
+          const cardImg = (function(){ var p = cardImagePath(runCohort, finalized.score, runLocale, userData.firstName); return p ? "https://www.linkedscore.app" + p : ""; })();
           const emailRes = await fetch("/api/send-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -2789,10 +2985,10 @@ export default function App() {
               firstName: userData.firstName,
               plan: finalized,
               planId: savedPlanId,
-              locale,
-              archetype: fixedArchetype(cohort, finalized.score, locale, userData.firstName) || finalized.archetype,
+              locale: runLocale,
+              archetype: fixedArchetype(runCohort, finalized.score, runLocale, userData.firstName) || finalized.archetype,
               cardImage: cardImg,
-              cardCaption: shareCaptionFor(cohort, finalized.score, locale, userData.firstName)
+              cardCaption: shareCaptionFor(runCohort, finalized.score, runLocale, userData.firstName)
             })
           });
           const emailData = await emailRes.json();
@@ -2803,6 +2999,7 @@ export default function App() {
       // Until now a failed unlock left no trace in analytics, so "generated but never
       // unlocked" could not be told apart from "tried to unlock and hit an error".
       track("unlock_failed", { cohort, planId: (planRef.current && !planRef.current._error) ? planRef.current : null, error: String((e && e.message) || "").slice(0, 120) });
+      setPayStage("");
       setEmailError(localizeError(e && e.message));
     }
     clearTimeout(slowTimer);
@@ -2814,11 +3011,26 @@ export default function App() {
   // their own language; raw messages only go to telemetry.
   const localizeError = (msg) => {
     const m = String(msg || "");
+    if (/payment_pending_or_pay/.test(m)) return t("err_payment_pending_or_pay");
+    if (/payment_pending/.test(m)) return t("err_payment_pending");
+    if (/payment_unavailable/.test(m)) return t("err_payment_unavailable");
+    if (/pay_consent_required/.test(m)) return t("err_pay_consent");
     if (/failed to fetch|load failed|networkerror|network error/i.test(m)) return t("err_connection");
     if (/taking longer/i.test(m)) return t("err_timeout");
     if (/hourly|limit/i.test(m)) return t("err_try_later");
     return t("err_generic");
   };
+
+  // Back from Stripe on the paywall with the plan and email known: unlock without a click.
+  useEffect(() => {
+    const pr = payReturnRef.current;
+    if (!pr || payAutoRef.current || phase !== "paywall" || loading) return;
+    if (!pr.planId || !planRef.current || planRef.current._error || planRef.current !== pr.planId) return;
+    if (!pr.email || String(email || "").trim().toLowerCase() !== pr.email) return;
+    payAutoRef.current = true;
+    handlePaywall({ fromPayment: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, email, planId, loading]);
 
   const handlePDF = (file) => {
     if (!file) return;
@@ -2922,9 +3134,17 @@ export default function App() {
 
   if (phase==="loading") return (
     <Layout>
-      <div style={{ minHeight:"40vh", display:"flex", alignItems:"center", justifyContent:"center" }}>
+      <div style={{ minHeight:"40vh", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:16, textAlign:"center" }}>
         <style>{`@keyframes lsspin{to{transform:rotate(360deg)}}`}</style>
-        <div role="status" aria-label="Loading" style={{ width:36, height:36, border:"3px solid #1a1a2e", borderTopColor:"#c8a96e", borderRadius:"50%", animation:"lsspin 0.8s linear infinite" }} />
+        {payStage !== "timeout" && <div role="status" aria-label="Loading" style={{ width:36, height:36, border:"3px solid #1a1a2e", borderTopColor:"#c8a96e", borderRadius:"50%", animation:"lsspin 0.8s linear infinite" }} />}
+        {payStage === "confirm" && <p style={{ color:"#c8c7dd", fontSize:14, margin:0 }}>{t("btn_confirming_payment")}</p>}
+        {payStage === "timeout" && (
+          <div style={{ maxWidth:440 }}>
+            <p style={{ color:"#e8e8f0", fontSize:15, lineHeight:1.6, marginBottom:14 }}>{t("pay_return_timeout")}</p>
+            <button className="primary-btn" style={{ marginBottom:14 }} onClick={()=>{ try { window.location.reload(); } catch (e) {} }}>{t("pay_retry")}</button>
+            <a href="mailto:a.azad@linkedscore.app" style={{ color:"#c8a96e", fontSize:14 }}>a.azad@linkedscore.app</a>
+          </div>
+        )}
       </div>
     </Layout>
   );
@@ -3158,7 +3378,7 @@ export default function App() {
             {!latest && (
               <>
                 <h2 style={{ ...s.h1, fontSize: 22, marginBottom: 14 }}>Your account</h2>
-                <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your free score</a> and it will be saved here.</p>
+                <p style={{ color: "#9696b4", fontSize: 14, marginBottom: 18 }}>No saved reports on this email yet. <a href="/" style={{ color: "#c8a96e" }}>Get your score</a> and it will be saved here.</p>
               </>
             )}
             {accountTab === "reports" && plans.length > 0 && (
@@ -3687,6 +3907,7 @@ export default function App() {
           ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall)
           : (teaser._gateOverall != null ? teaser._gateOverall : teaser.profileOverall))
       : null;
+    const payOn = !!(payCfg && payCfg.enabled && payCfg.link) || payNeeded;
     const gateScore = (gateModelOverall != null)
       ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(gateModelOverall)))
       : null;
@@ -3727,7 +3948,7 @@ export default function App() {
         {specialNote && specialNote.trim() && (
           <p style={{ color:"#c8c7dd", fontSize:13, lineHeight:1.6, marginBottom:10 }}>{t("gate_goal")} <span style={{ color:"#e8e8f0", fontStyle:"italic" }}>&ldquo;{summarize(specialNote, 180)}&rdquo;</span></p>
         )}
-        <p style={{ ...s.sub, marginBottom:16 }}>{t("paywall_sub")}</p>
+        <p style={{ ...s.sub, marginBottom:16 }}>{t(payOn ? "paywall_sub_paid" : "paywall_sub")}</p>
         <div style={{ position:"relative", marginBottom:22 }}>
           <div aria-hidden="true" style={{ background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:20, textAlign:"left", filter:"blur(3.5px)", opacity:0.5, userSelect:"none", pointerEvents:"none" }}>
             {[t("inc_profile"), t("inc_hooks"), t("inc_calendar"), t("inc_rules")].map((label,i)=>(
@@ -3740,7 +3961,7 @@ export default function App() {
           </div>
           <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", padding:12 }}>
             <div style={{ background:"rgba(13,13,24,0.9)", border:"1px solid #c8a96e44", borderRadius:12, padding:"10px 16px", display:"flex", alignItems:"center", gap:8, color:"#c8a96e", fontSize:13, fontWeight:600 }}>
-              <span>🔒</span> {t("paywall_locked")}
+              <span>🔒</span> {t(payOn ? "paywall_locked_paid" : "paywall_locked")}
             </div>
           </div>
         </div>
@@ -3749,10 +3970,16 @@ export default function App() {
           <input className={`field-input${emailError?" error":""}`} type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==="Enter"&&handlePaywall()} />
           {emailError&&<p style={s.err}>{emailError}</p>}
         </div>
+        {payOn && (
+          <label style={{ display:"flex", alignItems:"flex-start", gap:10, textAlign:"left", color:"#c8c7dd", fontSize:12, lineHeight:1.5, marginBottom:14, cursor:"pointer" }}>
+            <input type="checkbox" checked={payConsent} onChange={(e)=>{ setPayConsent(e.target.checked); if (e.target.checked) setEmailError(""); }} style={{ marginTop:3, width:16, height:16, accentColor:"#c8a96e", flexShrink:0 }} />
+            <span>{t("pay_consent_label")}</span>
+          </label>
+        )}
         <button className="primary-btn" disabled={loading} onClick={handlePaywall}>
-          {loading?(loadingSlow?t("btn_still_analyzing"):t("btn_generating")):t("btn_get_plan")}
+          {loading?(payStage==="redirect"?t("btn_opening_checkout"):payStage==="confirm"?t("btn_confirming_payment"):loadingSlow?t("btn_still_analyzing"):t("btn_generating")):t(payOn?"btn_unlock_paid":"btn_get_plan")}
         </button>
-        <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>{t("paywall_consent")} <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
+        <p style={{ color:"#7a7a96", fontSize:11, marginTop:12, lineHeight:1.5 }}>{t(payOn ? "paywall_consent_paid" : "paywall_consent")} <a href="/privacy.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Privacy</a> · <a href="/terms.html" target="_blank" rel="noreferrer" style={{ color:"#9696b4" }}>Terms</a></p>
       </div>
     </Layout>
     );

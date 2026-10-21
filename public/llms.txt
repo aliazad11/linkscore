@@ -1,16 +1,17 @@
 # LinkedScore
 
-> LinkedScore (https://www.linkedscore.app) is an AI LinkedIn analyzer. You upload your LinkedIn profile as a PDF, answer a short quiz and optionally add post screenshots, and it returns a free LinkedIn Score (0-100) with a personalized growth plan: profile rewrites, keyword analysis, an SSI breakdown, ready-to-edit post hooks and a 30-day roadmap. Built by Ali Azad. Available in English, German, French, Spanish, Portuguese, Dutch and Italian.
+> LinkedScore (https://www.linkedscore.app) is an AI LinkedIn analyzer. You upload your LinkedIn profile as a PDF, answer a short quiz and optionally add post screenshots, and it returns a LinkedIn Score (0-100) with a personalized growth plan: profile rewrites, keyword analysis, an SSI breakdown, ready-to-edit post hooks and a 30-day roadmap. Built by Ali Azad. Available in English, German, French, Spanish, Portuguese, Dutch and Italian.
 
 Key facts:
 - The LinkedIn Score is a 0-100 read of a real profile, not a quiz-only estimate; uploading the profile PDF produces the anchored score.
 - The report includes a Thought Leader Score when post screenshots are provided, and an SSI (Social Selling Index) pillar analysis when the user enters their four SSI pillar values.
 - A Post Writer turns a rough draft into a LinkedIn post in the user's own voice; signed-in users' saved tone is reused automatically.
-- The free report can be followed by a paid 1:1 strategy session.
+- The score preview is shown first; the full report and plan are a one-time EUR 9.99 payment.
+- The report can be followed by a paid 1:1 strategy session.
 
 ## Product
 
-- [LinkedScore analyzer](https://www.linkedscore.app/): start the free LinkedIn analysis
+- [LinkedScore analyzer](https://www.linkedscore.app/): start the LinkedIn analysis
 - [German version](https://www.linkedscore.app/de/): Dein LinkedIn-Score & KI-Plan
 - [About](https://www.linkedscore.app/about): what LinkedScore is and who builds it
 - [FAQ](https://www.linkedscore.app/faq): common questions about the analysis

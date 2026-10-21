@@ -121,7 +121,7 @@ export function buildCard(data) {
 
     // Footer
     box({ flexDirection: "column" }, [
-      text({ color: WHITE, fontSize: 28, fontWeight: 500, fontFamily: "Poppins" }, "Get your honest score free"),
+      text({ color: WHITE, fontSize: 28, fontWeight: 500, fontFamily: "Poppins" }, "Get your honest score"),
       text({ color: GOLD, fontSize: 28, fontWeight: 800, fontFamily: "Poppins", marginTop: 2 }, "linkedscore.app"),
     ]),
   ]);

@@ -45,7 +45,7 @@ export default async function handler(req) {
         el("div", { display: "flex", color: "#56566f", fontSize: 24, letterSpacing: 3 }, "OUT OF 100"),
       ]),
     ]),
-    el("div", { display: "flex", color: "#9696b4", fontSize: 26 }, "Get your own free LinkedIn score at linkedscore.app"),
+    el("div", { display: "flex", color: "#9696b4", fontSize: 26 }, "Get your own LinkedIn score at linkedscore.app"),
   ]);
 
   return new ImageResponse(tree, { width: 1200, height: 630 });

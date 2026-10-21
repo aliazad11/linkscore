@@ -45,7 +45,7 @@ export default async function handler(req, res) {
         const score = Math.max(0, Math.min(100, Math.round(Number(rows[0].plan_data.score) || 0)));
         const arch = esc(rows[0].plan_data.archetype || "");
         const title = name + " scored " + score + " on LinkedScore" + (arch ? " — " + arch : "");
-        const desc = "See " + name + "'s LinkedIn score and growth plan. Get your own free score in minutes.";
+        const desc = "See " + name + "'s LinkedIn score and growth plan. Get your own score in minutes.";
         const url = "https://www.linkedscore.app/plan/" + id;
         const ogImg = origin + "/api/og?id=" + encodeURIComponent(id);
 

@@ -1,3 +1,5 @@
+import { PAY_LINK, paywallOnFor, isPaid } from "./_paid.js";
+
 export const config = { maxDuration: 30 };
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
@@ -55,7 +57,7 @@ export default async function handler(req, res) {
   const cleanEmail = email.trim().toLowerCase();
 
   try {
-    const r = await fetch(SUPABASE_URL + "/rest/v1/gated_plans?id=eq." + encodeURIComponent(planId) + "&select=plan_data", {
+    const r = await fetch(SUPABASE_URL + "/rest/v1/gated_plans?id=eq." + encodeURIComponent(planId) + "&select=plan_data,unlocked_at", {
       headers: { "apikey": SERVICE_KEY, "Authorization": "Bearer " + SERVICE_KEY },
     });
     if (!r.ok) {
@@ -66,6 +68,16 @@ export default async function handler(req, res) {
     const rows = await r.json();
     if (!rows || !rows.length) return res.status(404).json({ error: "Plan not found or expired" });
     const plan = rows[0].plan_data;
+
+    // Paid unlock: with the paywall on (api/_paid.js), the full report is released only for
+    // plans whose payment stamp the Stripe webhook signed, or rows already unlocked before
+    // (free unlocks from before launch stay valid). With it off, the email unlock is
+    // unchanged. The payment stamp itself never leaves the server.
+    if (paywallOnFor(cleanEmail) && !rows[0].unlocked_at && !isPaid(planId, plan)) {
+      return res.status(402).json({ error: "payment_required", link: PAY_LINK });
+    }
+    const clientPlan = (plan && typeof plan === "object") ? { ...plan } : plan;
+    if (clientPlan && typeof clientPlan === "object") delete clientPlan._paid;
 
     await fetch(SUPABASE_URL + "/rest/v1/gated_plans?id=eq." + encodeURIComponent(planId), {
       method: "PATCH",
@@ -88,7 +100,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({ email: cleanEmail }),
     }).catch(() => {});
 
-    return res.status(200).json({ plan: plan });
+    return res.status(200).json({ plan: clientPlan });
   } catch (e) {
     console.error("[get-plan] " + (e && e.message));
     return res.status(500).json({ error: "Lookup failed" });
