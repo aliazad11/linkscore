@@ -1,5 +1,59 @@
 const posts = [
 {
+slug: "does-linkedin-penalize-links",
+title: `Does LinkedIn Penalize External Links? Not on Purpose`,
+metaTitle: "Does LinkedIn Penalize External Links? Not on Purpose",
+date: "2026-10-22",
+image: "/does-linkedin-penalize-links.jpg?v=20261022",
+excerpt: `A senior LinkedIn product director set one condition on links in August 2025. Practitioners measured 30% drops under that same post. Both are true, and that changes the fix.`,
+html: `<p>Put a link in the body of a post and the algorithm buries it, so move the link to the first comment. LinkedScore published a version of that rule, and this article corrects it below. The correction starts with two dated sources that disagree.</p>
+<p>On August 14, 2025, LinkedIn's senior director of product management for the feed answered the question in public, on his own profile. On July 30, 2026, eleven and a half months later, Forbes published a piece headlined "The LinkedIn Link Penalty Cutting Your Reach By 60%." Both are still live.</p>
+<h2>Does LinkedIn penalize external links?</h2>
+<p>No, not as a format rule. Yes, as a measured outcome. Those answers are not in conflict.</p>
+<p>LinkedIn does not demote a post for containing a URL. On August 14, 2025, Rishi Jobanputra, listed on theorg.com's LinkedIn org chart as Senior Director Of Product Management, Feed, took the question "Does including a link in a post impact distribution?" <a href="https://www.linkedin.com/posts/rishij_back-to-answer-more-feed-questions-and-reminder-activity-7361548020384976897--dhX">on his own profile</a> and attached one condition: "make sure your post gives enough context that it could stand alone without the link."</p>
+<p>Posts with links still tend to reach fewer people. Under that same post, practitioners reported drops of roughly 30%. The cause is not a penalty on the URL. A link gives readers somewhere else to go, and readers who go somewhere else do not comment, react or linger. The feed ranks on engagement, so the post falls. LinkedIn did not demote it. The audience did.</p>
+<p>That distinction decides whether you move the link or rewrite the post.</p>
+<h2>What the LinkedIn product director actually said</h2>
+<p>The post is dated August 14, 2025. It carries a short caption, an attached video and 56 comments. The caption puts the question plainly, then answers it with a condition rather than a yes or a no.</p>
+<p>That makes it a content test, not a format test. It says nothing about where the URL sits. It says the post has to be worth reading by someone who never clicks. It comes from inside the team that builds the ranking surface.</p>
+<h2>The blunter sentence is not in the caption</h2>
+<p>A flatter version of the answer circulates alongside it: that including a link in a post does not intentionally limit reach. That wording is not in the caption. The post's only other content is the attached video, which LinkedScore could not transcribe, so the flat version is reported here as secondary sourcing rather than a first-party quote. The reporting that carries it keeps a condition attached.</p>
+<p>On August 19, 2025, five days later, a LinkedIn practitioner <a href="https://www.linkedin.com/posts/mattjbarker1_last-week-linkedins-senior-director-of-product-activity-7363464041085767680-Nvr5">addressed the claim</a> and quoted a blunter version of the condition, presenting it as a quotation rather than his own wording: "If the sole purpose of your post is to drive traffic to that link, that's not going to create much value for the user and will impact reach."</p>
+<p>On September 8, 2025, a social media commentator <a href="https://www.linkedin.com/feed/update/urn:li:activity:7370869955623542785/">reported the same answer</a>: "Including a link in a post doesn't intentionally limit its reach." The same post carries the condition: "That's as long as the link is supplemental to the content, and not the main focus."</p>
+<p>Quote only the first half and you have a debunk. Quote both halves and you have something more useful. There is no penalty on the URL, and there is a real cost to a post that exists only to deliver one. That second half is what hurts European B2B teams, because the corporate post announcing a webinar and linking to the registration page is exactly the shape the condition excludes.</p>
+<h2>The measurements sitting directly underneath</h2>
+<p>The counter-evidence sits in the comments on Jobanputra's own post, from practitioners tracking their own accounts.</p>
+<p>One posted a sample large enough to argue with: "I've just analysed 290 of my recent posts and found that my posts containing a link received almost 30% lower impressions than my posts containing no link."</p>
+<p>Another put the gap wider: "I would say in general posts with links for me drop by about 30-40% in reach."</p>
+<p>These are self-reported analyses of single accounts, not LinkedIn data, and neither isolates the link as a variable. One of them at least states its sample size, which is the minimum any number in this argument should carry.</p>
+<h2>Why 30%, 60% and no penalty can all be defensible</h2>
+<p>The reported penalty runs from about 30% in practitioner samples to 60% in the Forbes headline. A fixed algorithmic rule would produce a consistent multiplier, not a range that wide. A range like this is the signature of an audience effect that varies by account, by topic and by how good the post is without its link.</p>
+<p>Stated intent and measured outcome describe different layers. LinkedIn is describing what its ranking system is built to do. The practitioners are describing what happens after readers behave like readers.</p>
+<h2>Forbes is still running the number</h2>
+<p>On July 30, 2026, Forbes published <a href="https://www.forbes.com/sites/jodiecook/2026/07/30/the-linkedin-link-penalty-cutting-your-reach-by-60/">"The LinkedIn Link Penalty Cutting Your Reach By 60%"</a>. Forbes blocks automated requests, so LinkedScore confirmed the headline, the author and the date but not the body text. Eleven and a half months after a LinkedIn product director conditioned the claim away, a tier-one business publication was still putting a fixed percentage in a headline.</p>
+<p>A dated primary source had been public the whole time. The number kept running anyway, which is also how the <a href="https://www.linkedscore.app/blog/linkedin-keyword-affinity-score">keyword affinity score</a> stayed in circulation.</p>
+<h2>The first-comment ritual fixes nothing</h2>
+<p>Moving the URL to the first comment is a format fix. Nothing in the caption identifies the URL's position as the trigger. A post that fails the stand-alone test fails it just as badly with the link one scroll further down.</p>
+<p>A mechanical objection sits in the same thread. One practitioner described what happens to a link parked there: "Putting link in comments is not helpful as LinkedIn determines these as not 'most relevant' which is default so reader would have to switch to most recent to see them." That is a reader's account rather than a LinkedIn statement, but it points the same way: the ritual adds a step and removes none of the problem.</p>
+<p>The ritual also trains an audience to read your posts as packaging rather than substance, which is the failure pattern behind <a href="https://www.linkedscore.app/blog/creative-linkedin-tactics-that-kill-your-authority">creative LinkedIn tactics that kill your authority</a>.</p>
+<p>LinkedScore has argued the other side. An earlier piece on <a href="https://www.linkedscore.app/blog/linkedin-golden-hour">the LinkedIn golden hour</a> told readers to keep links out of the post body and drop them in the first comment. That recommendation does not survive the evidence above. This article supersedes it.</p>
+<p>If the link belongs in the post, put it in the post.</p>
+<h2>What to do instead</h2>
+<p><strong>Run the delete test.</strong> Remove the URL and reread what is left. If the post is now pointless, the link was the post, and no placement trick saves it.</p>
+<p><strong>Give away the finding, not the fact that a finding exists.</strong> A post announcing that a new report is available fails the stand-alone test. A post that states the report's most surprising number and what it means passes, and the link becomes the place to check the method.</p>
+<p><strong>Judge link posts on the right metric.</strong> A post built to move people somewhere should be measured by whether they went. Lower impressions on a link post are the mechanism working as described, not a punishment. Getting seen and getting contacted are not the same outcome, which is the gap behind <a href="https://www.linkedscore.app/blog/linkedin-profile-views-but-no-messages">views but no messages</a>.</p>
+<p>LinkedScore founder Ali Azad has spent 10+ years building brands on social, from award-winning work at Huawei to leading corporate social media at QIAGEN, where nearly every executive post pointed at a webinar, a report or a gated asset. The ones that worked were worth reading before anyone clicked.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Do links in LinkedIn posts reduce reach?</strong> Often yes, but not because of a rule about format. On August 14, 2025, LinkedIn's senior director of product management for the feed set one condition: the post should give enough context to stand alone without the link. Link posts still tend to earn fewer impressions, because readers who leave do not engage.</p>
+<p><strong>Does putting the link in the first comment help?</strong> There is no verified reason to think so. The primary source describes a content condition, not a URL trigger, so moving the URL addresses nothing that was actually described. It adds friction and leaves the real condition unmet.</p>
+<p><strong>Is the 60% link penalty real?</strong> That figure comes from a Forbes article dated July 30, 2026, not from LinkedIn. Practitioner analyses posted under LinkedIn's own product director reported closer to 30%. That range is itself evidence against a fixed multiplier.</p>
+<p><strong>Does it matter where in the post the link sits?</strong> Neither the caption nor the reporting quoted above addresses placement. The only condition on record is about context: the post must carry value for someone who never clicks. Placement optimization is guesswork built on an unsourced premise.</p>
+<h2>The rule worth keeping</h2>
+<p>A blanket link penalty is not what LinkedIn's feed product director described. What he did set out, on August 14, 2025, is stricter and harder to game: the post has to be worth reading on its own. That standard is not satisfied by moving a URL into a comment box. It is satisfied by writing a better post.</p>
+<p>For executives whose posts exist to move people to a booking page or a webinar, the change is small and uncomfortable. Put the substance above the link, and let the link be the next step rather than the point.</p>
+<p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a></p>`
+},
+{
 slug: "linkedin-easy-apply-limit",
 title: `The LinkedIn Easy Apply Limit Has a Documented Fix and No Published Number`,
 metaTitle: "LinkedIn Easy Apply Limit: What LinkedIn Actually Says",
@@ -1099,7 +1153,7 @@ html: `<p>Here is the thing most posts like this pretend is not true. These tact
 slug: "linkedin-golden-hour",
 title: "The LinkedIn Golden Hour That Gets Your Posts Seen",
 date: "2026-06-08",
-updated: "2026-09-24",
+updated: "2026-10-22",
 image: "/golden-hour.jpg",
 excerpt: "Most dead LinkedIn posts are not bad. They are badly timed. Here's how the golden hour works and how to find the window that fits your audience, not an average.",
 html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no comments, the post just sits there while you refresh the page and pretend you are not.</p>
@@ -1134,7 +1188,7 @@ html: `<p>You wrote something good. You hit publish. Then nothing. No likes, no 
 <p>Picking the right hour gets your post into the test. Winning the test is a separate job. A few habits that consistently help:</p>
 <p><strong>Show up for the first hour.</strong> Do not publish and walk away. Be there to answer early comments. Every reply is another interaction the algorithm counts, and it keeps the conversation alive and visible.</p>
 <p><strong>Go for comments, not just likes.</strong> A thoughtful comment carries more weight than a like, because it signals a real conversation. End your post with a genuine question that is easy to answer.</p>
-<p><strong>Keep links out of the post body.</strong> Posts that send people off the platform get less reach. If you need to share a link, drop it in the first comment and point to it from the post.</p>
+<p><strong>Make the post work without the link.</strong> An earlier version of this page told readers to move links to the first comment. That advice is withdrawn. In August 2025, LinkedIn's senior director of product management for the feed took the question of whether a link in a post affects distribution and answered it with one condition: "make sure your post gives enough context that it could stand alone without the link." Moving the URL to a comment does nothing to meet that condition. <a href="/blog/does-linkedin-penalize-links">Here is what the evidence on links and reach shows</a>.</p>
 <p><strong>Skip the engagement bait.</strong> "Comment YES if you agree" used to work. The algorithm now reads it as spam and holds the post back. Earn the comment with something worth responding to instead.</p>
 <h2>The bottom line</h2>
 <p>None of this replaces good content. A boring post published at the perfect hour is still a boring post. But a strong post published into dead air is a genuine waste, and that is the far more common tragedy. Get the hour right and you give your best work the shot it deserves.</p>
