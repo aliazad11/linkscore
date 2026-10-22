@@ -3,6 +3,7 @@ export const config = { maxDuration: 300 };
 import { verifyToken, allowedOrigin } from "./_auth.js";
 import { durableRateOk, hashKey } from "./_ratelimit.js";
 import { todayContext } from "./_date.js";
+import { gateOverall, validDet, tlSubStats } from "./_blend.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
 
@@ -190,6 +191,33 @@ async function scrubFabrications(messages, plan, apiKey, signal) {
   } catch (e) { console.error("[scrub] " + ((e && e.name) || "error") + ": " + ((e && e.message) || "") + " — serving unscrubbed plan"); return plan; }
 }
 
+// Non-sensitive teaser for the email gate (scores + archetype only; the full report stays
+// gated). gateOverall and the TL stats let the gate show exactly the numbers the report
+// will show, computed from the stored plan; the per-section and TL sub-scores themselves
+// never leave before payment. Optional: any failure returns null and the planId flow is
+// unaffected.
+function buildTeaser(pd) {
+  try {
+    const p = pd || {};
+    const ps = p.profile_scores || {};
+    const ssi = p.ssi_plan || {};
+    const tl = p.thought_leader || {};
+    const tls = tlSubStats(tl);
+    return {
+      archetype: typeof p.archetype === "string" ? p.archetype : null,
+      profileOverall: Number(ps.overall) || null,
+      gateOverall: gateOverall(p, p._det),
+      ssiTotal: (ssi.available && Number(ssi.total)) ? Number(ssi.total) : null,
+      tlAvailable: !!tl.available,
+      tlScore: tl.available ? (Number(tl.score) || 0) : null,
+      tlSubCount: tl.available ? tls.count : null,
+      tlSubAvg: tl.available ? tls.avg : null,
+      hadPdf: p._had_pdf === true,
+      hadPosts: p._had_posts === true,
+    };
+  } catch (e) { return null; }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
@@ -215,7 +243,7 @@ export default async function handler(req, res) {
     console.error("[generate-plan] AUTH_SECRET not set - funnel token check skipped");
   }
 
-  const { messages, cohort, lang } = req.body || {};
+  const { messages, cohort, lang, det } = req.body || {};
   if (!validMessages(messages)) return res.status(400).json({ error: "Missing messages" });
 
   const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -237,20 +265,7 @@ export default async function handler(req, res) {
         const rows = await dup.json().catch(() => []);
         if (Array.isArray(rows) && rows.length && rows[0].id) {
           console.log("[generate-plan] idempotent replay for request key (no regeneration billed)");
-          let teaser = null;
-          try {
-            const pd = rows[0].plan_data || {};
-            const ps = pd.profile_scores || {};
-            const ssi = pd.ssi_plan || {};
-            const tl = pd.thought_leader || {};
-            teaser = {
-              archetype: typeof pd.archetype === "string" ? pd.archetype : null,
-              profileOverall: Number(ps.overall) || null,
-              ssiTotal: (ssi.available && Number(ssi.total)) ? Number(ssi.total) : null,
-              tlAvailable: !!tl.available,
-              tlScore: tl.available ? (Number(tl.score) || 0) : null,
-            };
-          } catch (e) { teaser = null; }
+          const teaser = buildTeaser(rows[0].plan_data);
           return res.status(200).json({ planId: rows[0].id, ready: true, teaser });
         }
       }
@@ -421,6 +436,12 @@ export default async function handler(req, res) {
       if (ALLOWED_LANGS.indexOf(lang) !== -1) plan._lang = lang;
       plan._had_pdf = Array.isArray(messages) && messages.some((m) => m && Array.isArray(m.content) && m.content.some((c) => c && c.type === "document"));
       plan._had_posts = hadPostImages;
+      // Deterministic profile anchors the browser measured from the uploaded PDF text.
+      // Stored so the report blends identically in ANY browser (a paid return through the
+      // email link has no local copy), and only for runs that really carried a PDF.
+      let d = null;
+      try { d = plan._had_pdf ? validDet(det) : null; } catch (e) { d = null; }
+      if (d) plan._det = d;
     }
 
     // 8s cap per insert: in the tightest recovery path (~291s elapsed) a hung Supabase call
@@ -454,22 +475,7 @@ export default async function handler(req, res) {
     const planId = rows && rows[0] && rows[0].id;
     if (!planId) return res.status(500).json({ error: "Could not store plan" });
 
-    // Non-sensitive teaser for the email gate (scores + archetype only; the full
-    // report stays gated). Fully optional — any failure leaves teaser null and the
-    // planId flow is unaffected.
-    let teaser = null;
-    try {
-      const ps = plan.profile_scores || {};
-      const ssi = plan.ssi_plan || {};
-      const tl = plan.thought_leader || {};
-      teaser = {
-        archetype: typeof plan.archetype === "string" ? plan.archetype : null,
-        profileOverall: Number(ps.overall) || null,
-        ssiTotal: (ssi.available && Number(ssi.total)) ? Number(ssi.total) : null,
-        tlAvailable: !!tl.available,
-        tlScore: tl.available ? (Number(tl.score) || 0) : null,
-      };
-    } catch (e) { teaser = null; }
+    const teaser = buildTeaser(plan);
 
     return res.status(200).json({ planId: planId, ready: true, teaser: teaser });
   } catch (e) {
