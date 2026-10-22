@@ -29,7 +29,13 @@
 // PURE module (no browser APIs, no pdfjs) - shared by App.jsx and generate-plan.js.
 // PDF text extraction lives in pdftext.js.
 
+// The blend lives in api/_blend.js so the server (gate teaser) and this browser code
+// (finalizePlan) run the very same function; re-exported here for the app.
+import { clampBand } from "./api/_blend.js";
+export { validDet, blendPlanScores, legacyGateOverall, tlGateScore } from "./api/_blend.js";
+
 // German transliteration so ASCII-typed "Mueller" matches "Müller" and vice versa.
+
 const translit = (s) => s.replace(/ü/g, "ue").replace(/ö/g, "oe").replace(/ä/g, "ae").replace(/ß/g, "ss");
 const fold = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const foldT = (s) => translit(String(s || "").toLowerCase()).normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -59,7 +65,6 @@ const ANY_MARKER = [...new Set(Object.values(SECTION_MARKERS).flat())];
 const COUNTRIES = new Set(["germany", "deutschland", "france", "espana", "spain", "portugal", "nederland", "netherlands", "italia", "italy", "united states", "usa", "united kingdom", "uk", "england", "scotland", "ireland", "canada", "australia", "new zealand", "india", "singapore", "malaysia", "indonesia", "philippines", "china", "hong kong", "japan", "korea", "south korea", "brazil", "brasil", "mexico", "argentina", "chile", "colombia", "peru", "united arab emirates", "uae", "saudi arabia", "qatar", "kuwait", "egypt", "south africa", "nigeria", "kenya", "switzerland", "schweiz", "suisse", "austria", "osterreich", "belgium", "belgie", "belgique", "luxembourg", "sweden", "sverige", "norway", "denmark", "danmark", "finland", "poland", "polska", "czech republic", "czechia", "hungary", "romania", "greece", "turkey", "turkiye", "israel", "ukraine", "russia", "vietnam", "thailand", "pakistan", "bangladesh"].map(fold));
 const REGION_HINT = /\b(area|region|regiao|gebiet|umgebung|metropolitan|greater|bay area|province|county|kanton|bundesland|estado|provincia)\b/i;
 
-const clampBand = (v) => Math.max(35, Math.min(92, Math.round(v)));
 
 function isMarkerLine(line, markers) {
   const l = norm(line).replace(/[:：]\s*$/, "").trim();
@@ -325,14 +330,6 @@ export function detPayload(m) {
   const n = (v) => (Number.isFinite(v) ? Math.round(v) : null);
   return { headline: n(m.det.headline), about: n(m.det.about), experience: n(m.det.experience), completeness: n(m.det.completeness), provisionalOverall: n(m.det.provisionalOverall) };
 }
-export function validDet(d) {
-  if (!d || typeof d !== "object") return null;
-  const ok = (v) => v == null || (Number.isFinite(Number(v)) && Number(v) >= 35 && Number(v) <= 92);
-  if (!ok(d.headline) || !ok(d.about) || !ok(d.experience) || !ok(d.completeness) || !ok(d.provisionalOverall)) return null;
-  if (!Number.isFinite(Number(d.completeness))) return null;
-  const r = (v) => (v == null ? null : Math.round(Number(v)));
-  return { headline: r(d.headline), about: r(d.about), experience: r(d.experience), completeness: r(d.completeness) == null ? 50 : r(d.completeness), provisionalOverall: r(d.provisionalOverall) };
-}
 
 // ── Prompt block ─────────────────────────────────────────────────────────────────
 export function measuredBlock(m) {
@@ -349,56 +346,4 @@ ${sec("Experience", f.expMeasured, `${f.roleCount} dated role(s), ${f.describedR
 - Completeness: websites ${f.websites}; skills section ${yn(f.hasSkills)}; education ${yn(f.hasEducation)}; certifications/credentials ${yn(f.hasCerts)}
 SCORING CONSISTENCY, CRITICAL: set profile_scores.headline ${anchorLine(d.headline)}; profile_scores.about ${anchorLine(d.about)}; profile_scores.experience ${anchorLine(d.experience)}. Anchored sections are computed from what the profile ACTUALLY contains; your judgment refines them, it never overrules them. Sections marked "could not be reliably measured" are yours to score honestly from the PDF. NEVER mention these anchors, measurements or any measurement process in user-visible text, and never state a numeric score in prose.
 PERCEPTION VS GROUND TRUTH, CRITICAL: the quiz answers and the note describe the situation as the user sees it, possibly written BEFORE their latest profile edits. The uploaded profile text is the current ground truth. When the measurements show a recommendation is ALREADY implemented (a positioned headline with audience language, a substantive About with a call to action, described experience, listed certifications), acknowledge that progress in the diagnosis and urgency, do NOT advise a change that is already done, and advise the NEXT lever instead. If the note claims a problem the current profile no longer shows, say plainly that their profile is already ahead of their own description.`;
-}
-
-// ── The blend (SERVER-SIDE, api/generate-plan.js) ────────────────────────────────
-// Runs once before the plan is stored, so gate teaser, report, /plan/:id link and
-// dashboard all share one number. Sub-scores: 0.6 anchor + 0.4 model-clamped-to-
-// anchor+-5 (null anchor -> model passes through). Overall is the weighted average of
-// the RESULTING sub-scores + completeness, so partial measurement is self-consistent.
-// FORGE GUARD: the caller must pass hadProfile=true (a real document was in the
-// request) AND the provisional overall must be within 25 of the model's own overall;
-// otherwise the anchors are ignored (logged) and the plan stays model-only. This caps
-// a tampered client payload to at most the model's own honest read.
-export function blendPlanScores(plan, det, opts = {}) {
-  if (!plan || typeof plan !== "object" || !det) return plan;
-  // hadProfile MUST be set by the server only after it RECOMPUTED det from the profile
-  // text itself (never from a client-supplied score). That server-recompute is the real
-  // forge defense: a tampered score field is ignored because the number is derived here
-  // from the text. No output-vs-model reconciliation band exists, and deliberately so -
-  // a legitimate rescue (the model badly under-scores a genuinely strong profile) is
-  // indistinguishable by magnitude from a forge, so any band tight enough to catch
-  // forgery would also throw away the exact rescue this system exists to perform.
-  if (opts.hadProfile !== true) { plan._anchored = false; return plan; }
-  const ps = (plan.profile_scores && typeof plan.profile_scores === "object") ? plan.profile_scores : (plan.profile_scores = {});
-  const blend = (anchor, model) => {
-    if (anchor == null) return Number.isFinite(Number(model)) ? clampBand(Number(model)) : model;
-    const mv = Number(model);
-    const anchored = Number.isFinite(mv) ? Math.max(anchor - 5, Math.min(anchor + 5, mv)) : anchor;
-    return clampBand(0.6 * anchor + 0.4 * anchored);
-  };
-  ps.headline = blend(det.headline, ps.headline);
-  ps.about = blend(det.about, ps.about);
-  ps.experience = blend(det.experience, ps.experience);
-  // Overall from the blended sub-scores + deterministic completeness. Internally
-  // consistent by construction: no independent overall anchor to contradict them.
-  const comp = Number.isFinite(Number(det.completeness)) ? Number(det.completeness) : 50;
-  const sub = [];
-  if (Number.isFinite(Number(ps.headline))) sub.push([Number(ps.headline), 0.3]);
-  if (Number.isFinite(Number(ps.about))) sub.push([Number(ps.about), 0.3]);
-  if (Number.isFinite(Number(ps.experience))) sub.push([Number(ps.experience), 0.25]);
-  sub.push([comp, 0.15]);
-  const wsum = sub.reduce((s, [, w]) => s + w, 0);
-  ps.overall = clampBand(sub.reduce((s, [v, w]) => s + v * w, 0) / wsum);
-  plan.score = ps.overall;
-  plan._anchored = true;
-  // Prose must agree with the blended number: normalize every score-mention form the
-  // model emits ("score of 58", "58/100", "58 out of 100").
-  const scrub = (s) => typeof s === "string"
-    ? s.replace(/\b((?:overall|linkedin)?\s?(?:score|rating|estimate)\s+(?:of|:)\s+)\d{1,3}\b/gi, (mm, p1) => p1 + plan.score)
-        .replace(/\b\d{1,3}\s*\/\s*100\b/g, plan.score + "/100")
-        .replace(/\b\d{1,3}(\s+out of\s+100)\b/gi, (mm, p1) => plan.score + p1)
-    : s;
-  for (const k of ["urgency", "closing_message", "headline"]) plan[k] = scrub(plan[k]);
-  return plan;
 }

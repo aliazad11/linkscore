@@ -7,18 +7,8 @@ import { track, identify } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
 import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
-import { measureProfile, measuredBlock, blendPlanScores, detPayload } from "./scoring.js";
+import { measureProfile, measuredBlock, blendPlanScores, detPayload, validDet, legacyGateOverall, tlGateScore } from "./scoring.js";
 import { extractPdfText } from "./pdftext.js";
-
-// Single-value blend for the email-gate score, mirroring blendPlanScores' math so the
-// gate teaser and the unlocked report agree (the teaser lacks sub-scores, so we blend
-// the model overall toward the provisional deterministic overall directly).
-function blendGateOverall(det, modelOverall) {
-  if (!det || !Number.isFinite(Number(det.provisionalOverall)) || !Number.isFinite(Number(modelOverall))) return modelOverall;
-  const a = Number(det.provisionalOverall), m = Number(modelOverall);
-  const clampedM = Math.max(a - 5, Math.min(a + 5, m));
-  return Math.max(35, Math.min(92, Math.round(0.6 * a + 0.4 * clampedM)));
-}
 
 const LOGO_URL = logoAsset;
 
@@ -2009,7 +1999,7 @@ export default function App() {
   const [pdfText, setPdfText] = useState("");
 
   const [planId, setPlanId] = useState(null);
-  const [teaser, setTeaser] = useState(null); // {archetype, profileOverall, ssiTotal, tlAvailable, tlScore} for the email gate
+  const [teaser, setTeaser] = useState(null); // {archetype, profileOverall, gateOverall, ssiTotal, tlAvailable, tlScore, tlSubCount, tlSubAvg, hadPdf, hadPosts} for the email gate
   const [sharedView, setSharedView] = useState(false);
   const [sharedLimited, setSharedLimited] = useState(false); // non-owner viewing a shared /plan/:id (owner gate)
   const [signinEmail, setSigninEmail] = useState("");
@@ -2222,7 +2212,9 @@ export default function App() {
               archetype: p.archetype || "LinkedIn Professional",
               headline: p.headline || "",
               urgency: p.urgency || "",
-              profile_scores: p.profile_scores || { headline: 50, about: 50, experience: 50, overall: 50 },
+              // The limited share view carries only score + archetype; seed the overall from the
+              // stored score, or finalizePlan rebuilds plan.score from a default 50 for every visitor.
+              profile_scores: p.profile_scores || { headline: 50, about: 50, experience: 50, overall: Number(p.score) || 50 },
               profile_fixes: p.profile_fixes || [],
               keyword_analysis: p.keyword_analysis || { target: "", present: [], missing: [] },
               content_strategy: p.content_strategy || {},
@@ -2392,7 +2384,7 @@ export default function App() {
       setTeaser(snap.teaser);
       // Rehydrate the deterministic anchors for a paywall resume so the unlocked
       // report gets the same anchored score the gate shows (detPayload({det})
-      // round-trips, so finalizePlan and blendGateOverall both work from this).
+      // round-trips, so finalizePlan and the legacy gate shortcut both work from this).
       if (flagsValid && snap.teaser._det && !measuredRef.current) {
         measuredRef.current = { det: snap.teaser._det };
       }
@@ -2576,9 +2568,12 @@ export default function App() {
         // deterministic PDF anchor can't survive a reload (the PDF text is gone), so
         // persist the BLENDED gate number AND the deterministic anchors (_det) — the
         // restored gate and the unlocked report must both show the number the user saw.
-        teaser: teaser ? { ...teaser, _gateOverall: (measuredRef.current && teaser.profileOverall != null) ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : (teaser._gateOverall != null ? teaser._gateOverall : null), _det: measuredRef.current ? detPayload(measuredRef.current) : (teaser._det || null) } : null,
-        _hp: !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
-        _hpost: !noPostsYet && postScreenshots.filter(Boolean).length > 0,
+        teaser: teaser ? { ...teaser, _gateOverall: (measuredRef.current && teaser.profileOverall != null) ? legacyGateOverall(detPayload(measuredRef.current), teaser.profileOverall) : (teaser._gateOverall != null ? teaser._gateOverall : null), _det: measuredRef.current ? detPayload(measuredRef.current) : (teaser._det || null) } : null,
+        // OR in the restored flags: after one resume pdfText/screenshots are gone, and
+        // dropping the flag here would cap the gate at 50 on the NEXT reload while the
+        // report (server stamps) stays uncapped. A fresh run resets both refs.
+        _hp: hadProfileSnapRef.current || !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
+        _hpost: hadPostsSnapRef.current || (!noPostsYet && postScreenshots.filter(Boolean).length > 0),
       }));
     } catch (e) {}
   }, [phase, sharedView, cohort, userData, answers, currentQ, specialNote, revCurrency, revValue, revPeriod, revTarget, founderHasRevenue, founderUnlock, revChannelShare, noPostsYet, planId, teaser]);
@@ -2805,7 +2800,7 @@ export default function App() {
     const callEngine = async (token) => fetch("/api/generate-plan", {
       method:"POST",
       headers:{ "Content-Type":"application/json", "x-funnel-token": token, "x-request-key": reqKey, "x-client-id": clientId },
-      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }], cohort: cohort || null, lang: locale || null }),
+      body: JSON.stringify({ messages:[{ role:"user", content:messageContent }], cohort: cohort || null, lang: locale || null, det: measured ? detPayload(measured) : null }),
     });
     let res = await callEngine(await getToken());
     if (res.status === 403) res = await callEngine(await getToken());
@@ -2918,7 +2913,10 @@ export default function App() {
       const revInputs = { cohort: runCohort, value: revValue, target: revTarget, currency: revCurrency || guessCurrency(), period: revPeriod, hasRevenue: founderHasRevenue, channelShare: revChannelShare };
       const hadPosts = (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadPostsSnapRef.current || srvHadPosts;
       const hadProfile = !!(pdfText && pdfText.trim()) || hadPosts || hadProfileSnapRef.current || srvHadPdf;
-      const finalized = finalizePlan(result, revInputs, runLocale, hadProfile, hadPosts, measuredRef.current);
+      // Blend with the anchors stored on the plan (same ones the gate number came from);
+      // the local measurement is only a fallback for plans stored before _det existed.
+      const srvDet = validDet(result._det);
+      const finalized = finalizePlan(result, revInputs, runLocale, hadProfile, hadPosts, srvDet ? { det: srvDet } : measuredRef.current);
       setPlan(finalized);
 
       // Reveal the report NOW. Persisting and emailing used to run serially before
@@ -3899,14 +3897,20 @@ export default function App() {
     // Displayed LinkedIn Score = the objective profile read only (matches finalizePlan A1).
     // SSI is self-reported, so it no longer moves this number; it lives in the SSI Analysis tab.
     // A8: with no PDF and no posts the score is an estimate from self-reported answers; cap at 50.
-    const hadProfileGate = !!(pdfText && pdfText.trim()) || (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadProfileSnapRef.current;
-    // Blend the gate teaser with the same deterministic anchor the report uses, so the
-    // number the user sees at the email gate matches the one inside the report.
+    // Every flag below mirrors how the report derives it at unlock (hadPosts, hadProfile,
+    // and _anchored via the stored or local anchors), so the cap and both rings agree.
+    const hadPostsGate = (!noPostsYet && postScreenshots.filter(Boolean).length > 0) || hadPostsSnapRef.current || !!(teaser && teaser.hadPosts);
+    const hadProfileGate = !!(pdfText && pdfText.trim()) || hadPostsGate || hadProfileSnapRef.current || !!(teaser && (teaser.hadPdf || teaser.gateOverall != null)) || !!measuredRef.current;
+    // The server computed the gate number with the report's own blend on the stored plan.
+    // Older teasers (saved before that) keep the single-value shortcut.
     const gateModelOverall = (teaser && teaser.profileOverall != null)
-      ? (measuredRef.current
-          ? blendGateOverall(detPayload(measuredRef.current), teaser.profileOverall)
-          : (teaser._gateOverall != null ? teaser._gateOverall : teaser.profileOverall))
+      ? (teaser.gateOverall != null
+          ? teaser.gateOverall
+          : measuredRef.current
+            ? legacyGateOverall(detPayload(measuredRef.current), teaser.profileOverall)
+            : (teaser._gateOverall != null ? teaser._gateOverall : teaser.profileOverall))
       : null;
+    const tlGate = tlGateScore(teaser, hadPostsGate);
     const payOn = !!(payCfg && payCfg.enabled && payCfg.link) || payNeeded;
     const gateScore = (gateModelOverall != null)
       ? Math.max(35, Math.min(hadProfileGate ? 95 : 50, Math.round(gateModelOverall)))
@@ -3931,10 +3935,10 @@ export default function App() {
             </div>
             <div style={{ flex:"1 1 220px", minWidth:0, display:"flex", alignItems:"center", gap:12, background:"#0d0d18", border:"1px solid #1a1a2e", borderRadius:16, padding:14 }}>
               {teaser.tlAvailable ? (
-                <><ScoreRing score={teaser.tlScore} color="#a78bfa" />
+                <><ScoreRing score={tlGate} color="#a78bfa" />
                 <div style={{ textAlign:"left" }}>
                   <p style={{ color:"#7a7a96", fontSize:9, fontWeight:700, letterSpacing:1.5, textTransform:"uppercase", marginBottom:3 }}>{t("tab_tl")}</p>
-                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700 }}>{teaser.tlScore<40?t("tl_early"):teaser.tlScore<70?t("tl_growing"):t("tl_strong")}</p>
+                  <p style={{ color:"#F9FAFB", fontSize:13, fontWeight:700 }}>{tlGate<40?t("tl_early"):tlGate<70?t("tl_growing"):t("tl_strong")}</p>
                 </div></>
               ) : (
                 <div style={{ textAlign:"left" }}>
