@@ -1,5 +1,57 @@
 const posts = [
 {
+slug: "linkedin-page-posts-disappeared",
+title: `LinkedIn Page Posts Disappeared? One Year or 500 Posts`,
+metaTitle: "LinkedIn Page Posts Disappeared? One Year or 500 Posts",
+date: "2026-10-28",
+image: "/linkedin-page-posts-disappeared.jpg?v=20261028",
+excerpt: `LinkedIn Page posts age out by design: one year or the most recent 500 posts, whichever comes first. The documented rule and what to keep the record in.`,
+html: `<p>A Page admin opens the Posts tab to pull last year's product launch for a board deck. The launch is not there. Neither is anything else from that quarter. No admin deleted it and nobody lost access. The tab simply stops.</p>
+<p>Nothing is broken. The explanation is narrower and duller than a bug, and LinkedIn writes it down in plain English in three separate help articles.</p>
+<h2>Why your LinkedIn company page posts disappeared</h2>
+<p>LinkedIn Page posts age out of view by design. There are two thresholds and the first one reached wins: one year or the most recent 500 Page posts. From the LinkedIn Page posts FAQ, under the heading "Where did my page post go?", checked on September 29, 2026 when the article carried the stamp "Last updated: 2 months ago":</p>
+<blockquote><p>"Page posts display in both, the page admin view and the member view for up to one year, or up to the most recent 500 page posts."</p></blockquote>
+<p>That is the mechanism. Not a bug, not a cache problem, not a penalty and not a moderation action. The identical sentence appears on the Marketing Solutions version of the same article, carrying the same stamp on the same date.</p>
+<h2>LinkedIn states the rule in three separate articles</h2>
+<p>This is not one stray line in one stale document. "LinkedIn Pages FAQs", stamped "Last updated: 7 months ago" on September 29, 2026, answers "How long will a post display in my Page feed?":</p>
+<blockquote><p>"Posts will display in your Page Posts feed for up to one year or until you post a maximum of 500 Page posts; whichever is reached first. If a post is no longer visible on your Page and neither of the conditions apply, the post might have been deleted."</p></blockquote>
+<p>"Troubleshoot posts on your LinkedIn Page", stamped "Last updated: 11 months ago" on the same date, lists three causes under "Posts no longer visible". The first one:</p>
+<blockquote><p>"Your post was created over a year ago or your Page has exceeded 500 posts."</p></blockquote>
+<p>Note the order in that list. The thresholds come first, an admin deletion second and a content-guidelines removal third. So if the missing post is younger than a year and the Page has published fewer than 500, an admin action or a policy removal becomes the likelier answer.</p>
+<p>This is not the first LinkedIn change that is easier to find in the help center than in the product. The <a href="https://www.linkedscore.app/blog/linkedin-ssi-discontinued">social selling index was discontinued</a> the same way, quietly and in writing. <a href="https://www.linkedscore.app/blog/why-linkedin-discontinued-ssi">Why LinkedIn made that call</a> is worth more than memorizing the next workaround.</p>
+<h2>Aged out is not deleted, but LinkedIn says "might" either way</h2>
+<p>Aging out is not deletion. On posts that drop out of the main view, the Page posts FAQ adds a hedge:</p>
+<blockquote><p>"If you don't see older posts in the main view, they might still be available in specific tabs or with direct links."</p></blockquote>
+<p>"Might" is LinkedIn's word, not a hedge added here. And LinkedIn reaches for close to the same wording about posts an admin actually deletes. Under "What happens when I delete a page post?", the same FAQ says:</p>
+<blockquote><p>"When you delete a post from your LinkedIn Page, it is permanently removed and won't be visible to your followers or anyone visiting your page. This action cannot be undone. But the deleted post might still appear in other places on LinkedIn if a member has the direct URL to the post."</p></blockquote>
+<p>So the documentation does not hand an admin a clean test. A post that aged out might survive at its direct link. A post that was deleted might too. Neither case comes with a promise. The practical reading: a saved permalink is worth more than a memory of having posted something, and it is still not a backup.</p>
+<h2>Which threshold actually bites your Page</h2>
+<p>Run the arithmetic before assuming the 500 cap is the problem. Five hundred posts inside a single year is roughly ten a week. A Page publishing three to five times a week needs roughly two to three years to reach 500, which means it meets the one-year clock long before it meets the cap.</p>
+<p>At that cadence the one-year clock is the binding constraint and 500 never enters the picture. The cap only arrives first on high-volume operations: multi-brand Pages, job-heavy Pages or Pages syndicating an RSS feed. For everyone else, what leaves the view is simply everything older than twelve months, on a rolling basis.</p>
+<p>The two thresholds also fail differently, which matters for planning. The 500 cap is a function of how much the team publishes, so the team can see it coming and slow down or accept it. The one-year clock is not. It runs whether the Page posts daily or goes quiet for six months, and it keeps taking the oldest row either way.</p>
+<h2>Your Page is a feed, not an archive</h2>
+<p>A LinkedIn post has a short distribution life. Reach is decided fast, which is the premise behind <a href="https://www.linkedscore.app/blog/linkedin-golden-hour">the golden hour</a>. The part that is easier to miss is that the record of the post has a short life too.</p>
+<p>Anyone treating the Posts tab as the record of what the company published is working from a view that silently truncates. A year-in-review deck that cannot find Q1. An agency inheriting a client Page and finding no evidence of two years of work. An employer-brand audit that reads twelve months as the entire history. A new comms lead checking what the company has said about a topic and concluding it said nothing.</p>
+<p>Nothing in LinkedIn's documentation describes a warning, a notification or an archive prompt before any of that happens. The oldest row just stops being there.</p>
+<h2>What to keep and where</h2>
+<p><strong>1. Record at publish time, not at audit time.</strong> The only reliable archive is the one the team keeps itself: final copy, the creative asset, the publish date and the permalink, stored wherever the team already works. Doing it at publish costs seconds. Reconstructing it past twelve months is not possible.</p>
+<p><strong>2. Save the permalink for anything that matters.</strong> Launches, statements, executive posts, crisis responses. LinkedIn says older posts "might still be available in specific tabs or with direct links", and a URL captured on day one is the only way to test that later.</p>
+<p><strong>3. Export analytics on a schedule.</strong> From "Export your LinkedIn Page analytics report", stamped "Last updated: 1 year ago": "you can export the data as an XLS file". The tabs are Content, Visitors, Followers and Competitors, and the export asks for a timeframe before it runs. Be clear about what that gives you: the performance data, not the post copy or the creative. That article also points to an API program for Page admins who need this at scale.</p>
+<p><strong>4. Do not mistake the Featured section for storage.</strong> Pinning is gone from Pages. The troubleshooting article states it plainly, "You can no longer pin posts on your LinkedIn Page", which is <a href="https://www.linkedscore.app/blog/linkedin-page-pin-post-removed">a separate story</a>. Nothing in the Pages documentation checked here says featuring a post exempts it from the one-year rule. Treat that section as merchandising for visitors, not as a record for the team.</p>
+<p><strong>5. Put the first anniversary on the calendar.</strong> For a Page that launched or rebranded inside the last year, the first material loss lands at twelve months.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Did LinkedIn delete your company Page posts?</strong> Probably not. LinkedIn's Pages FAQ puts deletion after the thresholds: "If a post is no longer visible on your Page and neither of the conditions apply, the post might have been deleted." Check the post's age and the Page's post count first.</p>
+<p><strong>How long do LinkedIn Page posts stay visible?</strong> Up to one year or up to the most recent 500 Page posts, whichever is reached first. LinkedIn states this on the Page posts FAQ, the Pages FAQs and the Page troubleshooting article, all checked on September 29, 2026.</p>
+<p><strong>Can you still see Page posts older than one year?</strong> Sometimes. LinkedIn says older posts "might still be available in specific tabs or with direct links". That is not a guarantee, and by LinkedIn's own wording those posts are no longer in the main view.</p>
+<p><strong>Does this apply to personal profile posts too?</strong> The one-year and 500-post wording appears in LinkedIn's Pages documentation and is written about Page posts. Those articles do not state the same rule for personal profiles, so do not assume it transfers.</p>
+<p><strong>Does clearing your browser cache bring the posts back?</strong> Not if they aged out. Clearing cache and cookies does appear in LinkedIn's troubleshooting article, but under viewing an existing post, not under "Posts no longer visible". Different problem, different fix.</p>
+<h2>Treat the Posts tab as a window</h2>
+<p>LinkedIn is not hiding this. It is documented in plain language, in three help articles that all state the same rule. The gap is not between the platform and its users. It is between what the documentation says and the habit of asking a feed to behave like a filing cabinet.</p>
+<p>The fix is not a setting. It is a routine: capture the record at publish, keep the permalinks and let the Posts tab be what it is.</p>
+<p>LinkedScore is built by Ali Azad, who has spent more than ten years in social media, with award-winning work at Huawei and corporate social at QIAGEN.</p>
+<p>Want a second pair of eyes on how your leaders show up on LinkedIn? <a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a>.</p>`
+},
+{
 slug: "does-linkedin-penalize-links",
 title: `Does LinkedIn Penalize External Links? Not on Purpose`,
 metaTitle: "Does LinkedIn Penalize External Links? Not on Purpose",
