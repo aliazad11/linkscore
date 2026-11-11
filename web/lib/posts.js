@@ -1,5 +1,60 @@
 const posts = [
 {
+slug: "linkedin-follow-visibility-setting",
+title: `LinkedIn Follow Visibility Does Not Make Your Following Anonymous`,
+metaTitle: "LinkedIn Follow Visibility: What It Actually Hides",
+date: "2026-11-11",
+image: "/linkedin-follow-visibility-setting.jpg?v=20261111",
+excerpt: `LinkedIn's follow visibility setting hides member follows from profile visitors. It does not hide them from the people you follow, and it ignores Pages.`,
+html: `<p>Set Follow visibility to "Only visible to me" and LinkedIn stops showing your follow list to people who browse your profile. That is a real change. It is also a much smaller one than the label implies. The person you followed still sees it. Every company Page you follow is untouched. LinkedIn documents both limits on its own help page.</p>
+<p>For an executive following a competitor, a consultant following a client's likely acquirer or a candidate following a target employer, that gap is the entire question.</p>
+<h2>What LinkedIn follow visibility actually does</h2>
+<p>LinkedIn follow visibility controls one thing: whether other members can see the list of members you follow when they open your profile. It offers exactly two options, "Only visible to me" and "Anyone on LinkedIn". There is no connections-only middle tier.</p>
+<p>It does not make following anonymous. <a href="https://www.linkedin.com/help/linkedin/answer/a595755">LinkedIn's help page for the setting</a>, checked on September 29, 2026, states: "If you follow a member, that member can always see that you follow them."</p>
+<p>It also does not cover company Pages. The same page states: "This setting only applies to members you follow and not Groups or LinkedIn Pages."</p>
+<p>Read those two sentences together and the picture inverts. The toggle masks the least revealing half of your follow graph and leaves the most commercially revealing half in plain view.</p>
+<p>The same help page documents where the control sits. On desktop it runs from the Me icon through Settings & Privacy, then Visibility, then Visibility of your profile & network, then Change next to Follow visibility. On mobile it runs from your profile picture through Settings, then Visibility, then Follow visibility. This is a standing setting with a standing help page, not a new feature, a test or a limited pilot.</p>
+<h2>Can people see who you follow on LinkedIn</h2>
+<p>Three audiences, three different answers.</p>
+<p><strong>People browsing your profile.</strong> Controlled. Set the option to "Only visible to me" and the members you follow stop appearing to them.</p>
+<p><strong>The members you follow.</strong> Not controlled, ever. LinkedIn's wording is absolute on this point.</p>
+<p><strong>The LinkedIn Pages you follow.</strong> Not controlled, because the setting does not reach them at all.</p>
+<p>The first answer is the one the setting is built for. The commercial risk lives in the third.</p>
+<h2>The people you follow get told</h2>
+<p>The same help page states: "Members are able to see if you follow them and will receive a notification whenever a non-connection follows them."</p>
+<p>Two practical consequences follow from that sentence.</p>
+<p>First, a follow is an outbound signal whether or not you meant it as one. A notification lands, the recipient taps it and the next thing they see is your profile. Whatever your <a href="https://www.linkedscore.app/blog/linkedin-headline-formula">headline</a> says is the line doing the explaining.</p>
+<p>Second, the exit is quieter than the entrance. The same help page says you can unfollow members and they will not be notified that you unfollowed them. A <a href="https://www.linkedin.com/help/linkedin/answer/a524326">separate help page on following and unfollowing people</a> covers what happens to a 1st degree connection: "If you're connected to a person and choose to unfollow them, you'll remain connected, but won't see their updates." Unfollowing is the low-friction correction. Following is the part that leaves a record.</p>
+<h2>Company Pages are the half the setting does not cover</h2>
+<p>This is the payoff for anyone doing competitive or prospect research.</p>
+<p><a href="https://www.linkedin.com/help/linkedin/answer/a569139">LinkedIn's help page for the Interests section</a> describes it as displaying Top Voices, Companies, Schools, Newsletters and Groups that a member is following, subscribed to or joined, as applicable and based on settings. Companies sit in that list, and LinkedIn's own qualifier points at settings. Follow visibility is not one of the settings that can take a company out of it, because that setting explicitly excludes Pages. So the companies you follow stay in your Interests section regardless of how the toggle is set.</p>
+<p>It goes further on the Page side. <a href="https://www.linkedin.com/help/linkedin/answer/a570460">LinkedIn's follower analytics documentation for Pages</a> is written for Page admins: "As a LinkedIn Page admin, you can access analytics that provide an insightful look into the followers that have taken interest in your Page." The same page says the All followers view "shows your current Page followers along with their current place of employment and when they followed your Page."</p>
+<p>The practical translation. An admin of a company Page can open that view and see the people following the Page, each with a current employer and a follow date. Follow a competitor on Monday and an admin of that competitor's Page can see, in their own dashboard, that someone employed at your company started following on Monday. No setting on your side changes that, because the setting LinkedIn provides for follows was never scoped to Pages.</p>
+<p>That is the difference between privacy and privacy theater. The toggle is genuinely useful against a stranger skimming your profile. It does nothing against the specific party you were most likely trying to be discreet around.</p>
+<h2>Groups are the documented exception</h2>
+<p>LinkedIn's follow visibility text names Groups alongside Pages, but Groups are not stranded in the same way. LinkedIn documents <a href="https://www.linkedin.com/help/linkedin/answer/a544805">a per-group control</a> instead. Under Display group on profile, the toggle is set to Yes to display that group's logo on your profile or to No to remove it.</p>
+<p>So Groups have a hide switch, one group at a time, in a different place. For a company, the only lever LinkedIn's follow visibility page leaves you is whether you follow it at all. If a group membership is sensitive, that per-group switch is where to handle it.</p>
+<h2>Treat the follow list as semi-public and act accordingly</h2>
+<p>Five things worth doing, in order of effort.</p>
+<p><strong>Set the toggle anyway.</strong> It costs nothing and it removes the easiest form of casual inspection. Partial coverage beats none.</p>
+<p><strong>Audit the Interests section on your own profile.</strong> Open your profile, scroll to Interests and read the Companies tab as a stranger would. Anything you cannot explain in one calm sentence is worth unfollowing. This is also the tab a recruiter or a prospect reads when they land on you, which is a separate problem from <a href="https://www.linkedscore.app/blog/linkedin-profile-views-but-no-messages">profile views that never turn into conversations</a>.</p>
+<p><strong>Research without following.</strong> A company Page and its posts can be read without following it. Following is what creates the durable record in two places at once, your Interests section and their follower analytics. For one-off due diligence, read and leave.</p>
+<p><strong>Decide when the signal is the point.</strong> For job seekers, following a target employer is frequently a feature rather than a leak. It shows interest, it puts the company's posts in front of you before an interview and the visibility is the intended effect. The rule is not "never follow". The rule is "know which follows are broadcast".</p>
+<p><strong>Do the cleanup in one pass.</strong> Unfollowing does not notify the other member, so a single audit session carries no social cost.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Can people see who you follow on LinkedIn?</strong> It depends who. Profile visitors see the members you follow only if follow visibility is set to "Anyone on LinkedIn". The members you follow can always see it, which LinkedIn states directly. Company Pages you follow stay visible in your Interests section regardless of the setting.</p>
+<p><strong>How do you hide who you follow on LinkedIn?</strong> Go to Settings & Privacy, then Visibility, then Visibility of your profile & network, then Change next to Follow visibility, then choose "Only visible to me". That hides member follows from profile visitors. It does not hide them from the people you followed, and it does not apply to Pages or Groups.</p>
+<p><strong>Can you hide the companies you follow on LinkedIn?</strong> Not with this setting. LinkedIn states that follow visibility "only applies to members you follow and not Groups or LinkedIn Pages", so a followed company stays in your Interests section whichever option is selected. The reliable way to keep a company off your profile is to unfollow it or not follow it in the first place.</p>
+<p><strong>Does LinkedIn notify someone when you follow them?</strong> Yes for non-connections. LinkedIn's help page says members can see if you follow them and receive a notification whenever a non-connection follows them.</p>
+<p><strong>Does anyone get notified when you unfollow them?</strong> No. LinkedIn's follow visibility page says members you unfollow are not notified that you unfollowed them. LinkedIn's separate page on following and unfollowing states that if you are connected to a person and unfollow them, you remain connected but stop seeing their updates.</p>
+<p><strong>Is there a connections-only option for follow visibility?</strong> No. LinkedIn documents exactly two options for this setting, "Only visible to me" and "Anyone on LinkedIn". There is no middle tier that shows your follows only to connections.</p>
+<h2>What to take from this</h2>
+<p>The honest summary of LinkedIn follow visibility, as of September 29, 2026: it is a partial mask over the least sensitive half of your follow graph. It works on profile visitors. It does not work on the people you follow, and it does not exist at all for the company Pages that make a follow list commercially interesting.</p>
+<p>LinkedIn is full of moves that feel clever and quietly cost something, and <a href="https://www.linkedscore.app/blog/creative-linkedin-tactics-that-kill-your-authority">some of the most confident tactics do the most damage</a>. Assuming a toggle covers more than it does belongs on that list. Set it, then audit what it never touched.</p>
+<p>If the wider question is how your profile reads to the people who do find you, and what to change first, that is worth a 45-minute working session with someone who does this daily.</p>
+<p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a></p>`
+},
+{
 slug: "linkedin-page-posts-disappeared",
 title: `LinkedIn Page Posts Disappeared? One Year or 500 Posts`,
 metaTitle: "LinkedIn Page Posts Disappeared? One Year or 500 Posts",
