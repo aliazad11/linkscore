@@ -1,5 +1,63 @@
 const posts = [
 {
+slug: "linkedin-advice-sessions-eligibility",
+title: `LinkedIn Advice Sessions Are US Only And Capped At $500`,
+metaTitle: "LinkedIn Advice Sessions: US Only, Invite Only, $500 Cap",
+date: "2026-11-12",
+image: "/linkedin-advice-sessions-eligibility.jpg?v=20261112",
+excerpt: `LinkedIn Advice Sessions are invite only, US only and capped at $500 per session. Bookers must be in the US too. What LinkedIn's Help pages actually say.`,
+html: `<p>A consultant in Berlin who goes looking for LinkedIn Advice Sessions hits the wall twice. The button to host one never appears. And if it did appear, no client in Berlin could press it.</p>
+<p>LinkedIn gates both sides of the transaction to the United States. The second half of that gate, the one on the person paying, is the half that decides whether the feature is worth waiting for.</p>
+<p>Everything below was checked against the live sources on September 29, 2026.</p>
+<h2>Who can use LinkedIn Advice Sessions right now</h2>
+<p>Nobody outside the United States, on either side of the booking.</p>
+<p>LinkedIn's Help page opens with two sentences: "Hosting an advice session is currently limited to invited LinkedIn Premium Business subscribers in the United States. Bookers don't need Premium, but they must have a verified profile and be in the United States to book."</p>
+<p>Read the second sentence twice. It is not enough to be invited. It is not enough to hold Premium Business. The person paying you also has to be in the United States and verified.</p>
+<p>The companion FAQ repeats the gate and adds the status: "This feature is being rolled out to a limited number of members in the United States. You must complete the required onboarding steps, including Stripe setup, and bookers must also be U.S.-based and verified."</p>
+<p>So the host checklist runs: a Premium Business subscription, an invitation from LinkedIn, a United States location and completed Stripe onboarding. LinkedIn is blunt about the last one: "Hosts must complete required onboarding (including Stripe setup) before their booking button is visible." The main Help page spells out what that onboarding involves: "Hosts must complete Stripe's identity verification and bank setup."</p>
+<p>This is a beta, not a shipped global product. LinkedIn's FAQ describes a limited rollout and refers to the beta period when it explains refunds.</p>
+<h2>Why the advice session button is missing from your profile</h2>
+<p>Three reasons.</p>
+<p><strong>You are outside the United States.</strong> Final. LinkedIn's Help page describes no exception and no way around the location requirement.</p>
+<p><strong>You are in the United States with Premium Business but have not been invited.</strong> Hosting is "limited to invited LinkedIn Premium Business subscribers", so paying for the tier does not open the door. That pattern should be familiar: buying Premium also does not restore <a href="https://www.linkedscore.app/blog/linkedin-premium-ssi-access">the Social Selling Index dashboard LinkedIn retired</a>.</p>
+<p><strong>You are invited but have not finished Stripe onboarding.</strong> Identity verification and bank setup come first. Until they are done there is nothing on your profile to find.</p>
+<h2>The price ceiling is $500</h2>
+<p>LinkedIn's list of what eligible hosts can do includes this: "Define meeting details such as duration and price (up to $500)".</p>
+<p>The cap is attached to the meeting, not to an hour. For a career coach running a short session, $500 is more headroom than the session needs. For a fractional executive, a corporate trainer or a strategy consultant with a four-figure day rate, $500 is not a price, it is a sample.</p>
+<p>The mismatch matters because the launch write-up quoted below told readers to set an hourly rate. LinkedIn's page describes a price attached to a meeting, with a hard ceiling.</p>
+<h2>Payouts are held for 30 days</h2>
+<p>LinkedIn states: "Payouts are delayed by 30 days to support issue resolution. After 30 days, the host receives the total session amount minus Stripe's platform fee." The same page adds that "Stripe charges a processing fee on every transaction."</p>
+<p>This matters more than it sounds. A consultant who invoices on delivery gets paid on delivery. A consultant using Advice Sessions delivers the call, then waits out a 30-day payout delay before the money lands, minus fees. That is a working capital decision, not a feature detail.</p>
+<h2>Cancellations and no-shows sit with the host</h2>
+<p>The refund rules have two halves, and quoting either half alone would mislead.</p>
+<p>The policy in principle: "Refunds are issued if the host cancels at any point or if the booker cancels at least 24 hours before the session start time."</p>
+<p>The policy during the beta: "There's no automatic refund triggered by a cancellation or a no-show during the beta period." A booker who gets stood up has to report an issue instead, and the window is short: "A booker or a host can report an issue up to 5 days after the date of the meeting."</p>
+<p>On the host side LinkedIn is direct: "It is the responsibility of the Host to refund the booker if there is a cancellation." Stripe fees follow a split rule: "Stripe processing fees will be refunded if the Advice Session is cancelled by Host. If the Advice Session is cancelled by the Booker at least 24 hours before the Advice Session start time, a refund can be granted but the Booker will still need to pay the Stripe processing fees."</p>
+<p>So a booker who cancels inside the rules still loses the processing fee, and the host carries the refund admin either way.</p>
+<h2>Why the launch write-up cannot be followed from Europe</h2>
+<p>A Self Employed article on the launch, last updated May 14, 2026, told readers: "The first move is to enable Advice Sessions within Premium Business and set an hourly rate that reflects current positioning in the consulting market."</p>
+<p>For a reader in Munich, Madrid or Manchester there is no first move. The same article said that LinkedIn handling booking, payment and video in one place "removes the Calendly-plus-Stripe-plus-Zoom stack that has been standard for paid consulting workflows since 2020". It removes nothing for someone who cannot switch it on.</p>
+<p>To be fair to that piece, it did say Advice Sessions are for Premium Business subscribers in the United States. What it left out is the invitation gate and the condition on the booker, the two conditions that decide whether its instruction can be carried out. It also stated that "LinkedIn has not published a fee structure for the payment processing". LinkedIn's Help page now names both a Stripe platform fee and a processing fee on every transaction.</p>
+<p>None of that is unusual. The announcement travels faster than the Help page. It is the same failure mode behind <a href="https://www.linkedscore.app/blog/creative-linkedin-tactics-that-kill-your-authority">tactics that look clever and quietly cost you authority</a>.</p>
+<h2>What to do if you are outside the United States</h2>
+<p>Wait for the rollout, and restructure nothing around it.</p>
+<p>A booking page, a payment link and a video room still work, and they work everywhere. That combination carries no $500 ceiling, no 30-day hold and no invitation requirement. LinkedScore sells a paid 45-minute session and runs the scheduling and the payment on exactly that kind of stack, which is why the tradeoffs above read as operational rather than theoretical.</p>
+<p>A booking button is not what makes someone want the call. If a profile collects views and no inquiries, <a href="https://www.linkedscore.app/blog/linkedin-profile-views-but-no-messages">the booking stack is not the problem</a>, and <a href="https://www.linkedscore.app/blog/linkedin-headline-formula">the headline is usually where it starts</a>.</p>
+<p>Every hour spent on rate, availability, positioning and headline transfers straight into Advice Sessions if the rollout reaches your country. Every hour spent hunting for a button that is not there does not.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Are LinkedIn Advice Sessions available in the UK, Germany or anywhere else in Europe?</strong> No. As of September 29, 2026, LinkedIn's Help page limits hosting to invited Premium Business subscribers in the United States, and it requires bookers to have a verified profile and be in the United States.</p>
+<p><strong>Does buying LinkedIn Premium Business switch Advice Sessions on?</strong> No. Hosting is "limited to invited LinkedIn Premium Business subscribers", so the subscription is necessary but not sufficient. Invited hosts also have to finish Stripe identity verification and bank setup before the booking button becomes visible.</p>
+<p><strong>Can a European client book a session with a host in the United States?</strong> No. LinkedIn requires bookers to have a verified profile and to be in the United States to book.</p>
+<p><strong>How much can a host charge for one session?</strong> Up to $500. LinkedIn describes it as the price a host defines alongside duration when setting up the meeting.</p>
+<p><strong>When does a host actually get the money?</strong> LinkedIn delays payouts by 30 days, then pays the host the total session amount minus Stripe's platform fee. A Stripe processing fee applies to every transaction.</p>
+<p><strong>Will Advice Sessions expand beyond the United States?</strong> LinkedIn calls it a limited rollout and says hosting is currently limited to the United States, wording that leaves room for expansion. It has published no dates and no countries on those Help pages. Anyone planning around a specific launch date is guessing.</p>
+<h2>The short version</h2>
+<p>Advice Sessions is a real product behind a narrow door. Invited hosts in the United States, verified bookers in the United States, $500 per session, money after 30 days and refunds handled by the host. Outside the United States it is not a plan, it is a bookmark.</p>
+<p>Before acting on anything written about it, including this, open the source: LinkedIn's <a href="https://www.linkedin.com/help/linkedin/answer/a10900094">Advice Sessions Help page</a> and its <a href="https://www.linkedin.com/help/linkedin/answer/a10900098">FAQ</a>, also served word for word at <a href="https://www.linkedin.com/help/linkedin/answer/a10439019">a second address</a>. All three were checked on September 29, 2026, when the main page carried a footer reading "Last updated: 4 months ago" and the FAQ read "Last updated: 3 months ago".</p>
+<p>The work that pays off while waiting is the work that makes someone want the call in the first place.</p>
+<p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a></p>`
+},
+{
 slug: "linkedin-follow-visibility-setting",
 title: `LinkedIn Follow Visibility Does Not Make Your Following Anonymous`,
 metaTitle: "LinkedIn Follow Visibility: What It Actually Hides",
