@@ -1,5 +1,77 @@
 const posts = [
 {
+slug: "how-to-pin-a-comment-on-linkedin",
+title: `Pinned Comments Are Coming Back to LinkedIn After Being Shelved in 2022`,
+metaTitle: "How to Pin a Comment on LinkedIn: What LinkedIn Confirmed",
+date: "2026-11-13",
+image: "/how-to-pin-a-comment-on-linkedin.jpg?v=20261113",
+excerpt: `LinkedIn announced on October 15, 2026 that authors can pin comments. What it confirmed, what it left open and the steps its Help Center printed in 2022.`,
+html: `<p>Guides on how to pin a comment on LinkedIn answer both ways. One walks through five steps and a confirmation prompt. Another says LinkedIn no longer offers it. Both predate LinkedIn's October 15, 2026 announcement.</p>
+<p>Yes, according to LinkedIn. Its <a href="https://news.linkedin.com/2026/new-ways-to-build-meaningful-connections">Pressroom announced on October 15, 2026</a> that "Authors can now pin helpful comments, making it easier to highlight valuable contributions and guide the discussion". The procedure LinkedIn's Help Center printed in 2022 was to open the More icon on the comment and choose Pin comment. Only the post's author could pin, and only one comment at a time. As of October 20, 2026, neither the announcement nor LinkedIn's live Help article on comments gives 2026 steps, a rollout schedule or a pin limit. Neither says whether the 2022 rules still apply.</p>
+<h2>How to pin a comment on LinkedIn</h2>
+<p>LinkedIn's Help Center article <a href="https://www.linkedin.com/help/linkedin/answer/a524166">"Comment on posts and reply to a comment"</a> shows "Last updated: 4 months ago" and, checked on October 20, 2026, does not mention pinning anywhere.</p>
+<p>LinkedIn's 2022 procedure sits in an <a href="https://web.archive.org/web/20220913103914/https://www.linkedin.com/help/linkedin/answer/a524166">archived copy of that same article from September 13, 2022</a>. Read it as LinkedIn's 2022 Help Center procedure (desktop steps), not as a confirmed 2026 click path.</p>
+<ol>
+<li>Click the More icon in the "upper-right corner of the comment that you want to pin."</li>
+<li>"Click Pin comment. The comment will appear at the top of the thread and marked Pinned comment. A message appears stating that the comment was successfully pinned."</li>
+</ol>
+<p>To unpin, the same article pointed to the More icon on the pinned comment, then "Click Unpin comment."</p>
+<p>Two rules sat above the steps: "Members can only pin one comment at a time. Only the author can pin or unpin a comment."</p>
+<p>On your own posts, the More icon on a comment is the first place to look. If pinning is not there yet, note that the announcement gives no rollout schedule for it.</p>
+<h2>What LinkedIn announced on October 15, 2026</h2>
+<p>The announcement is one bullet in a Pressroom post. Its bold lead-in reads "Pin the comments that add to the conversation" and the rest of the bullet is the sentence quoted above, nothing more.</p>
+<p>The other feature bullets in the same post each carry a market or rollout line. The digital business card is "Rolling out globally over the coming months." Profile notes are "Available globally." Advice Sessions are "available to Business Premium subscribers in the U.S., with more markets coming soon." Who qualifies for Advice Sessions is covered in <a href="https://www.linkedscore.app/blog/linkedin-advice-sessions-eligibility">LinkedIn Advice Sessions eligibility</a>. Beyond "can now", the pinning bullet gives no market, rollout window, platform, pin limit or steps.</p>
+<p>The announcement also never calls it a return. Social Media Today did, writing the same day that <a href="https://www.socialmediatoday.com/news/linkedin-adds-new-creator-monetization-options/833179/">"LinkedIn is also re-adding the option to pin comments under posts"</a>.</p>
+<h2>The timeline: launched in 2022, dropped from the Help Center, announced in 2026</h2>
+<ul>
+<li>August 26, 2022. Social Media Today <a href="https://www.socialmediatoday.com/news/linkedin-rolls-out-option-to-pin-comments-in-reply-chains/630659/">reported</a> that "The option to Pin comments is now being rolled out to all users".</li>
+<li>September 13, 2022 (archived copy). LinkedIn's Help article a524166 was titled "Comment on posts, reply to a comment, pin, and unpin a comment" and held the procedure quoted above.</li>
+<li>September 28, 2022. LinkedIn's Marketing Blog <a href="https://web.archive.org/web/20221006232201/https://www.linkedin.com/business/marketing/blog/linkedin-pages/new-features">lists pinned comments</a> among recent LinkedIn Page features.</li>
+<li>December 16, 2022 (decoded from the post's ID). Creator April Little <a href="https://www.linkedin.com/posts/aprillatoyalittle_linkedin-quietly-removed-the-pin-comment-activity-7009340681206853633--XaQ">posted</a> that LinkedIn had "quietly removed" the pin comment feature. In an undated comment beneath it, Temi Obaisi wrote "I'm a product manager at LinkedIn and my team built the pinned comment feature" and said "it wasn't achieving the impact we had hoped for". That is a personal comment from a self-identified LinkedIn product manager, not an official LinkedIn statement.</li>
+<li>By April 2023. An <a href="https://web.archive.org/web/20230426150214/https://www.linkedin.com/help/linkedin/answer/a524166?trk=contact_us_sa">archived copy from April 26, 2023</a> shows the article retitled "Comment on posts and reply to a comment", with no pin or unpin text anywhere. The page's embedded last-modified timestamp points to December 2022.</li>
+<li>October 15, 2026. LinkedIn's Pressroom announces that authors can now pin helpful comments.</li>
+</ul>
+<h2>Why older guides give you opposite answers</h2>
+<p>Four guides published before the announcement show how the answers split. All four were checked on October 20, 2026.</p>
+<p>A <a href="https://www.montdigital.com/news/how-to-pin-comments-on-linkedin-a-simple-guide-in-2024.html">montdigital.com guide</a> dated November 23, 2024 gives three pinning steps, then states lower on the same page: "Currently, LinkedIn does not offer a feature to pin individual comments on posts". A <a href="https://linkedinpreview.com/blog/how-to-pin-a-comment-on-linkedin">linkedinpreview.com guide</a> published May 22, 2026, almost five months before the announcement, gives five steps with a confirmation prompt. Neither cites a LinkedIn source.</p>
+<p>A <a href="https://www.commenti.in/blogs/can-you-pin-a-comment-on-linkedin">commenti.in article</a> dated August 18, 2026 says: "As of 2026, LinkedIn does not offer a native button to pin a comment on a post." Daniel Korenblum's <a href="https://daniel-korenblum.beehiiv.com/p/how-to-get-more-comments">newsletter</a>, dated November 23, 2024, says "LinkedIn no longer offers this as an official feature" and suggests adding a pin emoji to your own comment instead.</p>
+<p>All four appeared before the October 15 announcement and after the April 2023 archive that shows LinkedIn's comment Help article with no pin instructions.</p>
+<h2>What LinkedIn has confirmed and what it has not</h2>
+<p>Sources checked on October 20, 2026.</p>
+<table>
+<thead>
+<tr><th>Question</th><th>What LinkedIn says</th><th>Source and date</th></tr>
+</thead>
+<tbody>
+<tr><td>Can authors pin comments?</td><td>Yes.</td><td>Pressroom, October 15, 2026</td></tr>
+<tr><td>What are the steps in 2026?</td><td>Not in the announcement or the live Help article as of October 20, 2026. The 2022 archive of that article has steps.</td><td>Pressroom 2026; Help Center, live and 2022 archive</td></tr>
+<tr><td>How many pins per post?</td><td>One at a time in 2022. The 2026 announcement gives no limit.</td><td>Help Center 2022 (archived); Pressroom 2026</td></tr>
+<tr><td>Who can pin?</td><td>Only the author in 2022. The 2026 announcement says "Authors".</td><td>Help Center 2022 (archived); Pressroom 2026</td></tr>
+<tr><td>Can you pin your own comment?</td><td>Not addressed explicitly. The 2022 Help Center limited pinning to the author and the 2022 Pages blog spoke of "Pinning any comment on a post", but neither says whether the author's own comment can be pinned. Nor does the 2026 announcement.</td><td>Help Center and Marketing Blog 2022 (archived); Pressroom 2026</td></tr>
+<tr><td>Can Company Pages pin comments?</td><td>In 2022, yes, per LinkedIn's Marketing Blog. The 2026 announcement says "Authors" and does not mention Pages.</td><td>Marketing Blog, September 28, 2022 (<a href="https://web.archive.org/web/20221006232201/https://www.linkedin.com/business/marketing/blog/linkedin-pages/new-features">archived copy</a>); Pressroom 2026</td></tr>
+<tr><td>Which countries, and what rollout schedule?</td><td>Not stated for pinning beyond "can now pin". Every other feature bullet in the same post gives a market or rollout line.</td><td>Pressroom, October 15, 2026</td></tr>
+<tr><td>Desktop or mobile?</td><td>Not in the 2026 announcement. The 2022 Help Center gave pin steps for both.</td><td>Pressroom 2026; Help Center 2022 (archived)</td></tr>
+</tbody>
+</table>
+<h2>What a pinned comment is actually for</h2>
+<p>Per the live Help article, comments can be sorted by "Most relevant or Most recent comments". In the 2022 procedure, a pinned comment appeared "at the top of the thread". If the 2026 pin works the same way, the author sets the top of the thread instead of the sort.</p>
+<p>Two uses fit the announcement's wording. The first is lifting the best reply: one that adds data, a counterpoint or a sharper example.</p>
+<p>The second is keeping a correction or a link on top. When that correction or link is the author's own comment, it depends on a question the LinkedIn pages cited here leave open: whether authors can pin their own comments. If the 2026 pin sits on top like the 2022 one, a pinned clarification answers a repeated question once, above the thread. Several commenters on April Little's 2022 post tied the pin to links, one writing "I like to pin a link in big threads of mine." If the goal is to keep a link out of the post body, check first <a href="https://www.linkedscore.app/blog/does-linkedin-penalize-links">whether LinkedIn penalizes links at all</a>.</p>
+<p>A pin highlights a comment. It does not replace replying to the rest in <a href="https://www.linkedscore.app/blog/linkedin-golden-hour">the first hour after posting</a>, and none of the LinkedIn pages cited here says it changes a post's reach. Treat it as a reading aid, not a distribution lever.</p>
+<p>Pinning a comment is a different feature from pinning a post to the top of a Company Page. LinkedIn's <a href="https://www.linkedin.com/help/linkedin/answer/a547158">Help article on Page posts</a> states "The ability to pin a post on your LinkedIn Page is being discontinued." The same page says "You can instead feature a post", and that option is covered in <a href="https://www.linkedscore.app/blog/linkedin-page-pin-post-removed">the full breakdown of Page post pinning</a>.</p>
+<h2>Frequently asked questions</h2>
+<p><strong>Can you pin a comment on LinkedIn in 2026?</strong> Yes. LinkedIn's Pressroom announced on October 15, 2026 that "Authors can now pin helpful comments". It gives no markets or rollout schedule for pinning.</p>
+<p><strong>Can you pin your own comment on your LinkedIn post?</strong> Not in the LinkedIn pages cited here. Neither LinkedIn's 2022 Help Center, its 2022 Pages blog nor its 2026 announcement says whether the author's own comment can be pinned. A May 2026 third-party guide says yes but cites no LinkedIn source.</p>
+<p><strong>How many comments can you pin on one LinkedIn post?</strong> LinkedIn's 2022 Help Center said "Members can only pin one comment at a time." The 2026 announcement does not restate a limit.</p>
+<p><strong>Can a LinkedIn Company Page pin a comment?</strong> In 2022, LinkedIn's Marketing Blog presented pinned comments as a feature for a Page's own posts. The October 15, 2026 announcement does not mention Pages, so it leaves open whether Pages can pin today.</p>
+<p><strong>Why can't you see the option to pin a comment?</strong> The announcement says authors "can now pin" but gives no rollout schedule or markets for it. In the same post, LinkedIn says "You can now design and personalize your LinkedIn business card" while noting the card is "Rolling out globally over the coming months." The announcement names authors, so do not expect the option on posts you did not write.</p>
+<p><strong>How do you unpin a comment on LinkedIn?</strong> As of October 20, 2026, neither the announcement nor LinkedIn's live Help article on comments gives 2026 unpin steps. LinkedIn's 2022 Help Center procedure was to click the More icon on the pinned comment, then "Click Unpin comment."</p>
+<h2>The pin is the small part</h2>
+<p>A pinned comment highlights a reply, but it cannot produce replies worth highlighting. Until LinkedIn's Help Center documents the 2026 version, work from the one-sentence Pressroom bullet rather than from step lists that cite no LinkedIn source.</p>
+<p>For creators, consultants and the people who post on behalf of executives, a session works through the post and the comment strategy around it.</p>
+<p><a href="https://calendly.com/aliazad1800/how-to-be-a-linkedin-star">Book a session</a></p>`
+},
+{
 slug: "linkedin-advice-sessions-eligibility",
 title: `LinkedIn Advice Sessions Are US Only And Capped At $500`,
 metaTitle: "LinkedIn Advice Sessions: US Only, Invite Only, $500 Cap",
