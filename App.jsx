@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { HOME_CSS, homeHtml } from "./home.js";
 import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
-import { track, identify } from "./analytics.js";
+import { track, identify, landingUtm } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
 import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
@@ -11,6 +11,13 @@ import { measureProfile, measuredBlock, blendPlanScores, detPayload, validDet, l
 import { extractPdfText } from "./pdftext.js";
 
 const LOGO_URL = logoAsset;
+
+// When this page load began. Leaving for Stripe always unloads the page, so a pending
+// checkout stamped before this moment belongs to an EARLIER load: the visitor came back
+// without the success redirect (Stripe's own back link, a reopened tab, a typed URL),
+// which means they did not pay on that trip. Only a checkout started in this load can
+// still be in flight.
+const PAGE_LOADED_AT = Date.now();
 
 const FOUNDER_RULES = ["Post no more than twice a month. Quality beats quantity.","Don't post during low-traffic hours.","Never edit a post after publishing.","Never reshare. If you want a post seen, or your own account seen more, comment and like instead.","Fill in your full work history with proper, relevant descriptions on your profile.","Have a profile photo and banner that fit your industry.","Tag anyone you mention in a post.","Use a mix of content formats: documents, polls, images, video.","Have a content plan and roadmap built around what you want to become.","People follow you to hear your story, not industry news. Put yourself in the story, and show your face so posts get more reach.","Find relevant people in your field through search and send connection requests, to grow your following in the first months.","The first 60 minutes after posting matter most. Reply to every comment.","Use only 3 to 5 targeted, relevant hashtags.","End every post with a clear CTA, a question or an opinion request.","The first three lines must hook hard enough to earn the 'see more' click."];
 
@@ -2259,7 +2266,7 @@ export default function App() {
     // The gold CTAs are real <a href="?start=1"> links so they work BEFORE hydration
     // (pre-hydration click = navigation, and the ?start=1 check below auto-starts the
     // funnel after load). Once hydrated, preventDefault and start in place instead.
-    const start = (e) => { if (e && e.preventDefault) e.preventDefault(); track("funnel_started"); setPhase(cohort ? "form" : "cohort"); };
+    const start = (e) => { if (e && e.preventDefault) e.preventDefault(); track("funnel_started", landingUtm()); setPhase(cohort ? "form" : "cohort"); };
     const ctas = Array.from(root.querySelectorAll(".btn-gold"));
     ctas.forEach(b => b.addEventListener("click", start));
 
@@ -2272,7 +2279,10 @@ export default function App() {
     menuLinks.forEach(a => a.addEventListener("click", closeMenus));
     const outsideTap = (e) => { menus.forEach(d => { if (d.hasAttribute("open") && !d.contains(e.target)) d.removeAttribute("open"); }); };
     document.addEventListener("pointerdown", outsideTap);
-    if (window.location.search.indexOf("start=1") !== -1) {
+    // ?start=1 (landing buttons) or #start (blog calls to action: a fragment keeps those links
+    // pointing at the homepage for crawlers, not at a robots-blocked URL) opens the funnel.
+    // analytics.js has already read any campaign tags, so the whole address is cleaned.
+    if (window.location.search.indexOf("start=1") !== -1 || /^#start(&|$)/.test(window.location.hash)) {
       try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
       start();
     }
@@ -2851,8 +2861,15 @@ export default function App() {
         // such a buyer only ever waits for the webhook, never gets sent to pay again.
         const paidHere = !!(pend402 && pend402.planId === pid && pend402.sessionId && Date.now() - (pend402.ts || 0) < 14 * 24 * 60 * 60 * 1000);
         const returning = fromPayment || !!(pr && pr.planId === pid) || paidHere;
-        const recentlyPaying = !!(pend402 && pend402.planId === pid && !pend402.abandoned && Date.now() - (pend402.ts || 0) < 14 * 24 * 60 * 60 * 1000);
-        if (returning || (recentlyPaying && !payPendingRef.current)) {
+        const thisLoad = !!(pend402 && (pend402.ts || 0) >= PAGE_LOADED_AT);
+        const recentlyPaying = !!(pend402 && pend402.planId === pid && !pend402.abandoned && thisLoad && Date.now() - (pend402.ts || 0) < 14 * 24 * 60 * 60 * 1000);
+        // Back from Stripe with no success redirect: they almost certainly left checkout
+        // unpaid. Send them back to pay instead of a "confirming payment" wait and an error,
+        // after one silent re-check in case a payment did go through and only the redirect
+        // was lost (the webhook usually lands within seconds).
+        const backUnpaid = !!(pend402 && pend402.planId === pid && !pend402.sessionId && !thisLoad);
+        const confirming = returning || (recentlyPaying && !payPendingRef.current);
+        if (confirming) {
           // A payment for this plan may be in flight: wait for the webhook (cheap session
           // lookups, then one unlock call) instead of sending them to checkout again.
           setPayStage("confirm");
@@ -2882,10 +2899,32 @@ export default function App() {
             throw new Error(returning ? "payment_pending" : "payment_pending_or_pay");
           }
           track("payment_confirmed", { cohort, planId: pid });
-        } else {
+        } else if (backUnpaid) {
+          // Count each abandoned checkout once, however many clicks follow it.
+          if (!pend402.returnSeen) {
+            track("checkout_returned_unpaid", { cohort, planId: pid, mins: Math.round((Date.now() - (pend402.ts || 0)) / 60000) });
+            try { localStorage.setItem("ls_pay_v1", JSON.stringify({ ...pend402, returnSeen: true })); } catch (e) {}
+          }
+          // The re-check runs only once the consent box is ticked, so the wait never ends in a
+          // consent error, and only a clear answer (paid or unpaid) replaces the first one: a
+          // rate-limited or failed re-check proves nothing.
+          if (payConsent) {
+            setPayStage("redirect");
+            await new Promise((r) => setTimeout(r, 3000));
+            try { const again = await callGate(); if (again.ok || again.status === 402) gateRes = again; } catch (e) {}
+            setPayStage("");
+            if (gateRes.ok) track("payment_confirmed_late", { cohort, planId: pid });
+          }
+        }
+        if (!confirming && gateRes.status === 402) {
           const link = (payCfg && payCfg.enabled && payCfg.link) || (gd402 && gd402.link) || "";
           if (!link) throw new Error("payment_unavailable");
           if (!payConsent) throw new Error("pay_consent_required");
+          // Another tab may have finished paying for this report since the record was read
+          // (its success redirect stores the session id): never open a second checkout then.
+          let latest402 = null;
+          try { latest402 = JSON.parse(localStorage.getItem("ls_pay_v1") || "null"); } catch (e) { latest402 = null; }
+          if (latest402 && latest402.planId === pid && latest402.sessionId && Date.now() - (latest402.ts || 0) < 14 * 24 * 60 * 60 * 1000) throw new Error("payment_pending");
           try { localStorage.setItem("ls_pay_v1", JSON.stringify({ planId: pid, email: email.trim(), locale, ts: Date.now(), consent: true })); } catch (e) {}
           track("checkout_started", { cohort, planId: pid, consent: true });
           payStageRef.current = "redirect";
@@ -3976,7 +4015,7 @@ export default function App() {
         </div>
         {payOn && (
           <label style={{ display:"flex", alignItems:"flex-start", gap:10, textAlign:"left", color:"#c8c7dd", fontSize:12, lineHeight:1.5, marginBottom:14, cursor:"pointer" }}>
-            <input type="checkbox" checked={payConsent} onChange={(e)=>{ setPayConsent(e.target.checked); if (e.target.checked) setEmailError(""); }} style={{ marginTop:3, width:16, height:16, accentColor:"#c8a96e", flexShrink:0 }} />
+            <input type="checkbox" checked={payConsent} disabled={loading} onChange={(e)=>{ setPayConsent(e.target.checked); if (e.target.checked) setEmailError(""); }} style={{ marginTop:3, width:16, height:16, accentColor:"#c8a96e", flexShrink:0 }} />
             <span>{t("pay_consent_label")}</span>
           </label>
         )}

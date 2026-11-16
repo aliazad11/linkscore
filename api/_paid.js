@@ -2,6 +2,7 @@
 import crypto from "crypto";
 
 export const PAY_LINK = "https://buy.stripe.com/fZu7sMdqG1CK0pS6da1RC01";
+// The blog quotes the price separately (PRICE in web/app/components/ScoreCta.jsx): change both together.
 export const PAY_LINK_ID = "plink_1USj3ILFRTERw9CQL6uFVxLn";
 
 // Two switches on purpose: STRIPE_WEBHOOK_SECRET arms the webhook (it can be tested with
