@@ -29,6 +29,23 @@ export function hasAnalyticsConsent() {
   return !!(c && c.analytics);
 }
 
+// Campaign tags on the landing URL, read once at load before the app cleans the address:
+// query tags (?utm_source=...) and the blog's fragment form (#start&utm_source=blog&...).
+// Kept in memory only (nothing is stored before analytics consent). funnel_started carries
+// them, and PostHog gets them as session properties once it starts, so blog -> analysis
+// starts are countable per article.
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+const _utm = {};
+try {
+  [window.location.search, window.location.hash.replace(/^#/, "")].forEach((part) => {
+    const q = new URLSearchParams(part);
+    UTM_KEYS.forEach((k) => { const v = q.get(k); if (v && !_utm[k]) _utm[k] = v.slice(0, 200); });
+  });
+} catch (e) {}
+export function landingUtm() {
+  return { ..._utm };
+}
+
 export function initAnalytics() {
   if (!POSTHOG_KEY || typeof window === "undefined") return;
   if (!hasAnalyticsConsent()) return; // never load analytics without opt-in
@@ -43,6 +60,7 @@ export function initAnalytics() {
         disable_surveys: true,
         person_profiles: "identified_only",
       });
+      if (Object.keys(_utm).length) posthog.register_for_session({ ..._utm });
       _ph = posthog;
       _queue.splice(0).forEach(([e, p]) => posthog.capture(e, p));
     })
