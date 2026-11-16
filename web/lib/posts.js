@@ -195,10 +195,10 @@ html: `<p>A consultant in Berlin who goes looking for LinkedIn Advice Sessions h
 {
 slug: "linkedin-follow-visibility-setting",
 title: `LinkedIn Follow Visibility Does Not Make Your Following Anonymous`,
-metaTitle: "LinkedIn Follow Visibility: What It Actually Hides",
+metaTitle: "What Is Follow Visibility on LinkedIn? Less Than It Seems",
 date: "2026-11-11",
 image: "/linkedin-follow-visibility-setting.jpg?v=20261111",
-excerpt: `LinkedIn's follow visibility setting hides member follows from profile visitors. It does not hide them from the people you follow, and it ignores Pages.`,
+excerpt: `Follow visibility controls who sees the members you follow on your profile. Those members always see that you follow them. Company Pages are not covered.`,
 html: `<p>Set Follow visibility to "Only visible to me" and LinkedIn stops showing your follow list to people who browse your profile. That is a real change. It is also a much smaller one than the label implies. The person you followed still sees it. Every company Page you follow is untouched. LinkedIn documents both limits on its own help page.</p>
 <p>For an executive following a competitor, a consultant following a client's likely acquirer or a candidate following a target employer, that gap is the entire question.</p>
 <h2>What LinkedIn follow visibility actually does</h2>
@@ -356,10 +356,10 @@ html: `<p>Put a link in the body of a post and the algorithm buries it, so move 
 {
 slug: "linkedin-easy-apply-limit",
 title: `The LinkedIn Easy Apply Limit Has a Documented Fix and No Published Number`,
-metaTitle: "LinkedIn Easy Apply Limit: What LinkedIn Actually Says",
+metaTitle: "LinkedIn Easy Apply Limit Per Day: Why 50 Isn't Official",
 date: "2026-10-20",
 image: "/linkedin-easy-apply-limit.jpg?v=20261020",
-excerpt: `LinkedIn's help page on Easy Apply limits publishes no number, documents three limits and names one way to raise yours. The ranking pages leave that fix out.`,
+excerpt: `LinkedIn publishes no daily number. The 50-a-day figure is a third-party estimate. The cap resets at the end of the UTC day, not a rolling 24 hours.`,
 html: `<p>The button stops working mid-search. LinkedIn tells you that you have reached your Easy Apply limit, so you go looking for the number. The results on the first screen converge on the same three answers: the cap is about 50 a day, it resets on a rolling 24-hour basis and nothing you can do will raise it.</p>
 <p>LinkedIn's own help page, which ranks on the first page of that exact search, contradicts all three. Start with the last one, because it is the one that changes what is available to you tonight.</p>
 <h2>LinkedIn documents a way to raise the limit. The ranking pages leave it out.</h2>
@@ -516,10 +516,10 @@ html: `<p>LinkedIn's Sponsored Content viewability help page carries one dated s
 {
 slug: "linkedin-page-pin-post-removed",
 title: `You Can No Longer Pin a Post on Your LinkedIn Company Page`,
-metaTitle: "How to Pin a Post on a LinkedIn Company Page (You Cannot)",
+metaTitle: "Can You Pin a Post on a LinkedIn Company Page? No",
 date: "2026-10-12",
 image: "/linkedin-page-pin-post-removed.jpg?v=20261012",
-excerpt: `LinkedIn removed post pinning from Pages and never fixed its own help center. What replaced it holds six posts and refuses jobs, events and targeted posts.`,
+excerpt: `Pin to top missing from your Page admin view? LinkedIn removed pinning, but its help center still prints the old steps. Feature up to six posts instead.`,
 html: `<p>Search for how to pin a post on a LinkedIn company page and the results hand you a click path. Page posts. The Posts tab. The More icon. Pin to top. LinkedIn's own help center still publishes that procedure in full.</p>
 <p>Open your admin view and follow it. The menu item is not there.</p>
 <h2>How to pin a post on a LinkedIn company page</h2>
@@ -806,10 +806,10 @@ html: `<p>On September 23, 2026, LinkedIn announced it is testing a badge that c
 {
 slug: "why-linkedin-discontinued-ssi",
 title: `Why LinkedIn Discontinued the SSI, in LinkedIn's Own Words`,
-metaTitle: "Why LinkedIn Discontinued the SSI Score",
+metaTitle: "Your SSI Access Was Discontinued: LinkedIn's Own Reason",
 date: "2026-09-29",
 image: "/why-linkedin-discontinued-ssi.jpg",
-excerpt: `LinkedIn did explain why it killed free SSI access. The reason sits on its own SSI page, retitled "From SSI to AI", and it has been public since 2025.`,
+excerpt: `LinkedIn retired free SSI on purpose. Its own SSI page says the score "no longer accurately reflects the modern sales environment." No score replaced it.`,
 html: `<p>The lockout screen is two lines long and explains nothing. "You do not have access to SSI. Your access to the Social Selling Index (SSI) has been discontinued." No reason, no date, no link to a notice. So people do the obvious thing and paste the sentence into Google. Over the 28 days to September 27, 2026, <a href="https://www.linkedscore.app/blog/linkedin-ssi-discontinued">that exact wording</a> and its close variants drew more than a thousand search impressions to LinkedScore, making it the single biggest source of search traffic to the site, which is a rough gauge of how many people are hitting the same wall.</p>
 <p>Here is the part that has gone mostly unremarked. LinkedIn did explain itself. Not in a help article, not in a release note, but on its own Social Selling Index page, which it quietly retitled "From SSI to AI." The explanation has been sitting in public for close to a year.</p>
 <h2>Why LinkedIn discontinued the SSI, in short</h2>
@@ -1000,11 +1000,11 @@ html: `<p>Free access to the Social Selling Index is gone, and it is not only fr
 {
 slug: "linkedin-ssi-discontinued",
 title: `LinkedIn Is Discontinuing Free SSI Access. Here Is the Evidence`,
-metaTitle: "LinkedIn SSI Discontinued: What I Saw on My Dashboard",
+metaTitle: "LinkedIn SSI Discontinued: What You Lose (Almost Nothing)",
 date: "2026-08-28",
 updated: "2026-09-24",
 image: "/ssi-discontinued.jpg",
-excerpt: `A red banner replaced my SSI score on August 27, 2026. What LinkedIn is doing to the Social Selling Index, what the paper trail shows and what you lose.`,
+excerpt: `As of September 2026, accounts without Sales Navigator are being locked out of SSI. Premium does not restore it and LinkedIn never tied it to your reach.`,
 html: `<p>On August 27, 2026, a LinkedScore account opened its Social Selling Index dashboard and found a red banner where the score used to be: "Your access to the Social Selling Index (SSI) page will be discontinued soon. SSI is a Sales Navigator feature. Get Sales Navigator to retain access to SSI." Under it, no score. Just "Sorry, it looks like we don't have data available for you right now. Please come back at a later time!" The short read: you are losing almost nothing, and the way LinkedIn is closing this down tells you more than the number ever did.</p>
 
 <p><strong>Update, September 7, 2026.</strong> "Soon" has arrived, at least for accounts without a Sales Navigator license. The dashboard no longer shows a banner over a score. It now shows only an empty state that reads "You do not have access to SSI" and, underneath, "Your access to the Social Selling Index (SSI) has been discontinued." If yours says the same, nothing is broken. The shutdown has completed for that account.</p>
