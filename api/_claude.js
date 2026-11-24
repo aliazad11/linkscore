@@ -22,22 +22,60 @@ export const CLAUDE_MODEL = "claude-sonnet-5-5";
 // Multiply a cap tuned on Sonnet 4.5 by this to get the equivalent cap on Sonnet 5.5.
 export const TOKEN_FACTOR = 1.35;
 
-export function claudeHeaders(key) {
-  return {
+const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
+const FALLBACK_BETA = "server-side-fallback-2026-07-01";
+
+export function claudeHeaders(key, withFallbackBeta = true) {
+  const h = {
     "Content-Type": "application/json",
     "x-api-key": key,
     "anthropic-version": "2023-06-01",
-    "anthropic-beta": "server-side-fallback-2026-07-01",
   };
+  if (withFallbackBeta) h["anthropic-beta"] = FALLBACK_BETA;
+  return h;
 }
 
 // Request fields shared by every route. Spread first, then add max_tokens, system and messages.
+// Send it with postClaude, which owns the fallback beta (fallbacks + its header).
 export const CLAUDE_BASE = {
   model: CLAUDE_MODEL,
   thinking: { type: "between_tools" },
   output_config: { effort: "high" },
   fallbacks: "default",
 };
+
+// Server-side fallback is a beta. If Anthropic retires or renames it, a request that still
+// carries it gets a 400, on every route at once, which would take the whole product down.
+// postClaude sends the request with the beta; on a 400 whose message names it, it resends
+// once without the fallbacks field and the beta header, and this instance stops sending
+// them. Any other response is returned untouched (a non-beta 400 is rebuilt from its body
+// so callers can still read it).
+let fallbackBetaOff = false;
+const BETA_REJECTED = /fallback|anthropic-beta|beta header/i;
+
+function withoutFallbacks(body) {
+  const { fallbacks, ...rest } = body;
+  return rest;
+}
+
+export async function postClaude(key, body, init = {}) {
+  const send = (withBeta) => fetch(CLAUDE_URL, {
+    ...init,
+    method: "POST",
+    headers: claudeHeaders(key, withBeta),
+    body: JSON.stringify(withBeta ? body : withoutFallbacks(body)),
+  });
+  if (fallbackBetaOff) return send(false);
+  const r = await send(true);
+  if (r.status !== 400) return r;
+  const text = await r.text().catch(() => "");
+  if (!BETA_REJECTED.test(text)) {
+    return new Response(text, { status: r.status, statusText: r.statusText, headers: r.headers });
+  }
+  console.error("[claude] fallback beta rejected, resending without it: " + text.slice(0, 200));
+  fallbackBetaOff = true;
+  return send(false);
+}
 
 // The response's text, joined across text blocks. Skips thinking and any other block type.
 export function claudeText(d) {
