@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { HOME_CSS, homeHtml } from "./home.js";
 import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
-import { track, identify, landingUtm } from "./analytics.js";
+import { track, identify, landingUtm, trackAdsPurchase } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
 import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
@@ -18,6 +18,10 @@ const LOGO_URL = logoAsset;
 // which means they did not pay on that trip. Only a checkout started in this load can
 // still be in flight.
 const PAGE_LOADED_AT = Date.now();
+
+// Value reported to Google Ads for one paid report. /api/pay-status does not return the
+// charged amount, so this is the list price (keep it in step with the Stripe Payment Link).
+const REPORT_PRICE_EUR = 9.99;
 
 const FOUNDER_RULES = ["Post no more than twice a month. Quality beats quantity.","Don't post during low-traffic hours.","Never edit a post after publishing.","Never reshare. If you want a post seen, or your own account seen more, comment and like instead.","Fill in your full work history with proper, relevant descriptions on your profile.","Have a profile photo and banner that fit your industry.","Tag anyone you mention in a post.","Use a mix of content formats: documents, polls, images, video.","Have a content plan and roadmap built around what you want to become.","People follow you to hear your story, not industry news. Put yourself in the story, and show your face so posts get more reach.","Find relevant people in your field through search and send connection requests, to grow your following in the first months.","The first 60 minutes after posting matter most. Reply to every comment.","Use only 3 to 5 targeted, relevant hashtags.","End every post with a clear CTA, a question or an opinion request.","The first three lines must hook hard enough to earn the 'see more' click."];
 
@@ -2905,6 +2909,7 @@ export default function App() {
             throw new Error(returning ? "payment_pending" : "payment_pending_or_pay");
           }
           track("payment_confirmed", { cohort, planId: pid });
+          trackAdsPurchase({ value: REPORT_PRICE_EUR, currency: "EUR", transactionId: sid || pid });
         } else if (backUnpaid) {
           // Count each abandoned checkout once, however many clicks follow it.
           if (!pend402.returnSeen) {
@@ -2919,7 +2924,12 @@ export default function App() {
             await new Promise((r) => setTimeout(r, 3000));
             try { const again = await callGate(); if (again.ok || again.status === 402) gateRes = again; } catch (e) {}
             setPayStage("");
-            if (gateRes.ok) track("payment_confirmed_late", { cohort, planId: pid });
+            if (gateRes.ok) {
+              track("payment_confirmed_late", { cohort, planId: pid });
+              // This path means no success redirect reached this device, so there is no Stripe
+              // session id here: the report id stands in (each report is paid once).
+              trackAdsPurchase({ value: REPORT_PRICE_EUR, currency: "EUR", transactionId: pid });
+            }
           }
         }
         if (!confirming && gateRes.status === 402) {
@@ -2974,6 +2984,10 @@ export default function App() {
       // dies first, a refresh or the payment email link can still unlock it again.
       const paidSid = (payReturnRef.current && payReturnRef.current.sessionId) || "";
       payReturnRef.current = null;
+      // Back from a Stripe success redirect. When the webhook landed before the visitor did,
+      // the gate answers 200 at once and payment_confirmed above never fires, so the Google
+      // Ads purchase is reported here too (sent once per session id).
+      if (paidSid) trackAdsPurchase({ value: REPORT_PRICE_EUR, currency: "EUR", transactionId: paidSid });
       payPendingRef.current = false;
 
       (async () => {
