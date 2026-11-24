@@ -3,6 +3,7 @@ export const config = { maxDuration: 300 };
 import { verifyToken, allowedOrigin } from "./_auth.js";
 import { durableRateOk, hashKey } from "./_ratelimit.js";
 import { todayContext } from "./_date.js";
+import { CLAUDE_BASE, TOKEN_FACTOR, claudeHeaders, claudeText, fromFirstBrace, isRefusal, refusalNote } from "./_claude.js";
 import { gateOverall, validDet, tlSubStats } from "./_blend.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
@@ -148,21 +149,22 @@ async function scrubFabrications(messages, plan, apiKey, signal) {
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      headers: claudeHeaders(apiKey),
       body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250929",
+        ...CLAUDE_BASE,
         // Must fit the ENTIRE fact-checked field set back out. At 8000 a long plan's scrub
         // output truncated, failed to parse, and silently returned the UNSCRUBBED plan —
         // quietly disabling the anti-fabrication pass exactly on the biggest reports.
-        max_tokens: 16000,
+        max_tokens: Math.round(16000 * TOKEN_FACTOR),
         system: "You are a strict fact-checker and JSON API. Output ONLY a raw JSON object. Start with { end with }. " + todayContext(),
-        messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }, { role: "assistant", content: "{" }],
+        messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }],
       }),
       signal,
     });
     if (!r.ok) { console.error("[scrub] http " + r.status + " — serving unscrubbed plan"); return plan; }
     const d = await r.json().catch(() => null);
-    let raw = "{" + ((d && d.content && d.content[0] && d.content[0].text) || "");
+    if (isRefusal(d)) { console.error("[scrub] " + refusalNote(d) + " — serving unscrubbed plan"); return plan; }
+    let raw = fromFirstBrace(claudeText(d));
     const end = raw.lastIndexOf("}");
     if (end === -1) { console.error("[scrub] no JSON in output (stop_reason=" + (d && d.stop_reason) + ") — serving unscrubbed plan"); return plan; }
     let fixed;
@@ -302,7 +304,6 @@ export default async function handler(req, res) {
   const timeout = setTimeout(() => controller.abort(), 290000);
 
   try {
-    const messagesWithPrefill = [...messages, { role: "assistant", content: "{" }];
     const started = Date.now();
 
     // Up to 2 generation attempts. A single stochastic bad sample (truncated or invalid JSON)
@@ -318,16 +319,12 @@ export default async function handler(req, res) {
 
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-        },
+        headers: claudeHeaders(process.env.ANTHROPIC_KEY),
         body: JSON.stringify({
-          model: "claude-sonnet-4-5-20250929",
-          max_tokens: 24000,
+          ...CLAUDE_BASE,
+          max_tokens: Math.round(24000 * TOKEN_FACTOR),
           system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }. " + todayContext(),
-          messages: messagesWithPrefill,
+          messages,
         }),
         signal: controller.signal,
       });
@@ -346,7 +343,9 @@ export default async function handler(req, res) {
       }
 
       const data = await response.json();
-      const raw = "{" + ((data.content && data.content[0] && data.content[0].text) || "");
+      // A decline repeats on a re-roll, so stop here and return the error below.
+      if (isRefusal(data)) { console.error("[generate-plan] " + refusalNote(data) + " attempt=" + attempt); break; }
+      const raw = fromFirstBrace(claudeText(data));
 
       // Control chars become spaces (invalid inside JSON strings anyway), then strip
       // trailing commas before } or ] — the two cheap fixes that never break valid JSON.
