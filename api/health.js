@@ -26,7 +26,7 @@ export default async function handler(req, res) {
       db = r.ok;
     } catch (e) { db = false; }
   }
-  const ok = env.anthropic && env.supabase && db;
+  const ok = env.anthropic && env.supabase && env.auth && db;
   res.setHeader("Cache-Control", "no-store");
   return res.status(ok ? 200 : 503).json({ ok, env, db });
 }

@@ -1027,7 +1027,7 @@ function Footer() {
       <a href={`${base}/cookies.html`} style={lk}>{t("legal_cookies")}</a>
       <a href={`${base}/terms.html`} style={lk}>{t("legal_terms")}</a>
       <button onClick={openCookieSettings} style={{ ...lk, background:"transparent", border:"none", cursor:"pointer", padding:0 }}>{t("cc_settings")}</button>
-      <span style={{ color:"#56566f", fontSize:12 }}>© 2026 LinkedScore</span>
+      <span style={{ color:"#56566f", fontSize:12 }}>© {new Date().getFullYear()} LinkedScore</span>
     </footer>
   );
 }
@@ -2771,7 +2771,13 @@ export default function App() {
     // Apply the payload budget BEFORE building the prompt, so the screenshot count the
     // model is told always equals the number of images actually attached (an over-budget
     // drop used to leave the prompt claiming an image that never arrived).
-    var imgBudget = 2500000; var attachedImages = [];
+    // Vercel rejects request bodies over 4.5 MB (413 FUNCTION_PAYLOAD_TOO_LARGE), and a PDF
+    // near the 3 MB upload cap is already ~4.2M base64 chars on its own. Screenshots get only
+    // what the PDF leaves under ~4.2M, with 150K kept back for the prompt and JSON overhead,
+    // so PDF + three screenshots can no longer fail the whole analysis with a 413.
+    var pdfChars = 0;
+    messageContent.forEach(function(c){ if (c && c.type === "document" && c.source && typeof c.source.data === "string") pdfChars += c.source.data.length; });
+    var imgBudget = Math.max(0, Math.min(2500000, 4200000 - pdfChars - 150000)); var attachedImages = [];
     validScreenshots.forEach(function(sc){ var p = (sc && sc.preview) ? sc.preview : ""; if (p.indexOf("data:") === 0 && p.indexOf(";base64,") !== -1) { var mt = p.substring(5, p.indexOf(";base64,")); var d = p.substring(p.indexOf(";base64,") + 8); if (mt && d && d.length <= imgBudget) { attachedImages.push({ type:"image", source:{ type:"base64", media_type:mt, data:d } }); imgBudget = imgBudget - d.length; } } });
     if (attachedImages.length < validScreenshots.length) console.log("[api] dropped " + (validScreenshots.length - attachedImages.length) + " screenshot(s) over the payload budget");
     messageContent.push({ type:"text", text:buildPrompt(user, ans, profileText, attachedImages.length, cohort, specialNote, isPdfRun, locale, measured) });

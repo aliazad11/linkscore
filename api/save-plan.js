@@ -9,6 +9,7 @@
 // a valid session exists, the SESSION email owns the row. The typed email still
 // gets the report by mail and still lands in the users lead table.
 import { readSession } from "./_auth.js";
+import { durableRateOk } from "./_ratelimit.js";
 
 export const config = { maxDuration: 15 };
 
@@ -42,6 +43,18 @@ export default async function handler(req, res) {
   if (!validEmail(email)) return res.status(400).json({ error: "A valid email is required" });
   if (!body.plan_data || typeof body.plan_data !== "object") return res.status(400).json({ error: "Missing plan" });
   const cleanEmail = email.trim().toLowerCase();
+  // Durable caps (they survive cold starts). A real user saves one report per analysis, and
+  // analyses are capped far lower than this, so these only stop scripts that would fill the
+  // plans table or use the report email (sent right after this) as a relay. The per-IP cap
+  // matches generate-plan's, so a classroom behind one address is not blocked.
+  const fwd = req.headers["x-forwarded-for"] || "";
+  const ip = (typeof fwd === "string" ? fwd.split(",")[0].trim() : "") || "unknown";
+  if (!(await durableRateOk("save:" + ip, 40, SERVICE_KEY, "save-plan/ip"))) {
+    return res.status(429).json({ error: "Too many requests. Please try again later." });
+  }
+  if (!(await durableRateOk("save-to:" + cleanEmail, 10, SERVICE_KEY, "save-plan/recipient"))) {
+    return res.status(429).json({ error: "Too many requests. Please try again later." });
+  }
   const session = readSession(req);
   const ownerEmail = (session && session.purpose === "session" && session.email) ? session.email : cleanEmail;
 
