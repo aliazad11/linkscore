@@ -2277,6 +2277,13 @@ export default function App() {
     // The <details> menus (hamburger + language picker) have no native close-on-
     // navigate in an SPA: close them when a link inside is tapped, and when the
     // user taps anywhere outside the open menu.
+    // Footer "Cookie settings" link (plain markup in home.js) re-opens the consent banner,
+    // so withdrawing consent is as easy as giving it.
+    const openCs = (e) => { if (e && e.preventDefault) e.preventDefault(); openCookieSettings(); };
+    const csLinks = Array.from(root.querySelectorAll('a[href="#cookie-settings"]'));
+    csLinks.forEach(a => a.addEventListener("click", openCs));
+    if (window.location.hash === "#cookie-settings") openCs(); // clicked before hydration
+
     const menus = Array.from(root.querySelectorAll("details.navmenu, details.langpick"));
     const closeMenus = () => menus.forEach(d => d.removeAttribute("open"));
     const menuLinks = Array.from(root.querySelectorAll("details.navmenu a, details.langpick a"));
@@ -2331,6 +2338,7 @@ export default function App() {
     return () => {
       ctas.forEach(b => b.removeEventListener("click", start));
       menuLinks.forEach(a => a.removeEventListener("click", closeMenus));
+      csLinks.forEach(a => a.removeEventListener("click", openCs));
       document.removeEventListener("pointerdown", outsideTap);
       observers.forEach(o => o.disconnect());
       document.documentElement.style.scrollBehavior = prevSB;

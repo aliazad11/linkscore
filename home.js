@@ -241,6 +241,7 @@ function S(loc) { return Object.assign({}, HOME_STRINGS.en, HOME_STRINGS[loc] ||
 export function homeHtml(loc = "en") {
   const L = S(loc);
   const loginLabel = ({ en:"Log in", de:"Anmelden", fr:"Connexion", es:"Entrar", pt:"Entrar", nl:"Inloggen", it:"Accedi" })[loc] || "Log in";
+  const cookieLabel = ({ en:"Cookie settings", de:"Cookie-Einstellungen", fr:"Paramètres des cookies", es:"Configuración de cookies", pt:"Definições de cookies", nl:"Cookie-instellingen", it:"Impostazioni cookie" })[loc] || "Cookie settings";
   return `<nav><div class="wrap">
   <a href="${homeHref(loc)}" aria-label="LinkedScore home" class="brand"><img src="/logo.png" alt="LinkedScore" /></a>
   <div class="nav-r">
@@ -370,7 +371,7 @@ export function homeHtml(loc = "en") {
 
 <footer><div class="wrap">
   <span>${L.footer_tagline}</span>
-  <span class="foot-links"><a href="/imprint.html">${L.footer_imprint}</a><a href="${loc==="en"?"":"/"+loc}/privacy.html">${L.footer_privacy}</a><a href="${loc==="en"?"":"/"+loc}/cookies.html">${L.footer_cookies}</a><a href="${loc==="en"?"":"/"+loc}/terms.html">${L.footer_terms}</a><span>© 2026 LinkedScore</span></span>
+  <span class="foot-links"><a href="/imprint.html">${L.footer_imprint}</a><a href="${loc==="en"?"":"/"+loc}/privacy.html">${L.footer_privacy}</a><a href="${loc==="en"?"":"/"+loc}/cookies.html">${L.footer_cookies}</a><a href="${loc==="en"?"":"/"+loc}/terms.html">${L.footer_terms}</a><a href="#cookie-settings">${cookieLabel}</a><span>© ${new Date().getFullYear()} LinkedScore</span></span>
 </div></footer>`;
 }
 
