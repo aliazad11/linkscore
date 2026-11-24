@@ -96,7 +96,7 @@ AI scoring engine; PDF profile analysis; post screenshot analysis; smart onboard
 
 ## 5. Stack, repo & deployment (verified against the repo)
 - **Analyzer:** React + Vite. `App.jsx` (~2,065 lines). `icons.js` maps quiz emojis → gold line-icons. `main.jsx`, `index.html`, `package.json`, `vite.config.js`, `vercel.json`, `logo.png` + `logo-dark.png` at root. Key client-side functions: `buildPrompt(...)` builds the entire plan prompt (persona/scoring/archetype/copy rules all client-side); `finalizePlan(plan)` post-processes (strips brackets, recomputes the blended score, builds the Revenue at Risk range, defaults `headline_rewrite`); `FOUNDER_RULES` const overrides AI `critical_rules`.
-- **API (serverless, Node, `api/`):** `generate-plan.js` (relay to Anthropic; stores plan in Supabase `gated_plans`; returns `{ planId }`), `get-plan.js` (validates email, returns `{ plan }`), `send-email.js` (Resend). **Model string: `claude-sonnet-4-5-20250929`.**
+- **API (serverless, Node, `api/`):** `generate-plan.js` (relay to Anthropic; stores plan in Supabase `gated_plans`; returns `{ planId }`), `get-plan.js` (validates email, returns `{ plan }`), `send-email.js` (Resend). **Model: `claude-sonnet-5-5`, set once in `api/_claude.js` (shared by generate-plan, polish-post and analyze-headline).**
 - **DB:** Supabase. Tables: `users`, `plans`, `gated_plans`, `subscribers`. RLS with no anon policies; `unlocked_at` for conversion tracking; TTL/pg_cron purge on stored plans (needed so the "we don't keep it" copy is literally true). **Email:** Resend.
 - **Hosting:** Vercel (Pro), region `iad1`. Analyzer project `vercel.com/ali-visible-app/linkscore-app` (auto-deploys `main`). Blog project `linkscore-web` → `linkscore-web.vercel.app`.
 - **Repo:** `github.com/aliazad11/linkscore` (repo "linkscore", product "Linkedscore"). `web/` holds the Next.js blog.
@@ -107,7 +107,7 @@ AI scoring engine; PDF profile analysis; post screenshot analysis; smart onboard
 ---
 
 ## 6. Model policy
-- **Deployed (production analysis): `claude-sonnet-4-5-20250929`** in `api/generate-plan.js`. Opus 4.8 was evaluated 2026-06-30 (won a blind quality A/B 32-8) but REJECTED for prod: a live preview test caught that Opus 4.8 rejects the JSON assistant-prefill (400) and truncates the plan at `max_tokens: 8000`, and Ali judged the hardened-Sonnet output better. Staying on Sonnet 4.5 (creator/`polish-post` too); since 2026-07-01 the gen call already runs `max_tokens: 16000` (scrub 8000). If Opus/Fable is ever revisited: remove the prefill (the 16000 budget is already in place).
+- **Deployed (all API routes): `claude-sonnet-5-5`**, set in `api/_claude.js`. Moved from `claude-sonnet-4-5-20250929` in Nov 2026 because Anthropic retires Sonnet 4.5 on 2026-11-30. Request shape: no assistant prefill (a 400 on current models; JSON is read from the reply via `fromFirstBrace`), `thinking: {type: "between_tools"}` (Sonnet 5.5's thinking-off setting, for parity with Sonnet 4.5 and latency under the 300s limit) at `output_config.effort: "high"`, response text read by block type, `stop_reason: "refusal"` handled, server-side `fallbacks: "default"`, and `max_tokens` caps x1.35 for the new tokenizer. Possible later experiment: adaptive thinking at low or medium effort, measured against latency. History: Opus 4.8 won a blind A/B on 2026-06-30 but was rejected for prefill 400s and truncation, and Ali preferred the hardened-Sonnet output.
 - **Development (this Code work): Opus 4.8.** Haiku 4.5 only for cheap bulk pre-processing.
 
 ---
@@ -166,4 +166,3 @@ This file is reconciled against commit `122b955`. The previous "open bugs" are r
 - Confirm the `gated_plans` TTL / pg_cron purge exists, so the "we don't keep it" privacy copy is literally true.
 - Confirm `linkedscore.app/blog` routing is wired (`web/` + `vercel.json`).
 - Optional: re-export the logo badge in `#c8a96e` for gold consistency.
-- Decision: whether to bump the production model from `claude-sonnet-4-5-20250929` to Sonnet 4.6.

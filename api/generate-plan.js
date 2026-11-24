@@ -311,6 +311,7 @@ export default async function handler(req, res) {
     // same tokens as retrying here, minus the broken experience. HTTP-level errors (429/5xx)
     // still return immediately: retrying a capacity error would double-bill for nothing.
     let plan = null;
+    let refused = false;
     for (let attempt = 1; attempt <= 2 && !plan; attempt++) {
       // No headroom for a second full generation near the 290s abort — bail to the error.
       // 140s keeps the worst case (gen 2 to ~290s + skipped scrub + insert) inside
@@ -343,8 +344,9 @@ export default async function handler(req, res) {
       }
 
       const data = await response.json();
-      // A decline repeats on a re-roll, so stop here and return the error below.
-      if (isRefusal(data)) { console.error("[generate-plan] " + refusalNote(data) + " attempt=" + attempt); break; }
+      // Not re-rolled: a policy decline usually repeats, and each retry is billed and counts
+      // against the user's hourly budget. The user gets a message that does not invite a retry.
+      if (isRefusal(data)) { refused = true; console.error("[generate-plan] " + refusalNote(data) + " attempt=" + attempt); break; }
       const raw = fromFirstBrace(claudeText(data));
 
       // Control chars become spaces (invalid inside JSON strings anyway), then strip
@@ -367,7 +369,7 @@ export default async function handler(req, res) {
       // Fast path: parse up to the last closing brace (the intact-output case), then
       // the repair path for truncated/imbalanced output. BOTH candidates go through the
       // same completeness gate: a partial plan is never served — a valid-JSON-but-wrong-
-      // shape emission (e.g. a prefill-wrapped refusal) and a tail-lossy repair both
+      // shape emission (e.g. a refusal written as prose) and a tail-lossy repair both
       // count as failures so the retry can re-roll them, and after the final attempt we
       // return the honest error instead of storing a report with broken sections.
       let candidate = null;
@@ -390,6 +392,7 @@ export default async function handler(req, res) {
       }
     }
     clearTimeout(timeout);
+    if (!plan && refused) return res.status(422).json({ error: "We couldn't complete this analysis. Please email a.azad@linkedscore.app and we'll look into it." });
     if (!plan) return res.status(502).json({ error: "The analysis came back incomplete. Please try again." });
 
     // Fact-check pass (best-effort, own timeout): strip fabricated facts from the rewrite/hook

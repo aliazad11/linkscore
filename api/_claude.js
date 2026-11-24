@@ -45,12 +45,15 @@ export function claudeText(d) {
   return d.content.filter((b) => b && b.type === "text" && typeof b.text === "string").map((b) => b.text).join("");
 }
 
-// The response text from its first "{" on, for routes that expect a JSON object. Without a
+// The response text from where its JSON object starts, for routes that expect one. Without a
 // prefill the model writes the opening brace itself, sometimes after a code fence or a short
-// lead-in; both are dropped here. Returns "" when there is no "{".
+// lead-in; both are dropped here. The first `{"` is preferred over a bare "{" so a lead-in
+// that happens to contain a brace ("Scoring {headline}:") does not hide the real JSON.
+// Returns "" when there is no "{".
 export function fromFirstBrace(t) {
   const s = String(t || "");
-  const i = s.indexOf("{");
+  const m = /\{\s*"/.exec(s);
+  const i = m ? m.index : s.indexOf("{");
   return i === -1 ? "" : s.slice(i);
 }
 

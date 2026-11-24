@@ -105,7 +105,7 @@ export default async function handler(req, res) {
     const data = await response.json().catch(() => null);
     if (isRefusal(data)) {
       console.error("[analyze-headline] " + refusalNote(data));
-      return res.status(502).json({ error: "The analyzer returned something unreadable. Try again." });
+      return res.status(422).json({ error: "The analyzer can't score this headline. Try different wording." });
     }
     let text = claudeText(data);
     // Defensive parse: strip any code fences, start at the first "{", cut at the last
