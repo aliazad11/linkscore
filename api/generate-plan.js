@@ -111,19 +111,27 @@ const REQUIRED_PLAN_FIELDS = [
       Array.isArray(p.ssi_plan.pillars) && p.ssi_plan.pillars.length === 4 &&
       p.ssi_plan.pillars.every((pl) => pl && typeof pl === "object" && pl.name && pl.advice)))],
 ];
-// Sonnet 5.5 sometimes writes a top-level key one level too deep: in about a quarter of
-// no-PDF runs on 2026-11-24, "closing_message" landed inside "networking" (right after
-// follow_up_message) and the completeness gate rejected an otherwise complete plan, so the
-// user got "incomplete" after both attempts. When a required top-level string is missing,
-// move it up from any top-level object that holds it. Content is untouched.
-const HOISTABLE_PLAN_STRINGS = ["closing_message", "archetype", "headline_rewrite", "about_rewrite", "urgency", "experience_rewrite"];
+// Sonnet 5.5 sometimes forgets to close the "networking" object, so the keys that follow it
+// in the schema ("closing_message", then "thought_leader", then "ssi_plan") land inside it.
+// On 2026-11-24 that made the completeness gate reject otherwise complete plans (missing
+// closing_message, later missing thought_leader), and when both attempts slipped the user got
+// "incomplete". Before the gate, any top-level schema key that is absent at the top but present
+// inside a top-level object is moved back up. "score" and "headline" are never moved: they also
+// exist legitimately inside thought_leader, ssi_plan, profile_scores and networking.
+const HOISTABLE_PLAN_KEYS = ["archetype", "voice_fingerprint", "headline_rewrite", "about_rewrite", "experience_rewrite", "urgency", "profile_scores", "profile_fixes", "keyword_analysis", "content_strategy", "post_hooks", "content_calendar", "critical_rules", "growth_tactics", "closing_message", "thought_leader", "ssi_plan"];
+function presentValue(v) {
+  if (v === undefined || v === null) return false;
+  if (typeof v === "string") return v.trim() !== "";
+  return true;
+}
 function hoistNestedPlanFields(p) {
   if (!p || typeof p !== "object" || Array.isArray(p)) return;
-  for (const key of HOISTABLE_PLAN_STRINGS) {
-    if (typeof p[key] === "string" && p[key]) continue;
+  for (const key of HOISTABLE_PLAN_KEYS) {
+    if (presentValue(p[key])) continue;
     for (const parent of Object.keys(p)) {
+      if (parent === key) continue;
       const v = p[parent];
-      if (v && typeof v === "object" && !Array.isArray(v) && typeof v[key] === "string" && v[key]) {
+      if (v && typeof v === "object" && !Array.isArray(v) && presentValue(v[key])) {
         p[key] = v[key];
         delete v[key];
         console.warn("[generate-plan] hoisted " + key + " out of " + parent);
