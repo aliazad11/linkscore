@@ -111,6 +111,28 @@ const REQUIRED_PLAN_FIELDS = [
       Array.isArray(p.ssi_plan.pillars) && p.ssi_plan.pillars.length === 4 &&
       p.ssi_plan.pillars.every((pl) => pl && typeof pl === "object" && pl.name && pl.advice)))],
 ];
+// Sonnet 5.5 sometimes writes a top-level key one level too deep: in about a quarter of
+// no-PDF runs on 2026-11-24, "closing_message" landed inside "networking" (right after
+// follow_up_message) and the completeness gate rejected an otherwise complete plan, so the
+// user got "incomplete" after both attempts. When a required top-level string is missing,
+// move it up from any top-level object that holds it. Content is untouched.
+const HOISTABLE_PLAN_STRINGS = ["closing_message", "archetype", "headline_rewrite", "about_rewrite", "urgency", "experience_rewrite"];
+function hoistNestedPlanFields(p) {
+  if (!p || typeof p !== "object" || Array.isArray(p)) return;
+  for (const key of HOISTABLE_PLAN_STRINGS) {
+    if (typeof p[key] === "string" && p[key]) continue;
+    for (const parent of Object.keys(p)) {
+      const v = p[parent];
+      if (v && typeof v === "object" && !Array.isArray(v) && typeof v[key] === "string" && v[key]) {
+        p[key] = v[key];
+        delete v[key];
+        console.warn("[generate-plan] hoisted " + key + " out of " + parent);
+        break;
+      }
+    }
+  }
+}
+
 function missingPlanField(p) {
   if (!p || typeof p !== "object" || Array.isArray(p)) return "root";
   for (const [name, ok] of REQUIRED_PLAN_FIELDS) { if (!ok(p)) return name; }
@@ -373,6 +395,7 @@ export default async function handler(req, res) {
         candidate = parseWithRepair(out);
         repaired = !!candidate;
       }
+      hoistNestedPlanFields(candidate);
       const missing = missingPlanField(candidate);
       if (!missing) {
         plan = candidate;
