@@ -113,7 +113,14 @@ export default async function handler(req, res) {
   }
   const s = (event.data && event.data.object) || {};
   if (s.mode && s.mode !== "payment") return res.status(200).json({ received: true, ignored: "mode " + s.mode });
-  if (s.payment_link !== PAY_LINK_ID) return res.status(200).json({ received: true, ignored: "other payment link" });
+  if (s.payment_link !== PAY_LINK_ID) {
+    // A payment on any other link unlocks nothing. Log it loudly so a new price or test link
+    // that is taking real money without stamping plans is caught, not silently ignored.
+    if (typeof s.client_reference_id === "string" && UUID_RE.test(s.client_reference_id)) {
+      console.error("[stripe-webhook] PAID ON UNKNOWN LINK plan=" + s.client_reference_id + " session=" + s.id + " link=" + s.payment_link);
+    }
+    return res.status(200).json({ received: true, ignored: "other payment link" });
+  }
   if (s.payment_status !== "paid" && s.payment_status !== "no_payment_required") {
     // Delayed methods (e.g. bank debits) complete later via async_payment_succeeded.
     return res.status(200).json({ received: true, pending: true });

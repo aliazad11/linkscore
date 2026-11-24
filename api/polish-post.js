@@ -19,7 +19,7 @@ function ppBurstOk(email) {
   return arr.length <= 5;
 }
 
-export const config = { maxDuration: 60 };
+export const config = { maxDuration: 120 };
 
 const LANG = { en: "English", de: "German", fr: "French", es: "Spanish", pt: "Portuguese", nl: "Dutch", it: "Italian" };
 const N = 3; // candidates per post (best-of-N kills the catastrophic single-draw miss)

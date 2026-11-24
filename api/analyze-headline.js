@@ -8,6 +8,7 @@ export const config = { maxDuration: 60 };
 // that scores it. Error logs carry status codes only, never the input.
 
 import { todayContext } from "./_date.js";
+import { durableRateOk } from "./_ratelimit.js";
 import { CLAUDE_BASE, TOKEN_FACTOR, postClaude, claudeText, fromFirstBrace, isRefusal, refusalNote } from "./_claude.js";
 
 const GOALS = ["Clients", "A better job", "Investors", "Followers"];
@@ -67,6 +68,11 @@ export default async function handler(req, res) {
   const ip = (typeof fwd === "string" ? fwd.split(",")[0].trim() : "") || "unknown";
   if (!rateOk(ip)) {
     return res.status(429).json({ error: "Too many checks from your connection. Try again in ten minutes." });
+  }
+  // The in-memory limit resets on every cold start and is per instance. This durable cap
+  // keeps a script from spending the shared Anthropic budget the paid analysis also needs.
+  if (process.env.SUPABASE_SERVICE_KEY && !(await durableRateOk("headline:" + ip, 30, process.env.SUPABASE_SERVICE_KEY, "analyze-headline"))) {
+    return res.status(429).json({ error: "Too many checks from your connection. Try again in an hour." });
   }
 
   const body = req.body || {};
