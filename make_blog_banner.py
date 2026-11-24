@@ -34,6 +34,8 @@ def main():
     ap.add_argument("--gold", default="", help="comma-separated words rendered in gold (punctuation ignored)")
     ap.add_argument("--raise", dest="raise_frac", type=float, default=0.0,
                     help="lift the subject above the bottom band: upscale and crop a lower window (0..0.3, e.g. 0.12 lifts ~90px)")
+    ap.add_argument("--autofit", action="store_true",
+                    help="scale the headline up to fill the band (short 3-4 word headlines look lost at the fixed 56px)")
     ap.add_argument("--out", default="blog-banner.jpg")
     a = ap.parse_args()
 
@@ -54,8 +56,10 @@ def main():
     img.alpha_composite(band, (0, BAND_TOP))
     d = ImageDraw.Draw(img)
 
-    kicker_f = font(["public/fonts/Poppins-SemiBold.ttf", "public/fonts/Poppins-ExtraBold.ttf"], 25)
-    head_f = font(["public/fonts/Poppins-ExtraBold.ttf"], 56)
+    KICK_TTF = ["fonts/Poppins-SemiBold.ttf", "public/fonts/Poppins-SemiBold.ttf", "public/fonts/Poppins-ExtraBold.ttf"]
+    HEAD_TTF = ["fonts/Poppins-ExtraBold.ttf", "public/fonts/Poppins-ExtraBold.ttf"]
+    kicker_f = font(KICK_TTF, 25)
+    head_f = font(HEAD_TTF, 56)
 
     margin = 78
     ky = BAND_TOP + 44
@@ -68,20 +72,52 @@ def main():
     rule_y = ky + 16
     d.rectangle([kx + 24, rule_y, W - margin, rule_y + 3], fill=GOLD)
 
-    # headline: wrap to width, white with gold key words
-    words = a.headline.split()
-    space_w = d.textlength(" ", font=head_f)
+    # headline: wrap to width, white with gold key words. A literal | in the headline
+    # forces a line break there (Ali wants control over where the title splits).
+    forced = [seg.split() for seg in a.headline.split("|")] if "|" in a.headline else None
+    words = a.headline.replace("|", " ").split()
     max_w = W - 2 * margin
-    lines, cur, cur_w = [], [], 0
-    for w in words:
-        ww = d.textlength(w, font=head_f)
-        if cur and cur_w + space_w + ww > max_w:
-            lines.append(cur); cur, cur_w = [w], ww
-        else:
-            cur_w += (space_w if cur else 0) + ww; cur.append(w)
-    if cur: lines.append(cur)
-
     y = ky + 58
+    avail_h = H - y - 22          # room left inside the band under the kicker
+
+    def wrap(f):
+        sp = d.textlength(" ", font=f)
+        ls, cur, cur_w = [], [], 0
+        for w in words:
+            ww = d.textlength(w, font=f)
+            if cur and cur_w + sp + ww > max_w:
+                ls.append(cur); cur, cur_w = [w], ww
+            else:
+                cur_w += (sp if cur else 0) + ww; cur.append(w)
+        if cur: ls.append(cur)
+        widest = max(sum(d.textlength(w, font=f) for w in l) + sp * (len(l) - 1) for l in ls)
+        return ls, sp, widest
+
+    # autofit: a 3-word headline at the fixed 56px looks lost in a 1376px band, so grow
+    # the type until it fills the width or runs out of band height, whichever comes first
+    def measure_forced(f):
+        sp = d.textlength(" ", font=f)
+        widest = max(sum(d.textlength(w, font=f) for w in l) + sp * (len(l) - 1) for l in forced)
+        return widest
+
+    if a.autofit:
+        for size in range(104, 43, -2):
+            f = font(HEAD_TTF, size)
+            if forced:
+                if measure_forced(f) <= max_w and len(forced) * int(size * 1.18) <= avail_h:
+                    head_f = f
+                    break
+            else:
+                ls, _, widest = wrap(f)
+                if widest <= max_w and len(ls) * int(size * 1.18) <= avail_h:
+                    head_f = f
+                    break
+
+    if forced:
+        lines = forced
+        space_w = d.textlength(" ", font=head_f)
+    else:
+        lines, space_w, _ = wrap(head_f)
     lh = int(head_f.size * 1.18)
     for line in lines:
         x = margin
