@@ -3,6 +3,7 @@ export const config = { maxDuration: 300 };
 import { verifyToken, allowedOrigin } from "./_auth.js";
 import { durableRateOk, hashKey } from "./_ratelimit.js";
 import { todayContext } from "./_date.js";
+import { CLAUDE_BASE, TOKEN_FACTOR, claudeHeaders, claudeText, fromFirstBrace, isRefusal, refusalNote } from "./_claude.js";
 import { gateOverall, validDet, tlSubStats } from "./_blend.js";
 
 const SUPABASE_URL = "https://luiroqeufcmlyidnrlnt.supabase.co";
@@ -148,21 +149,22 @@ async function scrubFabrications(messages, plan, apiKey, signal) {
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      headers: claudeHeaders(apiKey),
       body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250929",
+        ...CLAUDE_BASE,
         // Must fit the ENTIRE fact-checked field set back out. At 8000 a long plan's scrub
         // output truncated, failed to parse, and silently returned the UNSCRUBBED plan —
         // quietly disabling the anti-fabrication pass exactly on the biggest reports.
-        max_tokens: 16000,
+        max_tokens: Math.round(16000 * TOKEN_FACTOR),
         system: "You are a strict fact-checker and JSON API. Output ONLY a raw JSON object. Start with { end with }. " + todayContext(),
-        messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }, { role: "assistant", content: "{" }],
+        messages: [...messages, { role: "user", content: [{ type: "text", text: instruction }] }],
       }),
       signal,
     });
     if (!r.ok) { console.error("[scrub] http " + r.status + " — serving unscrubbed plan"); return plan; }
     const d = await r.json().catch(() => null);
-    let raw = "{" + ((d && d.content && d.content[0] && d.content[0].text) || "");
+    if (isRefusal(d)) { console.error("[scrub] " + refusalNote(d) + " — serving unscrubbed plan"); return plan; }
+    let raw = fromFirstBrace(claudeText(d));
     const end = raw.lastIndexOf("}");
     if (end === -1) { console.error("[scrub] no JSON in output (stop_reason=" + (d && d.stop_reason) + ") — serving unscrubbed plan"); return plan; }
     let fixed;
@@ -302,7 +304,6 @@ export default async function handler(req, res) {
   const timeout = setTimeout(() => controller.abort(), 290000);
 
   try {
-    const messagesWithPrefill = [...messages, { role: "assistant", content: "{" }];
     const started = Date.now();
 
     // Up to 2 generation attempts. A single stochastic bad sample (truncated or invalid JSON)
@@ -310,6 +311,7 @@ export default async function handler(req, res) {
     // same tokens as retrying here, minus the broken experience. HTTP-level errors (429/5xx)
     // still return immediately: retrying a capacity error would double-bill for nothing.
     let plan = null;
+    let refused = false;
     for (let attempt = 1; attempt <= 2 && !plan; attempt++) {
       // No headroom for a second full generation near the 290s abort — bail to the error.
       // 140s keeps the worst case (gen 2 to ~290s + skipped scrub + insert) inside
@@ -318,16 +320,12 @@ export default async function handler(req, res) {
 
       const response = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-        },
+        headers: claudeHeaders(process.env.ANTHROPIC_KEY),
         body: JSON.stringify({
-          model: "claude-sonnet-4-5-20250929",
-          max_tokens: 24000,
+          ...CLAUDE_BASE,
+          max_tokens: Math.round(24000 * TOKEN_FACTOR),
           system: "You are a JSON API. Output ONLY a raw JSON object. No markdown, no backticks, no commentary. Start with { end with }. " + todayContext(),
-          messages: messagesWithPrefill,
+          messages,
         }),
         signal: controller.signal,
       });
@@ -346,7 +344,10 @@ export default async function handler(req, res) {
       }
 
       const data = await response.json();
-      const raw = "{" + ((data.content && data.content[0] && data.content[0].text) || "");
+      // Not re-rolled: a policy decline usually repeats, and each retry is billed and counts
+      // against the user's hourly budget. The user gets a message that does not invite a retry.
+      if (isRefusal(data)) { refused = true; console.error("[generate-plan] " + refusalNote(data) + " attempt=" + attempt); break; }
+      const raw = fromFirstBrace(claudeText(data));
 
       // Control chars become spaces (invalid inside JSON strings anyway), then strip
       // trailing commas before } or ] — the two cheap fixes that never break valid JSON.
@@ -368,7 +369,7 @@ export default async function handler(req, res) {
       // Fast path: parse up to the last closing brace (the intact-output case), then
       // the repair path for truncated/imbalanced output. BOTH candidates go through the
       // same completeness gate: a partial plan is never served — a valid-JSON-but-wrong-
-      // shape emission (e.g. a prefill-wrapped refusal) and a tail-lossy repair both
+      // shape emission (e.g. a refusal written as prose) and a tail-lossy repair both
       // count as failures so the retry can re-roll them, and after the final attempt we
       // return the honest error instead of storing a report with broken sections.
       let candidate = null;
@@ -391,6 +392,7 @@ export default async function handler(req, res) {
       }
     }
     clearTimeout(timeout);
+    if (!plan && refused) return res.status(422).json({ error: "We couldn't complete this analysis. Please email a.azad@linkedscore.app and we'll look into it." });
     if (!plan) return res.status(502).json({ error: "The analysis came back incomplete. Please try again." });
 
     // Fact-check pass (best-effort, own timeout): strip fabricated facts from the rewrite/hook

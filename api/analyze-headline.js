@@ -8,6 +8,7 @@ export const config = { maxDuration: 60 };
 // that scores it. Error logs carry status codes only, never the input.
 
 import { todayContext } from "./_date.js";
+import { CLAUDE_BASE, TOKEN_FACTOR, claudeHeaders, claudeText, fromFirstBrace, isRefusal, refusalNote } from "./_claude.js";
 
 const GOALS = ["Clients", "A better job", "Investors", "Followers"];
 
@@ -84,18 +85,13 @@ export default async function handler(req, res) {
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_KEY,
-        "anthropic-version": "2023-06-01",
-      },
+      headers: claudeHeaders(process.env.ANTHROPIC_KEY),
       body: JSON.stringify({
-        model: "claude-sonnet-4-5-20250929",
-        max_tokens: 700,
+        ...CLAUDE_BASE,
+        max_tokens: Math.round(700 * TOKEN_FACTOR),
         system: "You are a strict JSON API. Output ONLY a raw JSON object. Start with { and end with }. " + todayContext(),
         messages: [
           { role: "user", content: [{ type: "text", text: buildPrompt(headline, goal) }] },
-          { role: "assistant", content: "{" },
         ],
       }),
       signal: AbortSignal.timeout(50000),
@@ -107,11 +103,15 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json().catch(() => null);
-    let text = (data && data.content && data.content[0] && data.content[0].text) || "";
-    // Defensive parse: strip any code fences, re-attach the "{" prefill, cut at
-    // the last closing brace, then try/catch the parse.
+    if (isRefusal(data)) {
+      console.error("[analyze-headline] " + refusalNote(data));
+      return res.status(422).json({ error: "The analyzer can't score this headline. Try different wording." });
+    }
+    let text = claudeText(data);
+    // Defensive parse: strip any code fences, start at the first "{", cut at the last
+    // closing brace, then try/catch the parse.
     text = text.replace(/```(?:json)?/gi, "");
-    const raw = "{" + text;
+    const raw = fromFirstBrace(text);
     const end = raw.lastIndexOf("}");
     let parsed = null;
     if (end !== -1) {
