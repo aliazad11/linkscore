@@ -69,11 +69,6 @@ export default async function handler(req, res) {
   if (!rateOk(ip)) {
     return res.status(429).json({ error: "Too many checks from your connection. Try again in ten minutes." });
   }
-  // The in-memory limit resets on every cold start and is per instance. This durable cap
-  // keeps a script from spending the shared Anthropic budget the paid analysis also needs.
-  if (process.env.SUPABASE_SERVICE_KEY && !(await durableRateOk("headline:" + ip, 30, process.env.SUPABASE_SERVICE_KEY, "analyze-headline"))) {
-    return res.status(429).json({ error: "Too many checks from your connection. Try again in an hour." });
-  }
 
   const body = req.body || {};
   const headline = typeof body.headline === "string" ? body.headline.trim() : "";
@@ -87,6 +82,11 @@ export default async function handler(req, res) {
   }
 
   if (!process.env.ANTHROPIC_KEY) return res.status(500).json({ error: "Server not configured" });
+  // Runs after validation so only real checks count. The in-memory limit resets on every cold start and is per instance. This durable cap
+  // keeps a script from spending the shared Anthropic budget the paid analysis also needs.
+  if (process.env.SUPABASE_SERVICE_KEY && !(await durableRateOk("headline:" + ip, 30, process.env.SUPABASE_SERVICE_KEY, "analyze-headline"))) {
+    return res.status(429).json({ error: "Too many checks from your connection. Try again in an hour." });
+  }
 
   try {
     const response = await postClaude(process.env.ANTHROPIC_KEY, {

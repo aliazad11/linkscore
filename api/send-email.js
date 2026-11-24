@@ -157,11 +157,12 @@ export default async function handler(req) {
       return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
     // The app sends this email once, right after save-plan creates the row. A row older than
-    // 15 minutes is a replay: refusing it stops one saved plan from being reused to mail the
-    // same address again and again with LinkedScore branding.
+    // 60 minutes is a replay: refusing it stops one saved plan from being reused to mail the
+    // same address again and again with LinkedScore branding. 60, not 15, so a phone that
+    // suspends the tab between the two calls still gets its email when the user returns.
     const createdMs = rows[0].created_at ? Date.parse(rows[0].created_at) : NaN;
-    if (Number.isFinite(createdMs) && Date.now() - createdMs > 15 * 60 * 1000) {
-      console.error('[send-email] refused: plan ' + planId + ' was saved more than 15 minutes ago');
+    if (Number.isFinite(createdMs) && Date.now() - createdMs > 60 * 60 * 1000) {
+      console.error('[send-email] refused: plan ' + planId + ' was saved more than 60 minutes ago');
       return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
     if (owner !== cleanEmail) {

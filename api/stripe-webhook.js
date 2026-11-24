@@ -117,7 +117,7 @@ export default async function handler(req, res) {
     // A payment on any other link unlocks nothing. Log it loudly so a new price or test link
     // that is taking real money without stamping plans is caught, not silently ignored.
     if (typeof s.client_reference_id === "string" && UUID_RE.test(s.client_reference_id)) {
-      console.error("[stripe-webhook] PAID ON UNKNOWN LINK plan=" + s.client_reference_id + " session=" + s.id + " link=" + s.payment_link);
+      console.error("[stripe-webhook] SESSION ON UNKNOWN LINK plan=" + s.client_reference_id + " session=" + s.id + " link=" + s.payment_link + " payment_status=" + s.payment_status);
     }
     return res.status(200).json({ received: true, ignored: "other payment link" });
   }
