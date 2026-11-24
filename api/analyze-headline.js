@@ -8,7 +8,7 @@ export const config = { maxDuration: 60 };
 // that scores it. Error logs carry status codes only, never the input.
 
 import { todayContext } from "./_date.js";
-import { CLAUDE_BASE, TOKEN_FACTOR, claudeHeaders, claudeText, fromFirstBrace, isRefusal, refusalNote } from "./_claude.js";
+import { CLAUDE_BASE, TOKEN_FACTOR, postClaude, claudeText, fromFirstBrace, isRefusal, refusalNote } from "./_claude.js";
 
 const GOALS = ["Clients", "A better job", "Investors", "Followers"];
 
@@ -83,19 +83,14 @@ export default async function handler(req, res) {
   if (!process.env.ANTHROPIC_KEY) return res.status(500).json({ error: "Server not configured" });
 
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: claudeHeaders(process.env.ANTHROPIC_KEY),
-      body: JSON.stringify({
+    const response = await postClaude(process.env.ANTHROPIC_KEY, {
         ...CLAUDE_BASE,
         max_tokens: Math.round(700 * TOKEN_FACTOR),
         system: "You are a strict JSON API. Output ONLY a raw JSON object. Start with { and end with }. " + todayContext(),
         messages: [
           { role: "user", content: [{ type: "text", text: buildPrompt(headline, goal) }] },
         ],
-      }),
-      signal: AbortSignal.timeout(50000),
-    });
+      }, { signal: AbortSignal.timeout(50000) });
 
     if (!response.ok) {
       console.error("[analyze-headline] anthropic http " + response.status);

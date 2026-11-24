@@ -6,7 +6,7 @@
 import { readSession, allowedOrigin } from "./_auth.js";
 import { durableRateOk } from "./_ratelimit.js";
 import { todayContext } from "./_date.js";
-import { CLAUDE_BASE, TOKEN_FACTOR, claudeHeaders, claudeText, isRefusal, refusalNote } from "./_claude.js";
+import { CLAUDE_BASE, TOKEN_FACTOR, postClaude, claudeText, isRefusal, refusalNote } from "./_claude.js";
 
 // In-memory backstop (per lambda instance) under the durable per-account cap below:
 // a free magic-link account must not be a scriptable proxy onto our Anthropic key.
@@ -60,11 +60,7 @@ function usesHash(v) { return v && (v.examples || []).some((e) => HASH_TEST.test
 function introChars(t) { const s = String(t || "").trim(); const i = s.indexOf("\n\n"); return (i >= 0 ? s.slice(0, i) : s).length; }
 
 async function callClaude(key, system, content, maxTokens) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: claudeHeaders(key),
-    body: JSON.stringify({ ...CLAUDE_BASE, max_tokens: Math.round(maxTokens * TOKEN_FACTOR), system: system + " " + todayContext(), messages: [{ role: "user", content }] }),
-  });
+  const r = await postClaude(key, { ...CLAUDE_BASE, max_tokens: Math.round(maxTokens * TOKEN_FACTOR), system: system + " " + todayContext(), messages: [{ role: "user", content }] });
   if (!r.ok) { const e = await r.text().catch(() => ""); console.error("[polish-post] " + r.status + " " + e); return null; }
   const d = await r.json().catch(() => null);
   if (isRefusal(d)) { console.error("[polish-post] " + refusalNote(d)); return null; }
