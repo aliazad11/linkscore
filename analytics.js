@@ -158,7 +158,7 @@ export function initAds() {
 // Advertising switched off in the banner: stop the tag's ad storage if it already ran on
 // this page, and remove the click ids it stored.
 export function revokeAds() {
-  try { if (_adsOn && typeof window.gtag === "function") window.gtag("consent", "update", { ad_storage: "denied", ad_user_data: "denied" }); } catch (e) {}
+  try { if (_adsOn && typeof window.gtag === "function") window.gtag("consent", "update", { ad_storage: "denied", ad_user_data: "denied" }); window.gtag("set", "ads_data_redaction", true); } catch (e) {}
   purgeAdsStorage();
 }
 
