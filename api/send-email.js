@@ -145,15 +145,24 @@ export default async function handler(req) {
       return new Response(JSON.stringify({ error: 'Server not configured' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
     const cleanEmail = email.trim().toLowerCase();
-    const check = await fetch(`${SUPABASE_URL}/rest/v1/plans?id=eq.${encodeURIComponent(planId)}&select=email`, {
-      headers: { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` },
-    });
+    const sbHeaders = { 'apikey': SERVICE_KEY, 'Authorization': `Bearer ${SERVICE_KEY}` };
+    let check = await fetch(`${SUPABASE_URL}/rest/v1/plans?id=eq.${encodeURIComponent(planId)}&select=email,created_at`, { headers: sbHeaders });
+    if (!check.ok) check = await fetch(`${SUPABASE_URL}/rest/v1/plans?id=eq.${encodeURIComponent(planId)}&select=email`, { headers: sbHeaders });
     if (!check.ok) {
       return new Response(JSON.stringify({ error: 'Lookup failed' }), { status: 500, headers: { 'Content-Type': 'application/json' } });
     }
     const rows = await check.json();
     const owner = rows && rows[0] && typeof rows[0].email === 'string' ? rows[0].email.trim().toLowerCase() : null;
     if (!owner) {
+      return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
+    }
+    // The app sends this email once, right after save-plan creates the row. A row older than
+    // 60 minutes is a replay: refusing it stops one saved plan from being reused to mail the
+    // same address again and again with LinkedScore branding. 60, not 15, so a phone that
+    // suspends the tab between the two calls still gets its email when the user returns.
+    const createdMs = rows[0].created_at ? Date.parse(rows[0].created_at) : NaN;
+    if (Number.isFinite(createdMs) && Date.now() - createdMs > 60 * 60 * 1000) {
+      console.error('[send-email] refused: plan ' + planId + ' was saved more than 60 minutes ago');
       return new Response(JSON.stringify({ error: 'Plan not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
     }
     if (owner !== cleanEmail) {
@@ -166,6 +175,9 @@ export default async function handler(req) {
     }
 
     const name = esc(String(firstName || 'there').slice(0, 60));
+    // Only LinkedScore's own share-card images may appear in the email. Any other URL is
+    // dropped, so the endpoint cannot be used to mail arbitrary images under our brand.
+    const safeCardImage = (typeof cardImage === 'string' && /^https:\/\/www\.linkedscore\.app\/share-cards\/[A-Za-z0-9\/._-]+\.jpg$/.test(cardImage) && cardImage.indexOf('..') === -1) ? cardImage : '';
     // The CTA carries a signed auto-login link: on a phone the email is usually opened
     // in a browser with no session, and a bare /plan/:id would greet the report's own
     // owner with a locked "shared result" page. Trust model = email inbox access, same
@@ -215,7 +227,7 @@ export default async function handler(req) {
     <h1 style="color:#f9fafb;font-size:26px;font-weight:800;margin-bottom:8px;">${name}, ${L.you_are}</h1>
     <h2 style="color:#c8a96e;font-size:24px;font-weight:800;margin-bottom:16px;">${esc(String(archetype || plan.archetype || '').slice(0, 80))}</h2>
     <div style="width:40px;height:1px;background:#c8a96e;margin-bottom:20px;"></div>
-    ${cardImage ? `<img src="${esc(cardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 16px;display:block;" />` : ''}
+    ${safeCardImage ? `<img src="${esc(safeCardImage)}" alt="${esc(String(archetype || plan.archetype || '').slice(0, 80))}" width="540" style="width:100%;max-width:540px;height:auto;border-radius:14px;border:1px solid #20202f;margin:0 0 16px;display:block;" />` : ''}
     ${cardCaption ? `<div style="background:#0d0d18;border:1px solid #20202f;border-radius:14px;padding:20px;margin:0 0 24px;">
       <p style="color:#8a8aa8;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin:0 0 12px;">${shareCopyLabel}</p>
       <p style="color:#d8d7e8;font-size:14px;line-height:1.7;white-space:pre-wrap;margin:0;">${esc(String(cardCaption).slice(0, 1200))}</p>
@@ -237,7 +249,7 @@ export default async function handler(req) {
       <ul style="padding-left:18px;margin:0;">${rules}</ul>
     </div>
     <a href="${planUrl}" style="display:block;text-align:center;background-color:#c8a96e;background:linear-gradient(135deg,#c8a96e,#a07840);color:#08080e;text-decoration:none;padding:16px;border-radius:14px;font-weight:700;font-size:15px;margin-bottom:28px;">${L.view_plan}</a>
-    <p style="color:#9a99b4;font-size:11px;text-align:center;line-height:1.6;">${L.footer} <a href="https://www.linkedscore.app/privacy.html" style="color:#9696b4;">${L.privacy}</a><br/>&copy; 2026 LinkedScore</p>
+    <p style="color:#9a99b4;font-size:11px;text-align:center;line-height:1.6;">${L.footer} <a href="https://www.linkedscore.app/privacy.html" style="color:#9696b4;">${L.privacy}</a><br/>&copy; ${new Date().getFullYear()} LinkedScore</p>
   </div>
 </body>
 </html>`;
