@@ -2267,9 +2267,10 @@ export default function App() {
     document.documentElement.style.scrollBehavior = "smooth";
     document.body.style.background = "#08080e";
 
-    // The gold CTAs are real <a href="?start=1"> links so they work BEFORE hydration
-    // (pre-hydration click = navigation, and the ?start=1 check below auto-starts the
-    // funnel after load). Once hydrated, preventDefault and start in place instead.
+    // The gold CTAs are real <a href="#start"> links so they work BEFORE hydration: a
+    // pre-hydration click only sets the fragment (no reload, so ?utm_* and ?gclid survive)
+    // and the #start check below auto-starts the funnel once hydrated. After hydration,
+    // preventDefault and start in place. ?start=1 still works for older links.
     const start = (e) => { if (e && e.preventDefault) e.preventDefault(); track("funnel_started", landingUtm()); setPhase(cohort ? "form" : "cohort"); };
     const ctas = Array.from(root.querySelectorAll(".btn-gold"));
     ctas.forEach(b => b.addEventListener("click", start));
