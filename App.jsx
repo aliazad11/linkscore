@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { HOME_CSS, homeHtml } from "./home.js";
 import { iconFor } from "./icons.js";
 import logoAsset from "./logo.png";
-import { track, identify, landingUtm } from "./analytics.js";
+import { track, identify, landingUtm, trackAdsPurchase } from "./analytics.js";
 import { useLocale, LOCALES, PROMPT_LANG, cohortText, localizeQuestions } from "./i18n.jsx";
 import { openCookieSettings } from "./CookieConsent.jsx";
 import { SHARE_CARDS, SHARE_I18N, GENDERED_LOCALES, cardIdFor } from "./shareCards.data.js";
@@ -18,6 +18,10 @@ const LOGO_URL = logoAsset;
 // which means they did not pay on that trip. Only a checkout started in this load can
 // still be in flight.
 const PAGE_LOADED_AT = Date.now();
+
+// Value reported to Google Ads for one paid report. /api/pay-status does not return the
+// charged amount, so this is the list price (keep it in step with the Stripe Payment Link).
+const REPORT_PRICE_EUR = 9.99;
 
 const FOUNDER_RULES = ["Post no more than twice a month. Quality beats quantity.","Don't post during low-traffic hours.","Never edit a post after publishing.","Never reshare. If you want a post seen, or your own account seen more, comment and like instead.","Fill in your full work history with proper, relevant descriptions on your profile.","Have a profile photo and banner that fit your industry.","Tag anyone you mention in a post.","Use a mix of content formats: documents, polls, images, video.","Have a content plan and roadmap built around what you want to become.","People follow you to hear your story, not industry news. Put yourself in the story, and show your face so posts get more reach.","Find relevant people in your field through search and send connection requests, to grow your following in the first months.","The first 60 minutes after posting matter most. Reply to every comment.","Use only 3 to 5 targeted, relevant hashtags.","End every post with a clear CTA, a question or an opinion request.","The first three lines must hook hard enough to earn the 'see more' click."];
 
@@ -2263,9 +2267,10 @@ export default function App() {
     document.documentElement.style.scrollBehavior = "smooth";
     document.body.style.background = "#08080e";
 
-    // The gold CTAs are real <a href="?start=1"> links so they work BEFORE hydration
-    // (pre-hydration click = navigation, and the ?start=1 check below auto-starts the
-    // funnel after load). Once hydrated, preventDefault and start in place instead.
+    // The gold CTAs are real <a href="#start"> links so they work BEFORE hydration: a
+    // pre-hydration click only sets the fragment (no reload, so ?utm_* and ?gclid survive)
+    // and the #start check below auto-starts the funnel once hydrated. After hydration,
+    // preventDefault and start in place. ?start=1 still works for older links.
     const start = (e) => { if (e && e.preventDefault) e.preventDefault(); track("funnel_started", landingUtm()); setPhase(cohort ? "form" : "cohort"); };
     const ctas = Array.from(root.querySelectorAll(".btn-gold"));
     ctas.forEach(b => b.addEventListener("click", start));
@@ -2273,6 +2278,13 @@ export default function App() {
     // The <details> menus (hamburger + language picker) have no native close-on-
     // navigate in an SPA: close them when a link inside is tapped, and when the
     // user taps anywhere outside the open menu.
+    // Footer "Cookie settings" link (plain markup in home.js) re-opens the consent banner,
+    // so withdrawing consent is as easy as giving it.
+    const openCs = (e) => { if (e && e.preventDefault) e.preventDefault(); openCookieSettings(); };
+    const csLinks = Array.from(root.querySelectorAll('a[href="#cookie-settings"]'));
+    csLinks.forEach(a => a.addEventListener("click", openCs));
+    if (window.location.hash === "#cookie-settings") openCs(); // clicked before hydration
+
     const menus = Array.from(root.querySelectorAll("details.navmenu, details.langpick"));
     const closeMenus = () => menus.forEach(d => d.removeAttribute("open"));
     const menuLinks = Array.from(root.querySelectorAll("details.navmenu a, details.langpick a"));
@@ -2327,6 +2339,7 @@ export default function App() {
     return () => {
       ctas.forEach(b => b.removeEventListener("click", start));
       menuLinks.forEach(a => a.removeEventListener("click", closeMenus));
+      csLinks.forEach(a => a.removeEventListener("click", openCs));
       document.removeEventListener("pointerdown", outsideTap);
       observers.forEach(o => o.disconnect());
       document.documentElement.style.scrollBehavior = prevSB;
@@ -2905,6 +2918,7 @@ export default function App() {
             throw new Error(returning ? "payment_pending" : "payment_pending_or_pay");
           }
           track("payment_confirmed", { cohort, planId: pid });
+          trackAdsPurchase({ value: REPORT_PRICE_EUR, currency: "EUR", transactionId: sid || pid });
         } else if (backUnpaid) {
           // Count each abandoned checkout once, however many clicks follow it.
           if (!pend402.returnSeen) {
@@ -2919,7 +2933,12 @@ export default function App() {
             await new Promise((r) => setTimeout(r, 3000));
             try { const again = await callGate(); if (again.ok || again.status === 402) gateRes = again; } catch (e) {}
             setPayStage("");
-            if (gateRes.ok) track("payment_confirmed_late", { cohort, planId: pid });
+            if (gateRes.ok) {
+              track("payment_confirmed_late", { cohort, planId: pid });
+              // This path means no success redirect reached this device, so there is no Stripe
+              // session id here: the report id stands in (each report is paid once).
+              trackAdsPurchase({ value: REPORT_PRICE_EUR, currency: "EUR", transactionId: pid });
+            }
           }
         }
         if (!confirming && gateRes.status === 402) {
@@ -2974,6 +2993,10 @@ export default function App() {
       // dies first, a refresh or the payment email link can still unlock it again.
       const paidSid = (payReturnRef.current && payReturnRef.current.sessionId) || "";
       payReturnRef.current = null;
+      // Back from a Stripe success redirect. When the webhook landed before the visitor did,
+      // the gate answers 200 at once and payment_confirmed above never fires, so the Google
+      // Ads purchase is reported here too (sent once per session id).
+      if (paidSid) trackAdsPurchase({ value: REPORT_PRICE_EUR, currency: "EUR", transactionId: paidSid });
       payPendingRef.current = false;
 
       (async () => {

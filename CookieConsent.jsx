@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocale } from "./i18n.jsx";
-import { getConsent, setConsent, initAnalytics } from "./analytics.js";
+import { getConsent, setConsent, initAnalytics, initAds, revokeAds } from "./analytics.js";
 
 // Lets the footer "Cookie settings" link re-open the banner from anywhere.
 let _open = null;
@@ -12,11 +12,12 @@ export function CookieConsent() {
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState(false);
   const [analytics, setAnalytics] = useState(false);
+  const [marketing, setMarketing] = useState(false);
   const [card, setCard] = useState(null);
 
   useEffect(() => {
     if (!getConsent()) setOpen(true); // first visit: no choice stored yet
-    _open = () => { const c = getConsent(); setAnalytics(!!(c && c.analytics)); setCustom(true); setOpen(true); };
+    _open = () => { const c = getConsent(); setAnalytics(!!(c && c.analytics)); setMarketing(!!(c && c.marketing === true)); setCustom(true); setOpen(true); };
     return () => { _open = null; };
   }, []);
 
@@ -41,12 +42,14 @@ export function CookieConsent() {
     return () => { if (ro) ro.disconnect(); clear(); };
   }, [open, card]);
 
-  const decide = (analyticsOptIn) => {
-    setConsent({ analytics: analyticsOptIn, ts: Date.now() });
+  const decide = (analyticsOptIn, marketingOptIn) => {
+    setConsent({ analytics: analyticsOptIn, marketing: marketingOptIn, ts: Date.now() });
     // Anonymous decision beacon (no cookies, no PII): opt-in-gated analytics can't
     // see its own denominator, so this one log line is how we know the accept rate.
-    try { navigator.sendBeacon && navigator.sendBeacon("/api/log-consent?c=" + (analyticsOptIn ? "accept" : "reject")); } catch (e) {}
+    // c keeps its meaning (the analytics choice); m=1 marks an advertising opt-in.
+    try { navigator.sendBeacon && navigator.sendBeacon("/api/log-consent?c=" + (analyticsOptIn ? "accept" : "reject") + "&m=" + (marketingOptIn ? "1" : "0")); } catch (e) {}
     if (analyticsOptIn) initAnalytics();
+    if (marketingOptIn) initAds(); else revokeAds();
     setOpen(false); setCustom(false);
   };
 
@@ -57,6 +60,15 @@ export function CookieConsent() {
   const btnPrimary = { ...btnEqual, background: "linear-gradient(135deg,#c8a96e,#a07840)", color: "#08080e", border: "none" };
   const btnText = { background: "transparent", border: "none", color: "#9696b4", fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", padding: "11px 6px" };
   const rowStyle = { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "11px 0", borderTop: "1px solid #1a1a2e" };
+  const toggleRow = (on, flip, label, desc) => (
+    <div style={rowStyle}>
+      <div><p style={{ color: "#e8e8f0", fontSize: 13, fontWeight: 600 }}>{label}</p><p style={{ color: "#7a7a96", fontSize: 11 }}>{desc}</p></div>
+      <button onClick={flip} role="switch" aria-checked={on} aria-label={label}
+        style={{ width: 46, height: 26, borderRadius: 99, border: "none", cursor: "pointer", background: on ? "#c8a96e" : "#2a2a3e", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
+        <span style={{ position: "absolute", top: 3, left: on ? 23 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
+      </button>
+    </div>
+  );
 
   return (
     <div role="dialog" aria-label={t("cc_title")} aria-modal="false"
@@ -72,22 +84,17 @@ export function CookieConsent() {
               <div><p style={{ color: "#e8e8f0", fontSize: 13, fontWeight: 600 }}>{t("cc_essential")}</p><p style={{ color: "#7a7a96", fontSize: 11 }}>{t("cc_essential_desc")}</p></div>
               <span style={{ color: "#56c08a", fontSize: 12, fontWeight: 600, flexShrink: 0 }}>{t("cc_always_on")}</span>
             </div>
-            <div style={rowStyle}>
-              <div><p style={{ color: "#e8e8f0", fontSize: 13, fontWeight: 600 }}>{t("cc_analytics")}</p><p style={{ color: "#7a7a96", fontSize: 11 }}>{t("cc_analytics_desc")}</p></div>
-              <button onClick={() => setAnalytics(a => !a)} role="switch" aria-checked={analytics} aria-label={t("cc_analytics")}
-                style={{ width: 46, height: 26, borderRadius: 99, border: "none", cursor: "pointer", background: analytics ? "#c8a96e" : "#2a2a3e", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
-                <span style={{ position: "absolute", top: 3, left: analytics ? 23 : 3, width: 20, height: 20, borderRadius: "50%", background: "#fff", transition: "left 0.2s" }} />
-              </button>
-            </div>
+            {toggleRow(analytics, () => setAnalytics(a => !a), t("cc_analytics"), t("cc_analytics_desc"))}
+            {toggleRow(marketing, () => setMarketing(m => !m), t("cc_marketing"), t("cc_marketing_desc"))}
           </div>
         )}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           {custom ? (
-            <button onClick={() => decide(analytics)} style={btnPrimary}>{t("cc_save")}</button>
+            <button onClick={() => decide(analytics, marketing)} style={btnPrimary}>{t("cc_save")}</button>
           ) : (
             <>
-              <button onClick={() => decide(true)} style={btnEqual}>{t("cc_accept")}</button>
-              <button onClick={() => decide(false)} style={btnEqual}>{t("cc_reject")}</button>
+              <button onClick={() => decide(true, true)} style={btnEqual}>{t("cc_accept")}</button>
+              <button onClick={() => decide(false, false)} style={btnEqual}>{t("cc_reject")}</button>
               <button onClick={() => setCustom(true)} style={btnText}>{t("cc_customize")}</button>
             </>
           )}

@@ -96,6 +96,7 @@ nav .brand{display:flex;align-items:center}
 .ls-home .final p{color:var(--sub);font-size:18px;margin:18px auto 32px;max-width:440px;position:relative}
 .ls-home footer{border-top:1px solid rgba(255,255,255,.06);padding:34px 0;color:var(--sub);font-size:13px}
 .ls-home footer .wrap{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.ls-home footer .foot-legal{flex-basis:100%;margin:6px 0 0;color:var(--mute);font-size:11.5px;line-height:1.5}
 @media (max-width:880px){
 .ls-home .hero-grid{grid-template-columns:1fr;gap:40px}
 .ls-home .steps,.ls-home .grid{grid-template-columns:1fr}
@@ -241,6 +242,16 @@ function S(loc) { return Object.assign({}, HOME_STRINGS.en, HOME_STRINGS[loc] ||
 export function homeHtml(loc = "en") {
   const L = S(loc);
   const loginLabel = ({ en:"Log in", de:"Anmelden", fr:"Connexion", es:"Entrar", pt:"Entrar", nl:"Inloggen", it:"Accedi" })[loc] || "Log in";
+  const legalLine = ({
+    en:"LinkedScore is an independent tool and is not affiliated with or endorsed by LinkedIn. LinkedIn is a registered trademark of LinkedIn Corporation.",
+    de:"LinkedScore ist ein unabhängiges Tool, nicht mit LinkedIn verbunden und nicht von LinkedIn unterstützt. LinkedIn ist eine eingetragene Marke der LinkedIn Corporation.",
+    fr:"LinkedScore est un outil indépendant, sans lien avec LinkedIn et non approuvé par LinkedIn. LinkedIn est une marque déposée de LinkedIn Corporation.",
+    es:"LinkedScore es una herramienta independiente, sin relación con LinkedIn ni respaldada por LinkedIn. LinkedIn es una marca registrada de LinkedIn Corporation.",
+    pt:"O LinkedScore é uma ferramenta independente, sem ligação ao LinkedIn nem aprovada pelo LinkedIn. LinkedIn é uma marca registada da LinkedIn Corporation.",
+    nl:"LinkedScore is een onafhankelijke tool, niet verbonden aan of goedgekeurd door LinkedIn. LinkedIn is een geregistreerd handelsmerk van LinkedIn Corporation.",
+    it:"LinkedScore è uno strumento indipendente, non affiliato né approvato da LinkedIn. LinkedIn è un marchio registrato di LinkedIn Corporation."
+  })[loc] || "";
+  const cookieLabel = ({ en:"Cookie settings", de:"Cookie-Einstellungen", fr:"Paramètres des cookies", es:"Configuración de cookies", pt:"Definições de cookies", nl:"Cookie-instellingen", it:"Impostazioni cookie" })[loc] || "Cookie settings";
   return `<nav><div class="wrap">
   <a href="${homeHref(loc)}" aria-label="LinkedScore home" class="brand"><img src="/logo.png" alt="LinkedScore" /></a>
   <div class="nav-r">
@@ -253,7 +264,7 @@ export function homeHtml(loc = "en") {
     <a href="/account">${loginLabel}</a>
     <details class="navmenu"><summary aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></summary><div class="navmenu-list"><a href="#how">${L.nav_how}</a><a href="#get">${L.nav_what}</a><a href="#writer">${L.nav_writer}</a><a href="/about.html">${L.nav_about}</a><a href="/faq.html">${L.nav_faq}</a><a href="/blog">${L.nav_blog}</a><a href="/account">${loginLabel}</a></div></details>
     ${langSwitcher(loc)}
-    <a href="?start=1" class="btn btn-gold">${L.nav_cta}</a>
+    <a href="#start" class="btn btn-gold">${L.nav_cta}</a>
   </div>
 </div></nav>
 
@@ -268,7 +279,7 @@ export function homeHtml(loc = "en") {
       <li>${L.edge4}</li>
     </ul>
     <div class="cta-row reveal" style="transition-delay:.21s">
-      <a href="?start=1" class="btn btn-gold btn-lg">${L.hero_cta}</a>
+      <a href="#start" class="btn btn-gold btn-lg">${L.hero_cta}</a>
       <a href="#get" class="btn btn-ghost btn-lg">${L.hero_cta2}</a>
     </div>
     <div class="proof reveal" style="transition-delay:.28s">
@@ -365,12 +376,13 @@ export function homeHtml(loc = "en") {
 <section class="final"><div class="wrap">
   <h2>${L.final_h}</h2>
   <p>${L.final_p}</p>
-  <a href="?start=1" class="btn btn-gold btn-lg">${L.hero_cta}</a>
+  <a href="#start" class="btn btn-gold btn-lg">${L.hero_cta}</a>
 </div></section>
 
 <footer><div class="wrap">
   <span>${L.footer_tagline}</span>
-  <span class="foot-links"><a href="/imprint.html">${L.footer_imprint}</a><a href="${loc==="en"?"":"/"+loc}/privacy.html">${L.footer_privacy}</a><a href="${loc==="en"?"":"/"+loc}/cookies.html">${L.footer_cookies}</a><a href="${loc==="en"?"":"/"+loc}/terms.html">${L.footer_terms}</a><span>© 2026 LinkedScore</span></span>
+  <span class="foot-links"><a href="/imprint.html">${L.footer_imprint}</a><a href="${loc==="en"?"":"/"+loc}/privacy.html">${L.footer_privacy}</a><a href="${loc==="en"?"":"/"+loc}/cookies.html">${L.footer_cookies}</a><a href="${loc==="en"?"":"/"+loc}/terms.html">${L.footer_terms}</a><a href="#cookie-settings">${cookieLabel}</a><span>© ${new Date().getFullYear()} LinkedScore</span></span>
+  <p class="foot-legal">${legalLine}</p>
 </div></footer>`;
 }
 

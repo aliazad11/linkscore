@@ -46,7 +46,11 @@ export default function CookieConsent() {
   }, [open, card]);
 
   const decide = (analyticsOptIn) => {
-    setConsent({ analytics: analyticsOptIn, ts: Date.now() });
+    // The app's banner also stores an Advertising choice (marketing) in the same object. The
+    // blog only asks about analytics, so it keeps an existing Advertising opt-in when analytics
+    // stays on and clears it on a reject; it never grants Advertising by itself.
+    const prev = getConsent() || {};
+    setConsent({ analytics: analyticsOptIn, marketing: analyticsOptIn ? prev.marketing === true : false, ts: Date.now() });
     // Anonymous decision beacon (no cookies, no PII), tagged so blog and app accept rates
     // can be told apart in the logs. PostHogInit picks the decision up from setConsent.
     try {
